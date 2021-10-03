@@ -3,16 +3,23 @@
 int nb_ligne = 1;
 %}
 
+C1 [^"]
+C2 [^"*]
+C3 [^"*/]
+
 %%
 "cpyrr" {return(PROG);}
 \{  {return(DEBUT);}
 \}  {return(FIN);}
 
+\/\/$ ;
+\/\*({C2}|\"{C1}*\"|\*\**{C3}|\*\**\"{C1}*\")*\*\**\/ ;
+
 "." {return(POINT);}
 ";" {return(POINT_VIRGULE);}
 ":" {return(DEUX_POINTS);}
-"[" {printf("crochet o\n"); return(CROCHET_OUVRANT);}
-"]" {printf("crochet f\n"); return(CROCHET_FERMANT);}
+"[" {return(CROCHET_OUVRANT);}
+"]" {return(CROCHET_FERMANT);}
 ":=" {return(OPAFF);}
 
 "=" {return(EGAL);}
@@ -20,7 +27,7 @@ int nb_ligne = 1;
 ">="  {return(SUP_EGAL);}
 "<" {return(INF);}
 "<="  {return(INF_EGAL);}
-"<>"  {return(DIFFERENT);}
+"!="  {return(DIFFERENT);}
 
 "(" {return(PARENTHESE_OUVRANTE);}
 ")" {return(PARENTHESE_FERMANTE);}
@@ -63,11 +70,12 @@ int nb_ligne = 1;
 "-" {return(MOINS);}
 "/" {return(DIV);}
 "*" {return(MULT);}
+"%" {return(MODULO);}
 
 0|[1-9][0-9]* {return(CSTE_ENTIERE);}
 (0|[1-9][0-9]*)\.([0-9]*)  {return(CSTE_REELLE);}
 \'.\'  {return(CSTE_CARACTERE);}
-\".\" {return(CSTE_CHAINE);}
+\"[^"]*\" {return(CSTE_CHAINE);}
 
 \n  {nb_ligne++;}
 [ \t] ;

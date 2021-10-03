@@ -23,7 +23,7 @@ int syntaxe_correcte = 1;
 %token SI ALORS SINON PROCEDURE FONCTION RETOURNE TANT_QUE FAIRE DE
 %token VIDE
 %token ET OU NON
-%token PLUS MOINS MULT DIV
+%token PLUS MOINS MULT DIV MODULO
 %token TRUE FALSE
 
 %%
@@ -103,6 +103,7 @@ liste_param : un_param
             ;
 
 un_param : IDF DEUX_POINTS type_simple
+         ;
 
 instruction : affectation POINT_VIRGULE
             | condition
@@ -112,7 +113,7 @@ instruction : affectation POINT_VIRGULE
             | RETOURNE resultat_retourne POINT_VIRGULE
             ;
 
-resultat_retourne : expression
+resultat_retourne : un_arg
                   |
                   ;
 
@@ -120,38 +121,71 @@ appel : IDF liste_arguments
       ;
 
 liste_arguments : PARENTHESE_OUVRANTE liste_args PARENTHESE_FERMANTE
-                |
                 ;
 
 liste_args : un_arg
            | liste_args VIRGULE un_arg
+           |
+           ;
 
-un_arg : expression
+un_arg : expression_booleenne
        ;
 
-condition : SI PARENTHESE_OUVRANTE expression_booleenne PARENTHESE_FERMANTE
+condition : SI expression_booleenne
+            ALORS liste_instructions
+            |
+            SI expression_booleenne
             ALORS liste_instructions
             SINON liste_instructions
           ;
 
 tant_que : TANT_QUE expression_booleenne FAIRE liste_instructions
 
-affectation : variable OPAFF expression
+affectation : variable OPAFF expression_booleenne
             ;
 
-variable : variable CROCHET_OUVRANT variable CROCHET_FERMANT
-         | variable CROCHET_OUVRANT CSTE_ENTIERE CROCHET_FERMANT
-         | variable POINT variable
-         | IDF
+variable : IDF corps_variable
          ;
 
-expression_booleenne : expression_booleenne opp_logique expression_booleenne
-                     | un_non un_booleen
+corps_variable : CROCHET_OUVRANT indice_expr_tab CROCHET_FERMANT corps_variable
+               | POINT variable
+               |
+               ;
+
+indice_expr_tab : e1_tab
+                ;
+
+e1_tab : e1_tab PLUS e2_tab
+       | e1_tab MOINS e2_tab
+       | e2_tab
+       ;
+
+e2_tab : e2_tab MULT e3_tab
+       | e2_tab DIV e3_tab
+       | e3_tab
+       ;
+
+e3_tab : PARENTHESE_OUVRANTE e1_tab PARENTHESE_FERMANTE
+       | CSTE_ENTIERE
+       | variable
+       | appel
+       ;
+
+expression_booleenne : e1_bool
                      ;
 
-opp_logique : ET
-            | OU
-            ;
+e1_bool : e1_bool OU e2_bool
+        | e2_bool
+        ;
+
+e2_bool : e2_bool ET e3_bool
+        | e3_bool
+        ;
+
+e3_bool : NON e3_bool
+        | PARENTHESE_OUVRANTE e1_bool PARENTHESE_FERMANTE
+        | un_booleen
+        ;
 
 un_booleen : comparaison
            | expression
@@ -170,10 +204,6 @@ operateur_comp : EGAL
                | INF_EGAL
                ;
 
-un_non : NON
-       |
-       ;
-
 expression : e1
            ;
 
@@ -184,13 +214,16 @@ e1 : e1 PLUS e2
 
 e2 : e2 MULT e3
    | e2 DIV e3
+   | e2 MODULO e3
    | e3
    ;
 
 e3 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE
    | CSTE_ENTIERE
    | CSTE_REELLE
-   | VARIABLE
+   | CSTE_CARACTERE
+   | CSTE_CHAINE
+   | variable
    | appel
    ;
 %%
