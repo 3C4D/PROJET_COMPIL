@@ -12,7 +12,7 @@ C3 [^"*/]
 \{  {return(DEBUT);}
 \}  {return(FIN);}
 
-\/\/$ ;
+\/\/.*$ ;
 \/\*({C2}|\"{C1}*\"|\*\**{C3}|\*\**\"{C1}*\")*\*\**\/ ;
 
 "." {return(POINT);}
@@ -72,7 +72,7 @@ C3 [^"*/]
 "*" {return(MULT);}
 "%" {return(MODULO);}
 
-0|[1-9][0-9]* {return(CSTE_ENTIERE);}
+(0|[1-9][0-9]*) {return(CSTE_ENTIERE);}
 (0|[1-9][0-9]*)\.([0-9]*)  {return(CSTE_REELLE);}
 \'.\'  {return(CSTE_CARACTERE);}
 \"[^"]*\" {return(CSTE_CHAINE);}

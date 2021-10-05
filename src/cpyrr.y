@@ -54,7 +54,7 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type
                  ;
 
 suite_declaration_type : STRUCT liste_champs FSTRUCT
-                       | TABLEAU dimension DE nom_type
+                       | TABLEAU dimension DE nom_type POINT_VIRGULE
                        ;
 
 dimension : CROCHET_OUVRANT liste_dimensions CROCHET_FERMANT

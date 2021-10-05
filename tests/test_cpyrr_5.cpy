@@ -1,36 +1,70 @@
 cpyrr
+
+/*
+  Programme de test numéro 5 : fonction , booleens, tableaux, structures
+*/
+
+// On cherche à calculer un terme de la suite de fibonnacci en itératif
+func fibo(numeroTerme:int) return int
+var terme1 : int;
+var terme2 : int;
+var termTemp : int;
+var nbTerme : int;
 {
-   x:=(7*8.36+(98+7.14)*8.9)/8;  /* test affectation d'expression arithmetique */
-
-   while (a<b or f(ertfe[ghghg].lmlm,45)) do{  /* test de l'instruction tant que et des expressions booleens */
-     a := a + c;
-     p(arg1,f(a,b+3,c<3));   /* appel de fonction */
-     a:= f(af,t[45*10/f(a,b,c)]);   /* affectation du resultat d'une fonction */
-   }
-
-
-   if a-f(a[12])and (b!=c) or c=f(wwfe.dza[tad.bn[aa.d]],4) then{   /* test de if then else */
-       a:=p(e,f);
-   }else{
-       void;    /* test instruction vide dans un bloc d'instruction */
-   }
-
-   if(((b<c)or(tu!=gdpp(a.v.d.q,z(dfds,f[fdkl].gf)))))then{   /* test de if then sans le else */
-       c:=c%pl;    /* test de l'operateur modulo */
-   }else{
-    if(bonjour)then{
-    void;
+    if numeroTerme <= 0
+    then{
+      return 0;
     }
-   }
+    else{
+      nbTerme := 2;
+      terme1 := 1;
+      terme2 := 1;
 
-   read(a,b,d,fsd.hyh[12].gfg[fdze]);    /* test de l'instruction lire avec une liste de variable */
+      while nbTerme < numeroTerme do{
+        termeTemp := terme2;
+        terme2 := terme2 + terme1;
+        terme1 := termeTemp;
+      }
+    }
+  return terme2;
+}
 
-   write("bonjour %d");       /* test de l'instruction ecrire avec un format sans liste de variable */
-   write("test2_5fdsv \% ,%d ,%f,%ws",va1,va2);    /* test de l'instruction ecrire avec une liste de variable */
 
+// Quelques déclarations utiles de tous types
+var x42b : int;
+var y12 : bool;
+var variableInutile : float;
+var variableInutile : char;
+type monTab56 : array [2 .. 5] of int;
+type maStruct89 : struct
+  ch1:int;
+  ch2:char;
+  ch3:str[60]
+fstruct
+{
 
-   /*a:= "ere"+"ere";*/   /* la concatenation ne fonctionne pas */
+  // affectation arithmérique
+  x42b := (12 + (4 - 8 % 12) * 6);
+  // booleen
+  y12 := (true and ((false or 1) and 2));
+  // booleen
+  y12 := (true and ((false or 1) and 2));
+  // float
+  variableInutile := 3.75*(8+(6.789/1.6));
+  // caractère
+  variableInutile2 := 's';
+  // struct
+  maStruct89.ch1 := x42b+3*(6%2);
+  maStruct89.ch2 := variableInutile;
+  maStruct89.ch3 := "sa"+"lur";
+  // chaine
+  maStruct89.ch3[4] := 't';
+  // tableau
+  monTab56[x42b+2*(4+6%28)] := 2;
+  monTab56[fibo(x42b)] := x42b-85;
 
-   return "jhfgdfgdf";   /* test de l'instruction retour et des chaines constantes */
-
-}   /* fin du bloc d'instruction et donc du programme */
+  // On appelle notre fonction
+  affiche(fibo(x42b));
+  affiche(fibo(x42b + 5 - (6%(3/5))));
+  affiche(fibo(6));
+}
