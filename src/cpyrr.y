@@ -128,73 +128,68 @@ liste_args : un_arg
            |
            ;
 
-un_arg : expression_booleenne
+un_arg : expression
        ;
 
-condition : SI expression_booleenne
+condition : SI expression
             ALORS liste_instructions
-            |
-            SI expression_booleenne
-            ALORS liste_instructions
-            SINON liste_instructions
+            sinon
           ;
 
-tant_que : TANT_QUE expression_booleenne FAIRE liste_instructions
+sinon : SINON liste_instructions
+      |
+      ;
 
-affectation : variable OPAFF expression_booleenne
+tant_que : TANT_QUE expression FAIRE liste_instructions
+
+affectation : variable OPAFF expression
             ;
 
 variable : IDF corps_variable
          ;
 
-corps_variable : CROCHET_OUVRANT indice_expr_tab CROCHET_FERMANT corps_variable
+corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable
                | POINT variable
                |
                ;
 
-indice_expr_tab : e1_tab
-                ;
-
-e1_tab : e1_tab PLUS e2_tab
-       | e1_tab MOINS e2_tab
-       | e2_tab
-       ;
-
-e2_tab : e2_tab MULT e3_tab
-       | e2_tab DIV e3_tab
-       | e3_tab
-       ;
-
-e3_tab : PARENTHESE_OUVRANTE e1_tab PARENTHESE_FERMANTE
-       | CSTE_ENTIERE
-       | variable
-       | appel
-       ;
-
-expression_booleenne : e1_bool
-                     ;
-
-e1_bool : e1_bool OU e2_bool
-        | e2_bool
-        ;
-
-e2_bool : e2_bool ET e3_bool
-        | e3_bool
-        ;
-
-e3_bool : NON e3_bool
-        | PARENTHESE_OUVRANTE e1_bool PARENTHESE_FERMANTE
-        | un_booleen
-        ;
-
-un_booleen : comparaison
-           | expression
-           | TRUE
-           | FALSE
+expression : e1
            ;
 
-comparaison : expression operateur_comp expression
-            ;
+e1 : e1 PLUS e2
+   | e1 MOINS e2
+   | e1 OU e2
+   | e2
+   ;
+
+e2 : e2 MULT e3
+   | e2 DIV e3
+   | e2 MODULO e3
+   | e2 ET e3
+   | e3
+   ;
+
+e3 : e3 operateur_comp e4;
+   | e4
+   ;
+
+e4 : NON e5;
+   | e5
+   ;
+
+e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE
+   | CSTE_ENTIERE
+   | CSTE_REELLE
+   | CSTE_CARACTERE
+   | CSTE_CHAINE
+   | un_booleen
+   | variable
+   | appel
+   ;
+
+un_booleen : TRUE
+           | FALSE
+           ;
 
 operateur_comp : EGAL
                | DIFFERENT
@@ -204,28 +199,6 @@ operateur_comp : EGAL
                | INF_EGAL
                ;
 
-expression : e1
-           ;
-
-e1 : e1 PLUS e2
-   | e1 MOINS e2
-   | e2
-   ;
-
-e2 : e2 MULT e3
-   | e2 DIV e3
-   | e2 MODULO e3
-   | e3
-   ;
-
-e3 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE
-   | CSTE_ENTIERE
-   | CSTE_REELLE
-   | CSTE_CARACTERE
-   | CSTE_CHAINE
-   | variable
-   | appel
-   ;
 %%
 
 int yyerror(){
