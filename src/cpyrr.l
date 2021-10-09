@@ -1,6 +1,19 @@
 %{
+#include "../arbres/inc/arbres.h"
 #include "../obj/cpyrr.tab.h"
 int nb_ligne = 1;
+
+// Conserve la cohérence de la variable nb_ligne au regard des commentaires
+// multi-lignes
+void calcul_nb_ligne_comm(char *comm){
+  while(*comm != '\0'){
+    if(*comm == '\n'){
+      nb_ligne++;
+    }
+    comm++;
+  }
+}
+
 %}
 
 C1 [^"]
@@ -13,8 +26,11 @@ C3 [^"*/]
 \}  {return(FIN);}
 
 \/\/.*$ ;
-\/\*({C2}|\"{C1}*\"|\*\**{C3}|\*\**\"{C1}*\")*\*\**\/ ;
+\/\*({C2}|\"{C1}*\"|\*\**{C3}|\*\**\"{C1}*\")*\*\**\/ {
+  calcul_nb_ligne_comm(yytext);
+}
 
+"_" {return(SOULIGNE);}
 "." {return(POINT);}
 ";" {return(POINT_VIRGULE);}
 ":" {return(DEUX_POINTS);}
@@ -31,7 +47,6 @@ C3 [^"*/]
 
 "(" {return(PARENTHESE_OUVRANTE);}
 ")" {return(PARENTHESE_FERMANTE);}
-".." {return(POINT_POINT);}
 "," {return(VIRGULE);}
 
 "type"  {return(TYPE);}
@@ -51,6 +66,9 @@ C3 [^"*/]
 "return"  {return(RETOURNE);}
 "void"  {return(VIDE);}
 "of"  {return(DE);}
+
+"afficher"  {return(AFFICHER);}
+"lire"  {return(LIRE);}
 
 "if"  {return(SI);}
 "then" {return(ALORS);}
@@ -77,10 +95,10 @@ C3 [^"*/]
 \'.\'  {return(CSTE_CARACTERE);}
 \"[^"]*\" {return(CSTE_CHAINE);}
 
+[a-zA-Z][a-zA-Z0-9]*  {return(IDF);}
+
 \n  {nb_ligne++;}
 [ \t] ;
-
-[a-zA-Z][a-zA-Z0-9]*  {return(IDF);}
 
 %%
 

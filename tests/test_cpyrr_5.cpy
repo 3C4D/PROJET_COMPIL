@@ -1,9 +1,7 @@
 cpyrr
-
 /*
   Programme de test numéro 5 : fonction , booleens, tableaux, structures
 */
-
 // On cherche à calculer un terme de la suite de fibonnacci en itératif
 func fibo(numeroTerme:int) return int
 var terme1 : int;
@@ -19,7 +17,6 @@ var nbTerme : int;
       nbTerme := 2;
       terme1 := 1;
       terme2 := 1;
-
       while nbTerme < numeroTerme do{
         termeTemp := terme2;
         terme2 := terme2 + terme1;
@@ -28,21 +25,18 @@ var nbTerme : int;
     }
   return terme2;
 }
-
-
 // Quelques déclarations utiles de tous types
 var x42b : int;
 var y12 : bool;
 var variableInutile : float;
 var variableInutile : char;
-type monTab56 : array [2 .. 5] of int;
+type monTab56 : array [4+r*f(2)_6,7_r+5*2] of int;
 type maStruct89 : struct
   ch1:int;
   ch2:char;
   ch3:str[60]
 fstruct
 {
-
   // affectation arithmérique
   x42b := (12 + (4 - 8 % 12) * 6);
   // booleen
@@ -62,9 +56,8 @@ fstruct
   // tableau
   monTab56[x42b+2*(4+6%28)] := 2;
   monTab56[fibo(x42b)] := x42b-85;
-
   // On appelle notre fonction
-  affiche(fibo(x42b));
-  affiche(fibo(x42b + 5 - (6%(3/5))));
-  affiche(fibo(6));
+  afficher("%d\n", fibo(x42b));
+  afficher("%d\n", fibo(x42b + 5 - (6%(3/5))));
+  afficher("%d\n", fibo(6));
 }

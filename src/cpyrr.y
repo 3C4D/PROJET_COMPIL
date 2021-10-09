@@ -9,13 +9,38 @@ int yyerror();
 extern int nb_ligne;
 
 int syntaxe_correcte = 1;
+int erreur_semantique = 0;
+int tab_format[40];
+int tab_var_format[40];
+
+// fonction permettant de déterminer combien et quels formats simples se
+// trouvent dans une chaine de caractère
+void format(char *str){
+  char *ptr = str;
+
+  tab_format[0] = 0;
+
+  while(*ptr != '\0'){
+    if(*ptr == '%'){
+      if(*(ptr+1) == 'd'
+      || *(ptr+1) == 'f'
+      || *(ptr+1) == 'c'
+      || *(ptr+1) == 's'
+      ){
+        tab_format[0]++;
+        tab_format[tab_format[0]] = *(ptr+1)-'a';
+      }
+    }
+    ptr++;
+  }
+}
 
 %}
 
 %token PROG DEBUT FIN
 %token POINT_VIRGULE DEUX_POINTS CROCHET_OUVRANT CROCHET_FERMANT OPAFF
 %token EGAL DIFFERENT SUP SUP_EGAL INF INF_EGAL
-%token PARENTHESE_OUVRANTE PARENTHESE_FERMANTE POINT_POINT VIRGULE POINT
+%token PARENTHESE_OUVRANTE PARENTHESE_FERMANTE SOULIGNE VIRGULE POINT
 %token TYPE STRUCT FSTRUCT TABLEAU
 %token ENTIER REEL BOOLEEN CARACTERE CHAINE
 %token CSTE_ENTIERE CSTE_REELLE CSTE_CHAINE CSTE_CARACTERE
@@ -25,6 +50,7 @@ int syntaxe_correcte = 1;
 %token ET OU NON
 %token PLUS MOINS MULT DIV MODULO
 %token TRUE FALSE
+%token AFFICHER LIRE
 
 %%
 programme : PROG corps
@@ -64,7 +90,7 @@ liste_dimensions : une_dimension
                  | liste_dimensions VIRGULE une_dimension
                  ;
 
-une_dimension : expression POINT_POINT expression
+une_dimension : expression SOULIGNE expression
               ;
 
 liste_champs : un_champ
@@ -108,6 +134,8 @@ un_param : IDF DEUX_POINTS type_simple
 instruction : affectation POINT_VIRGULE
             | condition
             | tant_que
+            | afficher POINT_VIRGULE
+            | lire POINT_VIRGULE
             | appel POINT_VIRGULE
             | VIDE POINT_VIRGULE
             | RETOURNE resultat_retourne POINT_VIRGULE
@@ -153,8 +181,13 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable
                |
                ;
 
-expression : e1
+expression : concatenation
+           | e1
            ;
+
+concatenation : CSTE_CHAINE
+              | CSTE_CHAINE PLUS concatenation
+              ;
 
 e1 : e1 PLUS e2
    | e1 MOINS e2
@@ -181,7 +214,6 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE
    | CSTE_ENTIERE
    | CSTE_REELLE
    | CSTE_CARACTERE
-   | CSTE_CHAINE
    | un_booleen
    | variable
    | appel
@@ -199,10 +231,84 @@ operateur_comp : EGAL
                | INF_EGAL
                ;
 
+afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
+    // On analyse le format donné
+    format(yytext);
+    tab_var_format[0] = 0;
+  }
+  suite_afficher{
+    // On compare ici le format recu
+
+    int i;
+    // Trop de formats
+    if(tab_format[0] > tab_var_format[0]){
+      fprintf(stderr, "\nErreur l:%d -> afficher, trop de formats\n", nb_ligne);
+      erreur_semantique++;
+    }
+    // Trop d'arguments suivants le format
+    else if(tab_var_format[0] > tab_format[0]){
+      fprintf(stderr, "\nErreur l:%d -> afficher, trop d'arguments\n", nb_ligne);
+      erreur_semantique++;
+    }
+    // Les cardinaux sont cohérents, on regarde si les éléments sont cohérents
+    else{
+      for(i = 1; i < tab_format[0]+1; i++){
+        if(tab_format[i] != tab_var_format[i]){
+          fprintf(stderr,
+            "\nErreur l:%d -> Le format numéro %d ne corespond pas...\n",
+            nb_ligne, i
+          );
+          erreur_semantique++;
+        }
+      }
+    }
+  }
+  PARENTHESE_FERMANTE
+         ;
+
+suite_afficher : VIRGULE {
+                  tab_var_format[0]++;
+                }
+  composante_afficher
+  suite_afficher
+               |
+               ;
+
+
+composante_afficher : variable       {
+                      // A revoir car pas encore de tabdecl
+                      tab_var_format[tab_var_format[0]] = 'v'-'a';
+                    }
+                    | appel       {
+                      // A revoir car pas encore de tabdecl
+                      tab_var_format[tab_var_format[0]] = 'a'-'a';
+                    }
+                    | CSTE_ENTIERE       {
+                      tab_var_format[tab_var_format[0]] = 'd'-'a';
+                    }
+                    | CSTE_REELLE       {
+                      tab_var_format[tab_var_format[0]] = 'f'-'a';
+                    }
+                    | CSTE_CARACTERE       {
+                      tab_var_format[tab_var_format[0]] = 'c'-'a';
+                    }
+                    | CSTE_CHAINE       {
+                      tab_var_format[tab_var_format[0]] = 's'-'a';
+                    }
+                    ;
+
+lire : LIRE PARENTHESE_OUVRANTE liste_variables PARENTHESE_FERMANTE
+     ;
+
+liste_variables : variable VIRGULE liste_variables
+                | variable
+                ;
+
+
 %%
 
 int yyerror(){
-  printf("\nErreur de syntaxe ligne %d : %s\n\n", nb_ligne, yytext);
+  fprintf(stderr, "\nErreur de syntaxe ligne %d : %s\n\n", nb_ligne, yytext);
   syntaxe_correcte = 0;
 }
 
@@ -211,5 +317,8 @@ int main(){
 
   if(syntaxe_correcte){
     printf("\nSYNTAXE CORRECTE\n\n");
+  }
+  if(erreur_semantique){
+    fprintf(stderr, "\nERREURS SEMANTIQUES\n\n");
   }
 }
