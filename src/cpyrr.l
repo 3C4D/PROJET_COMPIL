@@ -2,6 +2,7 @@
 #include "../arbres/inc/arbres.h"
 #include "../obj/cpyrr.tab.h"
 #include "../inc/fct_aux_lex.h"
+#include "../TabLexico/inc/TabLexico.h"
 
 int nb_ligne = 1;
 
@@ -86,7 +87,7 @@ C3 [^"*/]
 \'.\'  {return(CSTE_CARACTERE);}
 \"[^"]*\" {return(CSTE_CHAINE);}
 
-[a-zA-Z][a-zA-Z0-9]*  {return(IDF);}
+[a-zA-Z][a-zA-Z0-9]*  {yylval.typ2 = inserer_tab_lex(yytext); return(IDF);}
 
 \n  {nb_ligne++;}
 [ \t] ;
