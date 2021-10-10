@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../inc/arbres.h"
-#include "../../tablex/inc/tablex.h"
+#include "../../TabLexico/inc/TabLexico.h"
 
 // Crée un arbre vide
 arbre creer_arbre_vide(){
