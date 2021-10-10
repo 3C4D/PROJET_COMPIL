@@ -6,8 +6,8 @@
 
 int main(){
 
-  arbre a = creer_noeud(5), b = creer_noeud(6);
-  arbre c = creer_noeud(7), d = creer_noeud(8);
+  arbre a = creer_noeud(5, -1), b = creer_noeud(6, -1);
+  arbre c = creer_noeud(7, -1), d = creer_noeud(8, -1);
 
   a = concat_pere_fils(a, b);
   afficher_arbre(a);

@@ -14,7 +14,7 @@ EXE_TABDECL := $(BIN_DIR_TABDECL)/tabdecl_test
 SRC_DIR_ARBRES := arbres/src
 OBJ_DIR_ARBRES := arbres/obj
 BIN_DIR_ARBRES := arbres/bin
-EXE_ARBRES := $(BIN_DIR_TABDECL)/arbres_test
+EXE_ARBRES := $(BIN_DIR_ARBRES)/arbres_test
 
 # TOUT POUR LE COMPILATEUR
 SRC_DIR_COMPIL := src

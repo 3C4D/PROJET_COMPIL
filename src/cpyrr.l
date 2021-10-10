@@ -1,6 +1,7 @@
 %{
 #include "../arbres/inc/arbres.h"
 #include "../obj/cpyrr.tab.h"
+
 int nb_ligne = 1;
 
 // Conserve la cohérence de la variable nb_ligne au regard des commentaires

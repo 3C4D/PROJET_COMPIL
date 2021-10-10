@@ -1,6 +1,7 @@
 %{
 #include<stdlib.h>
 #include<stdio.h>
+#include "../arbres/inc/arbres.h"
 
 char *yytext;
 int yylex();
@@ -51,6 +52,13 @@ void format(char *str){
 %token PLUS MOINS MULT DIV MODULO
 %token TRUE FALSE
 %token AFFICHER LIRE
+
+%union{
+  arbre typ1;
+  int typ2;
+  double typ3;
+  char typ4;
+}
 
 %%
 programme : PROG corps

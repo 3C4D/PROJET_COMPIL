@@ -16,11 +16,12 @@ int est_vide(arbre a){
   return (a == NULL);
 }
 
-// Crée un noeud avec le numéro de ce noeud
-arbre creer_noeud(int num_noeud){
+// Crée un noeud avec ses caractéristiques
+arbre creer_noeud(int numlex, int numdecl){
   arbre a = malloc(sizeof(struct arbre));
 
-  a->num_noeud = num_noeud;
+  a->numlex = numlex;
+  a->numdecl = numdecl;
   a->fils_gauche = creer_arbre_vide();
   a->frere_droit = creer_arbre_vide();
 
@@ -65,16 +66,9 @@ void aff_noeud(arbre a, int prof, int max_prof){
       printf("    ");
     }
 
-    printf("%s <\n", lexeme(a->num_noeud));
+    printf("%s, %d <\n", lexeme(a->numlex), a->numdecl);
 
     aff_noeud(a->fils_gauche, prof+1, max_prof); // On affiche le fils gauche
-  }
-  else{                 // Sinon (ie si le noeud est vide) :
-    for (i = 0; i < prof; i++) {
-      // On affiche le nombre d'espace necessaire
-      printf("    ");
-    }
-    printf("NULL\n");     // On affiche NULL puisque le noeud est vide
   }
 }
 
