@@ -37,8 +37,12 @@ OBJ_ARBRES := $(OBJ_ARBRES) $(OBJ_DIR_TABLEX)/tablex.o
 
 SRC_COMPIL := $(SRC_DIR_COMPIL)/cpyrr.*
 OBJ_COMPIL := $(OBJ_DIR_COMPIL)/*.o
+SRC_COMPIL_AUX := $(SRC_DIR_COMPIL)/fonctions_aux_lex.c
+SRC_COMPIL_AUX := $(SRC_COMPIL_AUX) $(SRC_DIR_COMPIL)/fonctions_aux_yacc.c
 OBJ_COMPIL_EXT := $(OBJ_DIR_TABLEX)/tablex.o $(OBJ_DIR_TABDECL)/tabdecl.o
 OBJ_COMPIL_EXT := $(OBJ_COMPIL_EXT) $(OBJ_DIR_ARBRES)/arbres.o
+OBJ_COMPIL_AUX := $(OBJ_DIR_COMPIL)/fonctions_aux_lex.o
+OBJ_COMPIL_AUX := $(OBJ_COMPIL_AUX) $(OBJ_DIR_COMPIL)/fonctions_aux_yacc.o
 
 CC := gcc
 CPPFLAGS := -Iinc -MMD -MP
@@ -54,6 +58,9 @@ all: $(ALL_EXE)
 
 # COMPILATION DE L'EXECUTABLE DU COMPILATEUR CPYRR
 $(EXE_COMPIL): obj bin $(SRC_COMPIL) $(OBJ_COMPIL_EXT)
+	$(CC) $(CFLAGS) -c $(SRC_DIR_COMPIL)/fct_aux_lex.c
+	$(CC) $(CFLAGS) -c $(SRC_DIR_COMPIL)/fct_aux_yacc.c
+	mv fct_aux* $(OBJ_DIR_COMPIL)
 	bison -dv $(SRC_DIR_COMPIL)/cpyrr.y
 	mv cpyrr.tab.* cpyrr.output $(OBJ_DIR_COMPIL)
 	flex $(SRC_DIR_COMPIL)/cpyrr.l
@@ -64,15 +71,15 @@ $(EXE_COMPIL): obj bin $(SRC_COMPIL) $(OBJ_COMPIL_EXT)
 
 # COMPILATION DE L'EXECUTABLE DE TEST DE LA TABLE LEXICOGRAPHIQUE
 $(EXE_TABLEX): $(OBJ_TABLEX) | $(BIN_DIR_TABLEX)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 # COMPILATION DE L'EXECUTABLE DE TEST DE LA TABLE DES DECLARATIONS
 $(EXE_TABDECL): $(OBJ_TABDECL) | $(BIN_DIR_TABDECL)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 # COMPILATION DE L'EXECUTABLE DE TEST DES ARBRES
 $(EXE_ARBRES): $(OBJ_ARBRES) | $(BIN_DIR_ARBRES)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 
 ########################## COMPILATION DES SOURCES #############################

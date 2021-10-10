@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include "../arbres/inc/arbres.h"
+#include "../inc/fct_aux_yacc.h"
 
 char *yytext;
 int yylex();
@@ -13,28 +14,6 @@ int syntaxe_correcte = 1;
 int erreur_semantique = 0;
 int tab_format[40];
 int tab_var_format[40];
-
-// fonction permettant de déterminer combien et quels formats simples se
-// trouvent dans une chaine de caractère
-void format(char *str){
-  char *ptr = str;
-
-  tab_format[0] = 0;
-
-  while(*ptr != '\0'){
-    if(*ptr == '%'){
-      if(*(ptr+1) == 'd'
-      || *(ptr+1) == 'f'
-      || *(ptr+1) == 'c'
-      || *(ptr+1) == 's'
-      ){
-        tab_format[0]++;
-        tab_format[tab_format[0]] = *(ptr+1)-'a';
-      }
-    }
-    ptr++;
-  }
-}
 
 %}
 

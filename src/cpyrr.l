@@ -1,19 +1,9 @@
 %{
 #include "../arbres/inc/arbres.h"
 #include "../obj/cpyrr.tab.h"
+#include "../inc/fct_aux_lex.h"
 
 int nb_ligne = 1;
-
-// Conserve la cohérence de la variable nb_ligne au regard des commentaires
-// multi-lignes
-void calcul_nb_ligne_comm(char *comm){
-  while(*comm != '\0'){
-    if(*comm == '\n'){
-      nb_ligne++;
-    }
-    comm++;
-  }
-}
 
 %}
 
