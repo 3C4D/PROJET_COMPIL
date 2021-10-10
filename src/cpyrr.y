@@ -15,6 +15,9 @@ int erreur_semantique = 0;
 int tab_format[40];
 int tab_var_format[40];
 
+int num_region = 0;
+int num_region_act = 0;
+
 %}
 
 %token PROG DEBUT FIN
@@ -101,10 +104,20 @@ type_simple : ENTIER
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type
                       ;
 
-declaration_procedure : PROCEDURE IDF liste_parametres corps
+declaration_procedure : PROCEDURE IDF liste_parametres {
+  num_region++;
+  num_region_act++;
+}                   corps{
+  num_region_act--;
+}
                       ;
 
-declaration_fonction  : FONCTION IDF liste_parametres RETOURNE type_simple corps
+declaration_fonction  : FONCTION IDF liste_parametres RETOURNE type_simple {
+  num_region++;
+  num_region_act++;
+}                   corps {
+  num_region_act--;
+}
                       ;
 
 liste_parametres : PARENTHESE_OUVRANTE liste_param PARENTHESE_FERMANTE
