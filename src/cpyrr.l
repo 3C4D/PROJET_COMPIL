@@ -82,10 +82,10 @@ C3 [^"*/]
 "*" {return(MULT);}
 "%" {return(MODULO);}
 
-(0|[1-9][0-9]*) {return(CSTE_ENTIERE);}
-(0|[1-9][0-9]*)\.([0-9]*)  {return(CSTE_REELLE);}
-\'.\'  {return(CSTE_CARACTERE);}
-\"[^"]*\" {return(CSTE_CHAINE);}
+(0|[1-9][0-9]*) {yylval.typ2 = atoi(yytext); return(CSTE_ENTIERE);}
+(0|[1-9][0-9]*)\.([0-9]*)  {yylval.typ3 = atof(yytext); return(CSTE_REELLE);}
+\'.\'  {yylval.typ4 = *yytext; return(CSTE_CARACTERE);}
+\"[^"]*\" {yylval.typ2 = inserer_tab_lex(yytext); return(CSTE_CHAINE);}
 
 [a-zA-Z][a-zA-Z0-9]*  {yylval.typ2 = inserer_tab_lex(yytext); return(IDF);}
 
