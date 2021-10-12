@@ -46,7 +46,7 @@ fstruct
   // float
   variableInutile := 3.75*(8+(6.789/1.6));
   // caractère
-  variableInutile2 := 's';
+  variableInutile := 's';
   // struct
   maStruct89.ch1 := x42b+3*(6%2);
   maStruct89.ch2 := variableInutile;

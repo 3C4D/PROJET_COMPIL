@@ -3,6 +3,9 @@
 #include<stdio.h>
 #include "../arbres/inc/arbres.h"
 #include "../inc/fct_aux_yacc.h"
+#include "../TabLexico/inc/TabLexico.h"
+#include "../TabRepresentation/inc/TabRepresentation.h"
+#include "../TabDecla/inc/TabDecla.h"
 
 char *yytext;
 int yylex();
@@ -12,12 +15,16 @@ extern int nb_ligne;
 
 int syntaxe_correcte = 1;
 int erreur_semantique = 0;
-int tab_format[40];
 int tab_var_format[40];
 
 int num_region = 0;
 int num_region_act = 0;
+int diff = 0;
 
+int nb_parametres;
+int nb_champs;
+int nb_dim;
+int premier_indice;
 %}
 
 %token PROG DEBUT FIN
@@ -26,14 +33,13 @@ int num_region_act = 0;
 %token PARENTHESE_OUVRANTE PARENTHESE_FERMANTE SOULIGNE VIRGULE POINT
 %token TYPE STRUCT FSTRUCT TABLEAU
 %token ENTIER REEL BOOLEEN CARACTERE CHAINE
-%token CSTE_ENTIERE CSTE_REELLE CSTE_CHAINE CSTE_CARACTERE
-%token VARIABLE IDF
+%token VARIABLE
 %token SI ALORS SINON PROCEDURE FONCTION RETOURNE TANT_QUE FAIRE DE
 %token VIDE
 %token ET OU NON
 %token PLUS MOINS MULT DIV MODULO
-%token TRUE FALSE
 %token AFFICHER LIRE
+
 
 %union{
   arbre typ1;
@@ -41,6 +47,15 @@ int num_region_act = 0;
   double typ3;
   char typ4;
 }
+%token<typ2> IDF CSTE_ENTIERE CSTE_CHAINE TRUE FALSE
+%token<typ2> CSTE_REELLE
+%token<typ2> CSTE_CARACTERE
+
+%type<typ2> declaration_type declaration_fonction declaration_variable declaration_procedure
+%type<typ2> liste_champs liste_param liste_dimensions liste_parametres
+%type<typ2> une_dimension un_champ un_param dimension
+%type<typ2> nom_type type_simple
+%type<typ2> expression suite_declaration_type
 
 %%
 programme : PROG corps
@@ -67,68 +82,131 @@ declaration : declaration_type
             ;
 
 declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type
+                   {$$ = inserer_tab_declaration($2, $4, num_region_act, premier_indice, nb_ligne);}
                  ;
 
-suite_declaration_type : STRUCT liste_champs FSTRUCT
-                       | TABLEAU dimension DE nom_type POINT_VIRGULE
+suite_declaration_type : STRUCT {nb_champs = 0;
+                               /*Réservation d'une case pour mettre le nombre
+                                   de champs*/
+                                premier_indice = inserer_tab_representation_type(0, -1);}
+                        liste_champs FSTRUCT
+                      {/*Mise à jour de la première case*/
+                        /*On retrouve l'indice de la première case*/
+
+                       TableRepresentation[premier_indice] = nb_champs;
+                     $$= TYPE_STRUCT;}
+                       | TABLEAU {nb_dim =0;
+                         /*On reserve 2cases, une pour le type des éléments, une
+                         pour le nombre de dimension*/
+                          premier_indice = inserer_tab_representation_type(0,0);}
+
+                        dimension DE nom_type POINT_VIRGULE {
+                          /*Mise à jour des 2 premières cases*/
+                          TableRepresentation[premier_indice-1] = $5;
+                          TableRepresentation[premier_indice] = nb_dim;
+                          premier_indice--;
+                          $$ = TYPE_TAB;}
                        ;
 
-dimension : CROCHET_OUVRANT liste_dimensions CROCHET_FERMANT
+dimension : CROCHET_OUVRANT liste_dimensions CROCHET_FERMANT {$$ = $2;}
           ;
 
-liste_dimensions : une_dimension
+liste_dimensions : une_dimension { $$ = $1;}
                  | liste_dimensions VIRGULE une_dimension
-                 ;
+                ;
 
-une_dimension : expression SOULIGNE expression
+une_dimension : expression SOULIGNE expression {nb_dim += 1;$$=inserer_tab_representation_type($1, $3);}
               ;
 
-liste_champs : un_champ
+liste_champs : un_champ {$$ = $1;}
              | liste_champs POINT_VIRGULE un_champ
              ;
 
-un_champ : IDF DEUX_POINTS nom_type
+un_champ : IDF DEUX_POINTS nom_type { nb_champs += 1;$$ = inserer_tab_representation_type($3, $1);}
          ;
 
-nom_type : type_simple
-         | IDF
+nom_type : type_simple {$$ = $1;}
+         | IDF {$$ = $1;}
          ;
 
-type_simple : ENTIER
-            | REEL
-            | BOOLEEN
-            | CARACTERE
-            | CHAINE CROCHET_OUVRANT CSTE_ENTIERE CROCHET_FERMANT
+type_simple : ENTIER {$$= 0;}
+            | REEL {$$=1;}
+            | BOOLEEN {$$ = 2;}
+            | CARACTERE {$$ = 3;}
+            | CHAINE CROCHET_OUVRANT CSTE_ENTIERE CROCHET_FERMANT {$$ = 4;}
             ;
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type
+                      {$$ = inserer_tab_declaration($2, VAR, num_region_act, $4, nb_ligne);}
                       ;
 
-declaration_procedure : PROCEDURE IDF liste_parametres {
-  num_region++;
-  num_region_act++;
+declaration_procedure : PROCEDURE { nb_parametres = 0;
+                                  /*On reserve une case pour le nombre de parametres*/
+                                   premier_indice= inserer_tab_representation_type(0,-1);
+
+                                   /*Mise à jour des num de région*/
+                                   if(num_region > num_region_act){
+                                      if(num_region_act == 0){
+                                         diff = num_region - num_region_act;
+                                         num_region_act = num_region_act + diff +1;
+                                       }else{
+                                         diff = num_region - num_region_act +1;
+                                        num_region_act = num_region_act + diff +1;
+                                       }
+                                   }else{
+                                       num_region_act++;
+                                   }
+                                   num_region++;
+                                  }
+                        IDF liste_parametres {
+  /*Mise à jour de la première case*/
+  TableRepresentation[premier_indice] = nb_parametres;
+
 }                   corps{
-  num_region_act--;
+  num_region_act = num_region_act - diff ;
+  $$=inserer_tab_declaration($3, PROC, num_region_act, premier_indice, nb_ligne);
 }
                       ;
 
-declaration_fonction  : FONCTION IDF liste_parametres RETOURNE type_simple {
-  num_region++;
-  num_region_act++;
+declaration_fonction  : FONCTION {nb_parametres = 0;
+                                /*On reserve 2 cases pour le nombre de parametres
+                                et la nature du renvoie*/
+                                 premier_indice = inserer_tab_representation_type(0,0);
+                                 /*Mise à jour des num de région*/
+                                 if(num_region> num_region_act){
+                                    if(num_region_act == 0){
+                                       diff = num_region - num_region_act;
+                                       num_region_act = num_region_act + diff +1;
+                                     }else{
+                                       diff = num_region - num_region_act + 1;
+                                      num_region_act = num_region_act + diff +1;
+                                     }
+                                 }else{
+                                     num_region_act++;
+                                 }
+                                 num_region++;
+  } IDF liste_parametres RETOURNE type_simple {
+
+  /*Mise à jour de la première case*/
+  TableRepresentation[premier_indice-1] = $6;
+  TableRepresentation[premier_indice] = nb_parametres;
+  premier_indice--;
 }                   corps {
-  num_region_act--;
+  num_region_act = num_region_act - diff ;
+  $$= inserer_tab_declaration($3, FCT, num_region_act, premier_indice, nb_ligne);
 }
                       ;
 
-liste_parametres : PARENTHESE_OUVRANTE liste_param PARENTHESE_FERMANTE
-                 |
+liste_parametres : PARENTHESE_OUVRANTE liste_param PARENTHESE_FERMANTE {$$=$2;}
+                 | {$$ = 0;}
                  ;
 
-liste_param : un_param
+liste_param : un_param {$$=$1;}
             | liste_param POINT_VIRGULE un_param
             ;
 
-un_param : IDF DEUX_POINTS type_simple
+un_param : IDF DEUX_POINTS type_simple {nb_parametres+=1; $$ = inserer_tab_representation_type($3, $1);
+                                        inserer_tab_declaration($1, PARAMETRE, num_region_act, $3, nb_ligne);}
          ;
 
 instruction : affectation POINT_VIRGULE
@@ -181,8 +259,8 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable
                |
                ;
 
-expression : concatenation
-           | e1
+expression : concatenation {$$=99;}
+           | e1 {$$=99;}
            ;
 
 concatenation : CSTE_CHAINE
@@ -313,6 +391,9 @@ int yyerror(){
 }
 
 int main(){
+  init_table_lexico();
+  init_tab_decla();
+  init_tab_representation_type();
   yyparse();
 
   if(syntaxe_correcte){
@@ -321,4 +402,10 @@ int main(){
   if(erreur_semantique){
     fprintf(stderr, "\nERREURS SEMANTIQUES\n\n");
   }
+
+  afficher_tab_representation();
+  printf("\n\n");
+  afficher_tab_declaration();
+  printf("\n\n");
+  affiche_table_lexico();
 }

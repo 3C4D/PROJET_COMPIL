@@ -1,9 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../inc/TabRepresentation.h"
-#define MAX_TAB_RPZ 300
-
-int TableRepresentation[MAX_TAB_RPZ];
 
 /*Initialiser la table des représentation*/
 void init_tab_representation_type(){
@@ -37,7 +34,23 @@ int inserer_tab_representation_type(int type, int num_lexico){
   /*Si on ne rempli pas les premières cases de la table avec nombre champs etc*/
   if(num_lexico != -1){
     TableRepresentation[premier_indice + 1] = num_lexico;
+    return (premier_indice+1);
+  }else{
+    return premier_indice;
   }
 
-  return premier_indice;
+}
+
+
+/*----------------------------------------------------------------------------
+  Utilité : Affiche la partie rempli de la table des représentations des types
+  ----------------------------------------------------------------------------*/
+void afficher_tab_representation(){
+  int i=0;
+  printf("\n---------------- TABLE REPRESENTATION ---------------- \n");
+  while(TableRepresentation[i]!=-1){
+    printf("| %d |", TableRepresentation[i]);
+    i++;
+  }
+  printf("\n");
 }

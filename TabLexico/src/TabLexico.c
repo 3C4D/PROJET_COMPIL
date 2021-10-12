@@ -1,135 +1,143 @@
-// Fonctions concernant la table lexicographique
-
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include "../inc/TabLexico.h"
 
-cell_lexeme TableLexico[MAX_TAB_LEX];
-int hash_code_table[32];
 
-// Retourne le hash-code du lexème
-int hash_code(char *lexeme){
-  int i = 0, hash_code = 0;
+int calcul_hashcode(char * lexeme){
+  int hc = 0;
+  int i = 1;
+  char c = lexeme[0];
 
-  while(lexeme[i] != '\0'){
-    hash_code += lexeme[i];
-    i++;
+  while(c != '\0'){
+    hc += c;
+    c = lexeme[i];
+    i = i+1;
   }
-  return hash_code % 32;
+
+  /*Transformation en modulo 32*/
+  hc = hc%32;
+  return hc;
 }
 
-// Fonction d'insertion du lexèle en connaissant l'index précis de l'insertion
-// ainsi que la longueur du lexème (fonction locale)
-void insere_lexeme_index(char *lexeme, int len, int index){
-  int i;
-  TableLexico[index].longueur = len;                          // Longueur
-  TableLexico[index].lexeme = malloc((len+1) * sizeof(char)); // On alloue
-  if(TableLexico[index].lexeme == NULL){                      // Vérification
-    fprintf(stderr, "marche pas\n");
-    exit(-1);
-  }
-  for(i = 0; i < len; i++){
-    TableLexico[index].lexeme[i] = lexeme[i]; // Copie
-  }
-  TableLexico[index].lexeme[i] = '\0';        // Fin de chaine
-}
-
-// Insere le lexème dans la table lexico, retourne le numero lexicographique
-int inserer_tab_lex(char *lexeme){
-  cell_lexeme *case_courante;
-  int len = 0, hcode = hash_code(lexeme);
-  int ind_prec = 0;
-  int i = 0, j = 0;
-
-
-  while(lexeme[j] != '\0'){len++;j++;}      // Calcul de la longueur du lexème
-
-  if(hash_code_table[hcode] == -1){ // Pas de lexèmes pour ce hash-code
-    // On insère à la première case sans chercher son précédent, il n'en a pas
-    while(TableLexico[i].longueur != -1){i++;}  // On cherche l'index vide
-    insere_lexeme_index(lexeme, len, i);      // On insère le lexème
-    hash_code_table[hcode] = i;               // Màj de la table de hash-code
-  }
-  else{                             // Un lexème pour ce hash-code
-
-    // On cherche si le lexème est déjà dans la table grâce à la table de
-    // hash-code
-    case_courante = &TableLexico[hash_code_table[hcode]];
-
-    // On parcourt les suivants en s'assurant que le lexème n'y est pas déjà
-    while(
-      case_courante->suivant != NULL
-      && len != case_courante->longueur
-      && strcmp(case_courante->lexeme, lexeme)
-    ){
-      case_courante = case_courante->suivant;
-    }
-
-    if( // Si le dernier suivant ne correspond ni en longueur, ni en chaine
-      len != case_courante->longueur
-      || strcmp(case_courante->lexeme, lexeme)
-    ){
-      ind_prec = case_courante - TableLexico; // On retient l'adresse du précédent
-
-      // On insère désormais le lexème au premier index nul
-      i = ind_prec;
-      while(TableLexico[i].longueur != -1){i++;}  // On cherche l'index vide
-      insere_lexeme_index(lexeme, len, i);      // On insère le lexème
-      TableLexico[ind_prec].suivant = &TableLexico[i];           // Màj du suivant
-    }
-  }
-  return i;
-}
-
-// Retourne le lexème associé à ce numéro lexicographique
-char *lexeme(int num_lexico){
-  int i = 0;
-  char *mot = malloc(100 * sizeof(char));
-
-  if(mot == NULL){
-    fprintf(stderr, "marche pas\n");
-    exit(-1);
-  }
-
-  while(TableLexico[num_lexico].lexeme[i] != '\0'){
-    mot[i] = TableLexico[num_lexico].lexeme[i];
-    i++;
-  }
-
-  return mot;
-}
-
-// Affiche la table lexicographique
-void affiche_table_lexico(){
-  int i;
-  for(i = 0; i < 20; i++){
-    if(TableLexico[i].longueur != -1){
-      printf("| hc : %d |", hash_code(TableLexico[i].lexeme));
-    }
-    else{
-      printf("| hc : -1 |");
-    }
-    printf(" lg : %d | %s |", TableLexico[i].longueur, TableLexico[i].lexeme);
-    if(TableLexico[i].suivant == NULL){
-      printf(" -1 |\n");
-    }
-    else{
-      printf(" %s |\n", TableLexico[i].suivant->lexeme);
-    }
-  }
-}
-
-// Initialise la table lexicographique
 void init_table_lexico(){
   int i;
-  for(i = 0; i < 500; i++){
-    TableLexico[i].longueur = -1;
-    TableLexico[i].lexeme = NULL;
-    TableLexico[i].suivant = NULL;
+
+  /*Initialisation de la table de HashCode*/
+  for(i=0; i<32 ; i++){
+    TableHC[i] = -1;
   }
 
-  for(i = 0; i < 32; i++){
-    hash_code_table[i] = -1;
+  /*Initialisation de la table lexicographique*/
+  for(i=0; i<500 ;i++){
+    TableLexico[i].longueur = -1;
+    TableLexico[i].lexeme = NULL;
+    TableLexico[i].suivant = -1;
+  }
+}
+
+int inserer_tab_lex(char * lexeme){
+  int hcl, numLexicoLc, longueurLexeme;
+  char c;
+  int premierLexeme;
+  int lexemePrecedent;
+  int i=0;
+
+  /*On recherche la premier case vide de la table lexicographique*/
+  while(TableLexico[i].lexeme != NULL){
+    i++;
+  }
+  numLexicoLc = i; /*L'indice de la première case vide correspond au potentiel
+                  numéro lexicographique du lexeme courant*/
+
+  /*On calcule la longueur du lexeme courant*/
+  c = lexeme[0];
+  longueurLexeme=0;
+  i=1;
+
+  while(c != '\0'){
+    longueurLexeme++;
+    c = lexeme[i];
+    i++;
+  }
+
+  /*Il faut mettre à jour la case suivant de la table lexicographique du lexeme
+  précédent, s'il existe*/
+
+  hcl = calcul_hashcode(lexeme);
+  /*Si le lexème courant est le premier lexeme de HashCode hcl, alors on remplir
+  la table de hc, et on n'a aucune mise à jour à faire */
+  if(TableHC[hcl] == -1){
+    TableHC[hcl] = numLexicoLc; /*On insère le numéro lexicographique du lexeme
+                                  courant*/
+    TableLexico[numLexicoLc].lexeme =(char*)malloc(sizeof(char)*(longueurLexeme+1));
+    /*On insère en toute sécurité le lexème car on sait qu'il ne peut pas être
+     en double*/
+     for(int j =0; j<longueurLexeme;j++){
+       TableLexico[numLexicoLc].lexeme[j]=lexeme[j];
+     }
+     TableLexico[numLexicoLc].lexeme[longueurLexeme]='\0';
+
+    TableLexico[numLexicoLc].longueur = longueurLexeme;
+    return numLexicoLc;
+  }else{
+    premierLexeme = TableHC[hcl];
+    /*On vérifie que les deux lexemes soient différents avant de faire quoi
+    que ce soit*/
+    if(TableLexico[premierLexeme].longueur == longueurLexeme){
+      if(strcmp(TableLexico[premierLexeme].lexeme, lexeme)==0){
+        /*Nos deux lexemes sont identiques, on renvoie donc le numéro
+        lexicographique de celui déjà présent dans la table*/
+        return premierLexeme;
+      }
+    }
+
+    /*Le but est de rechercher le premier lexeme de même Hashcode que notre lexeme
+    qui n'a pas de suivant*/
+    lexemePrecedent = premierLexeme;
+    while(TableLexico[lexemePrecedent].suivant != -1){
+      /*Le potentiel lexeme précédent change*/
+      lexemePrecedent = TableLexico[lexemePrecedent].suivant;
+
+      /*On vérifie à chaque fois que le lexeme ne soit pas identique à un déjà
+      présent dans la table*/
+      if(TableLexico[lexemePrecedent].longueur == longueurLexeme){
+        if(strcmp(TableLexico[lexemePrecedent].lexeme, lexeme)==0){
+          /*Nos deux lexemes sont identiques, on renvoie donc le numéro
+          lexicographique de celui déjà présent dans la table*/
+          return lexemePrecedent;
+        }
+      }
+    }
+
+    /*Une fois notre lexeme en question trouvé, on indique que sont suivant
+    devient notre lexeme courant*/
+    TableLexico[lexemePrecedent].suivant = numLexicoLc ;
+    /*Et on insère notre lexeme*/
+    TableLexico[numLexicoLc].lexeme =(char*)malloc(sizeof(char)*(longueurLexeme+1));
+    for(int j =0; j<longueurLexeme;j++){
+      TableLexico[numLexicoLc].lexeme[j]=lexeme[j];
+    }
+    TableLexico[numLexicoLc].lexeme[longueurLexeme]='\0';
+    /*Et sa longueur*/
+    TableLexico[numLexicoLc].longueur = longueurLexeme;
+
+    return numLexicoLc;
+  }
+}
+
+void affiche_table_lexico(){
+  int i,j;
+  i=0;
+  j=1;
+
+  while(TableLexico[i].lexeme !=NULL){
+    i++;
+    j++;
+  }
+  printf("Longueur |    Lexeme    | Indice du suivant \n");
+  for(i=0; i<j; i++){
+    printf("%d        | %s | %d \n",TableLexico[i].longueur, TableLexico[i].lexeme,
+    TableLexico[i].suivant);
   }
 }

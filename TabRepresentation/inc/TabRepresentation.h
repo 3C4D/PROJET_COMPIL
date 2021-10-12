@@ -1,7 +1,9 @@
 #ifndef  TAB_REPRESENTATION_H
 #define TAB_REPRESENTATION_H
 
-#include "../../arbres/inc/arbres.h"
+#define MAX_TAB_RPZ 300
+
+int TableRepresentation[MAX_TAB_RPZ];
 
 /*Initialiser la table des représentation*/
 void init_tab_representation_type();
@@ -15,5 +17,10 @@ void init_tab_representation_type();
                 remplir la/les premières caractéristique
  ----------------------------------------------------------------------------- */
 int inserer_tab_representation_type(int type, int num_lexico);
+
+/*----------------------------------------------------------------------------
+  Utilité : Affiche la partie rempli de la table des représentations des types
+  ----------------------------------------------------------------------------*/
+void afficher_tab_representation();
 
 #endif

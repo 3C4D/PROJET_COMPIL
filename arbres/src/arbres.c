@@ -66,7 +66,7 @@ void aff_noeud(arbre a, int prof, int max_prof){
       printf("    ");
     }
 
-    printf("%s, %d <\n", lexeme(a->numlex), a->numdecl);
+    printf("%s, %d <\n", TableLexico[a->numlex].lexeme, a->numdecl);
 
     aff_noeud(a->fils_gauche, prof+1, max_prof); // On affiche le fils gauche
   }

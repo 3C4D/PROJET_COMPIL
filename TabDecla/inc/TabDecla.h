@@ -1,5 +1,11 @@
 #ifndef TABDECLA_H
 #define TABDECLA_H
+#define TYPE_STRUCT 1
+#define TYPE_TAB 2 /*Type tableau*/
+#define VAR 3 /*Variable*/
+#define PARAMETRE 4
+#define PROC 5 /*Procédure*/
+#define FCT 6 /*Fonctions*/
 
 typedef struct tabDecla{
   int nature;
@@ -14,7 +20,7 @@ typedef struct tabDecla{
 void init_tab_decla();
 
 /*Retourne le numéro dans la table des déclaration du lexème courant*/
-int inserer_tab_declaration(char *lexeme, int nature, int num_region, int nb_champs, int type, int num_represention_type);
+int inserer_tab_declaration(int num_lexico, int nature, int num_region, int num_represention_type, int nb_ligne);
 
 /*Affiche la table des déclarations*/
 void afficher_tab_declaration();

@@ -5,23 +5,25 @@
 
 #define MAX_TAB_LEX 500
 
-typedef struct cell_lexeme{
-  int longueur;
-  char *lexeme;
-  struct cell_lexeme *suivant;
-}cell_lexeme;
+int TableHC[32];
 
-// Retourne le hash-code du lexème
-int hash_code(char *lexeme);
+typedef struct tabLex{
+  int longueur;
+  char * lexeme;
+  int suivant;
+}tabLex;
+
+tabLex TableLexico[MAX_TAB_LEX];
+
+//Calcul le hashcode du lexeme
+int calcul_hashcode(char * lexeme);
 
 // Insere le lexème dans la table lexico, retourne le numero lexicographique
 int inserer_tab_lex(char *lexeme);
 
-// Retourne le lexème associé à ce numéro lexicographique
-char *lexeme(int num_lexico);
-
 // Affiche la table lexicographique
 void affiche_table_lexico();
+
 
 // Initialise la table lexicographique
 void init_table_lexico();
