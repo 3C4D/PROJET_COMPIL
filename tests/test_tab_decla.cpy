@@ -13,6 +13,9 @@ fstruct
 
 proc camembert(coulant:int; pascoulant:bool; cremeux:char)
     var coquelicot : int;
+    proc violette(koli : int){
+    void;
+    }
 {
 
     void;

@@ -18,7 +18,6 @@ int erreur_semantique = 0;
 int tab_var_format[40];
 
 int num_region = 0;
-int num_region_act = 0;
 int diff = 0;
 
 int nb_parametres;
@@ -82,7 +81,7 @@ declaration : declaration_type
             ;
 
 declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type
-                   {$$ = inserer_tab_declaration($2, $4, num_region_act, premier_indice, nb_ligne);}
+                   {$$ = inserer_tab_declaration($2, $4, tete_pile_region(), premier_indice, nb_ligne);}
                  ;
 
 suite_declaration_type : STRUCT {nb_champs = 0;
@@ -137,7 +136,7 @@ type_simple : ENTIER {$$= 0;}
             ;
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type
-                      {$$ = inserer_tab_declaration($2, VAR, num_region_act, $4, nb_ligne);}
+                      {$$ = inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);}
                       ;
 
 declaration_procedure : PROCEDURE { nb_parametres = 0;
@@ -145,26 +144,15 @@ declaration_procedure : PROCEDURE { nb_parametres = 0;
                                    premier_indice= inserer_tab_representation_type(0,-1);
 
                                    /*Mise à jour des num de région*/
-                                   if(num_region > num_region_act){
-                                      if(num_region_act == 0){
-                                         diff = num_region - num_region_act;
-                                         num_region_act = num_region_act + diff +1;
-                                       }else{
-                                         diff = num_region - num_region_act +1;
-                                        num_region_act = num_region_act + diff +1;
-                                       }
-                                   }else{
-                                       num_region_act++;
-                                   }
                                    num_region++;
+                                   empiler_pile_region(num_region);
                                   }
                         IDF liste_parametres {
   /*Mise à jour de la première case*/
   TableRepresentation[premier_indice] = nb_parametres;
 
 }                   corps{
-  num_region_act = num_region_act - diff ;
-  $$=inserer_tab_declaration($3, PROC, num_region_act, premier_indice, nb_ligne);
+  $$=inserer_tab_declaration($3, PROC, depiler_pile_region(), premier_indice, nb_ligne);
 }
                       ;
 
@@ -173,27 +161,17 @@ declaration_fonction  : FONCTION {nb_parametres = 0;
                                 et la nature du renvoie*/
                                  premier_indice = inserer_tab_representation_type(0,0);
                                  /*Mise à jour des num de région*/
-                                 if(num_region> num_region_act){
-                                    if(num_region_act == 0){
-                                       diff = num_region - num_region_act;
-                                       num_region_act = num_region_act + diff +1;
-                                     }else{
-                                       diff = num_region - num_region_act + 1;
-                                      num_region_act = num_region_act + diff +1;
-                                     }
-                                 }else{
-                                     num_region_act++;
-                                 }
                                  num_region++;
-  } IDF liste_parametres RETOURNE type_simple {
+                                 empiler_pile_region(num_region);
+                                 }
+                        IDF liste_parametres RETOURNE type_simple {
 
   /*Mise à jour de la première case*/
   TableRepresentation[premier_indice-1] = $6;
   TableRepresentation[premier_indice] = nb_parametres;
   premier_indice--;
 }                   corps {
-  num_region_act = num_region_act - diff ;
-  $$= inserer_tab_declaration($3, FCT, num_region_act, premier_indice, nb_ligne);
+  $$= inserer_tab_declaration($3, FCT, depiler_pile_region(), premier_indice, nb_ligne);
 }
                       ;
 
@@ -206,7 +184,7 @@ liste_param : un_param {$$=$1;}
             ;
 
 un_param : IDF DEUX_POINTS type_simple {nb_parametres+=1; $$ = inserer_tab_representation_type($3, $1);
-                                        inserer_tab_declaration($1, PARAMETRE, num_region_act, $3, nb_ligne);}
+                                        inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);}
          ;
 
 instruction : affectation POINT_VIRGULE
@@ -391,6 +369,7 @@ int yyerror(){
 }
 
 int main(){
+  init_pile_region();
   init_table_lexico();
   init_tab_decla();
   init_tab_representation_type();

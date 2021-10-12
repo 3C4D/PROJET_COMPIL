@@ -43,16 +43,16 @@ void empiler_pile_region(int region){
     exit(-1);
   }
   pile_region[0]++;
-  tab_format[tab_format[0]] = region;
+  pile_region[pile_region[0]] = region;
 }
 
 // Dépile une région
 int depiler_pile_region(){
   pile_region[0]--;
-  return tab_format[tab_format[0]+1];
+  return pile_region[pile_region[0]+1];
 }
 
 // Retourne la tête de la pile des regions
 int tete_pile_region(){
-  return tab_format[tab_format[0]+1];
+  return pile_region[pile_region[0]];
 }
