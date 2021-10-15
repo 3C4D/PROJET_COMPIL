@@ -1,3 +1,4 @@
+/*- Prototypes des fonctions concernantla table des représentations des types -*/
 #ifndef  TAB_REPRESENTATION_H
 #define TAB_REPRESENTATION_H
 

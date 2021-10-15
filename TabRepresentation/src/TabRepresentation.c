@@ -19,6 +19,7 @@ void init_tab_representation_type(){
               - num_lexico : vaut le numéro lexico du lexeme, OU -1 si on veut juste
                 remplir la/les premières caractéristique
  ----------------------------------------------------------------------------- */
+ // (Manque la champs execution)
 int inserer_tab_representation_type(int type, int num_lexico){
   int premier_indice; /*Indice dans la table des représentation de la première
                        case vide*/

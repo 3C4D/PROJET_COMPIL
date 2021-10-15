@@ -1,4 +1,4 @@
-// Prototypes des fonctions concernant la table lexicographique
+/* ----- Prototypes des fonctions concernant la table lexicographique ----- */
 
 #ifndef TABLEXICO_H_
 #define TABLEXICO_H_
@@ -15,17 +15,25 @@ typedef struct tabLex{
 
 tabLex TableLexico[MAX_TAB_LEX];
 
-//Calcul le hashcode du lexeme
+/*----------------------------------------------------------------------------
+  Utilité : Renvoie le HashCode du lexème
+  Paramatère : - lexeme : le lexeme en question
+  ----------------------------------------------------------------------------*/
 int calcul_hashcode(char * lexeme);
 
-// Insere le lexème dans la table lexico, retourne le numero lexicographique
+/* Initialise la table lexicographique */
+void init_table_lexico();
+
+/*----------------------------------------------------------------------------
+  Utilité : Insere le lexème dans la table lexico, et retourne le numero
+            lexicographique.
+  Paramatère : - lexeme : le lexeme en question
+  ----------------------------------------------------------------------------*/
 int inserer_tab_lex(char *lexeme);
 
-// Affiche la table lexicographique
+/* Affiche la table lexicographique */
 void affiche_table_lexico();
 
 
-// Initialise la table lexicographique
-void init_table_lexico();
 
 #endif

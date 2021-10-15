@@ -17,18 +17,20 @@ void init_tab_decla(){
   }
 }
 
-
 /*-----------------------------------------------------------------------------
-  Utilité fonction : Retourne le numéro dans la table des déclaration du lexème courant
+  Utilité fonction : Retourne le numéro dans la table des déclaration du lexème
+                    courant
   Paramètres : - num_lexico : numéro lexicographique du lexeme courant
               - nature
               - num_region
-              - num_represention_type : (Variable ou paramatère) numéro de déclaration du type du lexème
+              - num_represention_type : (Variable ou paramatère) numéro de
+                déclaration du type du lexème
                courant OU (procédure, fonction, structure, tableau) l'indice dans
                la table des représentation
               - nb_ligne : numéro de la ligne à laquelle on est.
  -----------------------------------------------------------------------------*/
-int inserer_tab_declaration(int num_lexico, int nature, int num_region, int num_represention_type, int nb_ligne){
+int inserer_tab_declaration(int num_lexico, int nature, int num_region,
+                            int num_represention_type, int nb_ligne){
     int i;
     int num_decla;
 

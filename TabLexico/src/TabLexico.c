@@ -3,7 +3,10 @@
 #include <stdio.h>
 #include "../inc/TabLexico.h"
 
-
+/*----------------------------------------------------------------------------
+  Utilité : Renvoie le HashCode du lexème
+  Paramatère : - lexeme : le lexeme en question
+  ----------------------------------------------------------------------------*/
 int calcul_hashcode(char * lexeme){
   int hc = 0;
   int i = 1;
@@ -20,6 +23,7 @@ int calcul_hashcode(char * lexeme){
   return hc;
 }
 
+/* Initialise la table lexicographique */
 void init_table_lexico(){
   int i;
 
@@ -36,6 +40,11 @@ void init_table_lexico(){
   }
 }
 
+/*----------------------------------------------------------------------------
+Utilité : Insere le lexème dans la table lexico, et retourne le numero
+lexicographique.
+Paramatère : - lexeme : le lexeme en question
+----------------------------------------------------------------------------*/
 int inserer_tab_lex(char * lexeme){
   int hcl, numLexicoLc, longueurLexeme;
   char c;
@@ -126,6 +135,7 @@ int inserer_tab_lex(char * lexeme){
   }
 }
 
+/* Affiche la table lexicographique */
 void affiche_table_lexico(){
   int i,j;
   i=0;
