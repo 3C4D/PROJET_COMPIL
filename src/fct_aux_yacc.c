@@ -56,3 +56,16 @@ int depiler_pile_region(){
 int tete_pile_region(){
   return pile_region[pile_region[0]];
 }
+
+// Renvoie 1 si la région est dans la pile des régions, 0 sinon
+int est_dans_pile_region(int region){
+  int i;
+
+  for(i = 1; i<pile_region[0]+1; i++){ //On regarde chaque élément de la pile
+    if(pile_region[i] == region){ // On regarde si region en fait partie
+      return 1;
+    }
+  }
+
+  return 0;
+}

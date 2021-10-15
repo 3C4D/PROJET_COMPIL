@@ -387,4 +387,6 @@ int main(){
   afficher_tab_declaration();
   printf("\n\n");
   affiche_table_lexico();
+  printf("\n\n");
+
 }

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "../inc/TabDecla.h"
 
-int main() {
-
+int main(){
   return 0;
 }

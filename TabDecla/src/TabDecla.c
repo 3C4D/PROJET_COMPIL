@@ -2,10 +2,8 @@
 #include <stdlib.h>
 #include "../../TabLexico/inc/TabLexico.h"
 #include "../inc/TabDecla.h"
-#define MAX_TAB_DECLA 5000
+#include "../../inc/fct_aux_yacc.h"
 
-
-tabDecla TableDeclaration[MAX_TAB_DECLA];
 
 /*Initialise la table des déclarations*/
 void init_tab_decla(){
@@ -242,4 +240,37 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region, int num_
        }
        i++;
    }
+}
+
+/*----------------------------------------------------------------------------
+  Utilité : Renvoie le numéro de déclaration du lexème si il est déclaré, -1
+  sinon.
+  Paramatères : - num_lexico : numéro du lexème en question.
+                - nature : nature du lexème en question (si c'est une procédure,
+               fonction, ...)
+  ----------------------------------------------------------------------------*/
+int num_decla(int num_lexico, int nature){
+  int num_decla = -1;
+  int derniere_region = -1; /*Region la plus proche de la région courante*/
+  int chainage = num_lexico; /*Début du chainage*/
+
+  /*Tant qu'il existe une déclaration de même numéro lexicographique*/
+  while((chainage != -1) && (TableDeclaration[chainage].nature != -1)){
+    /*On vérifie si les natures des déclarations sont les mêmes*/
+    if(TableDeclaration[chainage].nature == nature){
+      /*On vérifie ensuite si la région de la déclaration en court d'examen est
+      dans la pile des régions*/
+      if(est_dans_pile_region(TableDeclaration[chainage].num_region) == 1){ /*si oui*/
+        /*On sauvage ce numéro de déclaration si derniere_region est plus petit
+        que*/
+        if(TableDeclaration[chainage].num_region >= derniere_region){
+          num_decla = chainage;
+        }
+      }
+    }
+    chainage = TableDeclaration[chainage].suivant;
+  }
+
+  return num_decla;
+
 }

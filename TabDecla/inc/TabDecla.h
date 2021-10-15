@@ -1,5 +1,6 @@
 #ifndef TABDECLA_H
 #define TABDECLA_H
+#define MAX_TAB_DECLA 5000
 #define TYPE_STRUCT 1
 #define TYPE_TAB 2 /*Type tableau*/
 #define VAR 3 /*Variable*/
@@ -16,6 +17,9 @@ typedef struct tabDecla{
   int exec; /*Information sur l'exécution*/
 }tabDecla;
 
+
+tabDecla TableDeclaration[MAX_TAB_DECLA];
+
 /*Initialise la table des déclarations*/
 void init_tab_decla();
 
@@ -24,5 +28,14 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region, int num_
 
 /*Affiche la table des déclarations*/
 void afficher_tab_declaration();
+
+/*----------------------------------------------------------------------------
+  Utilité : Renvoie le numéro de déclaration du lexème si il est déclaré, -1
+  sinon.
+  Paramatères : - num_lexico : numéro du lexème en question.
+                - nature : nature du lexème en question (si c'est une procédure,
+               fonction, ...)
+  ----------------------------------------------------------------------------*/
+int num_decla(int num_lexico, int nature);
 
 #endif

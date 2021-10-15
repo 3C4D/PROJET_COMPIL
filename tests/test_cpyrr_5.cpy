@@ -30,12 +30,14 @@ var x42b : int;
 var y12 : bool;
 var variableInutile : float;
 var variableInutile : char;
-type monTab56 : array [4+r*f(2)_6,7_r+5*2] of int;
+type monTab56 : array [5_6,7_2] of int;
 type maStruct89 : struct
   ch1:int;
   ch2:char;
   ch3:str[60]
 fstruct
+
+var bonjour : maStruct89;
 {
   // affectation arithmérique
   x42b := (12 + (4 - 8 % 12) * 6);

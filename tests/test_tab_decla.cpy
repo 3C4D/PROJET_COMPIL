@@ -13,7 +13,10 @@ fstruct
 
 proc camembert(coulant:int; pascoulant:bool; cremeux:char)
     var coquelicot : int;
-    proc violette(koli : int){
+    var coucou : int;
+    proc violette(koli : int)
+    var coucou : float;
+    {
     void;
     }
 {
@@ -28,6 +31,7 @@ func jambon(cru:bool; bon:int) return int
     var penelope : char;
     func cornichon(pasta : int; pascoulant: float) return int
     var tulipe : float;
+    var x : coucou;
     {
     void;
     }
