@@ -54,7 +54,7 @@ int premier_indice;
 %type<typ2> liste_champs liste_param liste_dimensions liste_parametres
 %type<typ2> une_dimension un_champ un_param dimension
 %type<typ2> nom_type type_simple
-%type<typ2> expression suite_declaration_type
+%type<typ2> suite_declaration_type
 
 %%
 programme : PROG corps
@@ -114,7 +114,7 @@ liste_dimensions : une_dimension { $$ = $1;}
                  | liste_dimensions VIRGULE une_dimension
                 ;
 
-une_dimension : expression SOULIGNE expression {nb_dim += 1;$$=inserer_tab_representation_type($1, $3);}
+une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {nb_dim += 1;$$=inserer_tab_representation_type($1, $3);}
               ;
 
 liste_champs : un_champ {$$ = $1;}
@@ -152,7 +152,7 @@ declaration_procedure : PROCEDURE { nb_parametres = 0;
   TableRepresentation[premier_indice] = nb_parametres;
 
 }                   corps{
-  $$=inserer_tab_declaration($3, PROC, depiler_pile_region(), premier_indice, nb_ligne);
+  $$=inserer_tab_declaration($3, PROC, tete_pile_region(depiler_pile_region()), premier_indice, nb_ligne);
 }
                       ;
 
@@ -171,7 +171,7 @@ declaration_fonction  : FONCTION {nb_parametres = 0;
   TableRepresentation[premier_indice] = nb_parametres;
   premier_indice--;
 }                   corps {
-  $$= inserer_tab_declaration($3, FCT, depiler_pile_region(), premier_indice, nb_ligne);
+  $$= inserer_tab_declaration($3, FCT, tete_pile_region(depiler_pile_region()), premier_indice, nb_ligne);
 }
                       ;
 
@@ -237,8 +237,8 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable
                |
                ;
 
-expression : concatenation {$$=99;}
-           | e1 {$$=99;}
+expression : concatenation
+           | e1
            ;
 
 concatenation : CSTE_CHAINE

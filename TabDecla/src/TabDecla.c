@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../../TabLexico/inc/TabLexico.h"
 #include "../inc/TabDecla.h"
-#define MAX_TAB_DECLA 3000
+#define MAX_TAB_DECLA 5000
 
 
 tabDecla TableDeclaration[MAX_TAB_DECLA];
@@ -185,32 +185,61 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region, int num_
  void afficher_tab_declaration(){
    int i = 0;
    printf("\n-----------------TABLE DES DECLARATIONS----------------------\n");
-   printf("  Nature    |  Indice du suivant   |  Région   |   Description   |  Exécution  \n" );
+   printf("     |   Nature   |  Indice du suivant   |  Région   |   Description   |  Exécution  \n" );
    while(i<30){
      switch (TableDeclaration[i].nature) {
        case TYPE_STRUCT:
-         printf("TYPE_STRUCT |         %d           |     %d     |        %d        |  %d  \n", TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("  %d  |TYPE_STRUCT |         %d           |     %d     |        %d        |  %d  \n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case TYPE_TAB:
-         printf("  TYPE_TAB  |          %d          |     %d     |        %d        |  %d  \n", TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("  %d  |  TYPE_TAB  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case VAR:
-         printf("  VARIABLE  |          %d          |     %d     |        %d        |  %d  \n", TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("  %d  |  VARIABLE  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PARAMETRE:
-         printf(" PARAMETRE  |          %d          |     %d     |         %d         |  %d  \n", TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("  %d  | PARAMETRE  |          %d          |     %d     |         %d         |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PROC:
-         printf("  PROCEDURE |          %d          |     %d     |         %d        |  %d \n", TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("  %d  |  PROCEDURE |          %d          |     %d     |         %d        |  %d \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case FCT:
-         printf("  FONCTION  |          %d          |     %d     |        %d        |  %d  \n", TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("  %d  |  FONCTION  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        default:
-        printf("           |                      |            |                   |     \n");
+        printf("     |           |                      |            |                   |     \n");
          break;
        }
        i++;
 
+   }
+
+   printf("---Zone de débordement ----\n");
+   i = 500;
+   while(i<520){
+     switch (TableDeclaration[i].nature) {
+       case TYPE_STRUCT:
+         printf("  %d  |TYPE_STRUCT |         %d           |     %d     |        %d        |  %d  \n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
+       case TYPE_TAB:
+         printf("  %d  |  TYPE_TAB  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
+       case VAR:
+         printf("  %d  |  VARIABLE  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
+       case PARAMETRE:
+         printf("  %d  | PARAMETRE  |          %d          |     %d     |         %d         |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
+       case PROC:
+         printf("  %d  |  PROCEDURE |          %d          |     %d     |         %d        |  %d \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
+       case FCT:
+         printf("  %d  |  FONCTION  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
+       default:
+        printf("     |           |                      |            |                   |     \n");
+         break;
+       }
+       i++;
    }
 }

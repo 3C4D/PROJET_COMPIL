@@ -26,8 +26,13 @@ var tululu : bool;
 func jambon(cru:bool; bon:int) return int
     var tulipe : int;
     var penelope : char;
-{
+    func cornichon(pasta : int; pascoulant: float) return int
+    var tulipe : float;
+    {
     void;
+    }
+{
+ void;
 }
 
 {
