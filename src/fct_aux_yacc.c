@@ -15,6 +15,7 @@ void format(char *str){
     if(*ptr == '%'){
       if(*(ptr+1) == 'd'
       || *(ptr+1) == 'f'
+      || *(ptr+1) == 'b'
       || *(ptr+1) == 'c'
       || *(ptr+1) == 's'
       ){
@@ -23,7 +24,26 @@ void format(char *str){
           exit(-1);
         }
         tab_format[0]++;
-        tab_format[tab_format[0]] = *(ptr+1)-'a';
+        switch(*(ptr+1)){   // On rempli le tableau de format avec les formats
+          case 'd':
+            tab_format[tab_format[0]] = 0;
+            break;
+          case 'f':
+            tab_format[tab_format[0]] = 1;
+            break;
+          case 'b':
+            tab_format[tab_format[0]] = 2;
+            break;
+          case 'c':
+            tab_format[tab_format[0]] = 3;
+            break;
+          case 's':
+            tab_format[tab_format[0]] = 4;
+            break;
+          default :
+            fprintf(stderr, "Erreur format...");
+            exit(-1);
+        }
       }
     }
     ptr++;

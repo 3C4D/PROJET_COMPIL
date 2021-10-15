@@ -332,24 +332,38 @@ suite_afficher : VIRGULE {
 
 
 composante_afficher : variable       {
-                      // A revoir car pas encore de tabdecl
-                      tab_var_format[tab_var_format[0]] = 'v'-'a';
+                  // On récupère le type de la fonction appellée
+                      int num_decla_var = num_decla(inserer_tab_lex(yytext),
+                                                    VAR
+                                                    );
+                      int type = TableDeclaration[num_decla_var].description;
+                      tab_var_format[tab_var_format[0]] = type;
+
                     }
                     | appel       {
-                      // A revoir car pas encore de tabdecl
-                      tab_var_format[tab_var_format[0]] = 'a'-'a';
+                  // On récupère le type de la fonction appellée
+                  int num_decla_fct = num_decla(inserer_tab_lex(yytext),
+                                                VAR
+                                                );
+                  int type = TableRepresentation[
+                                TableDeclaration[num_decla_fct].description
+                                ];
+                  tab_var_format[tab_var_format[0]] = type;
                     }
                     | CSTE_ENTIERE       {
-                      tab_var_format[tab_var_format[0]] = 'd'-'a';
+                      tab_var_format[tab_var_format[0]] = 0;
                     }
                     | CSTE_REELLE       {
-                      tab_var_format[tab_var_format[0]] = 'f'-'a';
+                      tab_var_format[tab_var_format[0]] = 1;
+                    }
+                    | BOOLEEN       {
+                      tab_var_format[tab_var_format[0]] = 2;
                     }
                     | CSTE_CARACTERE       {
-                      tab_var_format[tab_var_format[0]] = 'c'-'a';
+                      tab_var_format[tab_var_format[0]] = 3;
                     }
                     | CSTE_CHAINE       {
-                      tab_var_format[tab_var_format[0]] = 's'-'a';
+                      tab_var_format[tab_var_format[0]] = 4;
                     }
                     ;
 
