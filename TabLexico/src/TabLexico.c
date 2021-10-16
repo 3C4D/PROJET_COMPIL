@@ -135,6 +135,15 @@ int inserer_tab_lex(char * lexeme){
   }
 }
 
+
+/*----------------------------------------------------------------------------
+  Utilité : Retourne le lexème dont le numéro léxicographique est num_lexico
+  Paramatère : - num_lexico : le numéro lexicographique du lexème à retourner.
+  ----------------------------------------------------------------------------*/
+char * lexeme(int num_lexico){
+  return TableLexico[num_lexico].lexeme;
+}
+
 /* Affiche la table lexicographique */
 void affiche_table_lexico(){
   int i,j;
@@ -145,9 +154,9 @@ void affiche_table_lexico(){
     i++;
     j++;
   }
-  printf("Longueur |    Lexeme    | Indice du suivant \n");
+  printf("Num | Longueur |    Lexeme    | Indice du suivant \n");
   for(i=0; i<j; i++){
-    printf("%d        | %s | %d \n",TableLexico[i].longueur, TableLexico[i].lexeme,
+    printf("%d   | %d        | %s | %d \n",i,TableLexico[i].longueur, TableLexico[i].lexeme,
     TableLexico[i].suivant);
   }
 }

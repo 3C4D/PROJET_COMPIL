@@ -31,8 +31,17 @@ void init_table_lexico();
   ----------------------------------------------------------------------------*/
 int inserer_tab_lex(char *lexeme);
 
+/*----------------------------------------------------------------------------
+  Utilité : Retourne le lexème dont le numéro léxicographique est num_lexico
+  Paramatère : - num_lexico : le numéro lexicographique du lexème à retourner.
+  ----------------------------------------------------------------------------*/
+char * lexeme(int num_lexico);
+
+
 /* Affiche la table lexicographique */
 void affiche_table_lexico();
+
+
 
 
 

@@ -23,7 +23,7 @@ int diff = 0;
 int nb_parametres;
 int nb_champs;
 int nb_dim;
-int premier_indice;
+
 %}
 
 %token PROG DEBUT FIN
@@ -99,7 +99,7 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
       $2,
       $4,
       tete_pile_region(),
-      premier_indice,
+      premier_indice(),
       nb_ligne
     );
 }
@@ -108,27 +108,27 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
 suite_declaration_type : STRUCT {
       /*Réservation d'une case pour mettre le nombre de champs*/
       nb_champs = 0;
-      premier_indice = inserer_tab_representation_type(0, -1);
+      change_premier_indice(inserer_tab_representation_type(0, -1));
 }
                         liste_champs FSTRUCT {
       /*Mise à jour de la première case, on retrouve l'indice de la première
       case*/
 
-      TableRepresentation[premier_indice] = nb_champs;
+      stocker_table_representation(premier_indice(), nb_champs);
       $$= TYPE_STRUCT;
 }
                        | TABLEAU {
       nb_dim = 0;
       /*On reserve 2cases, une pour le type des éléments, une pour le nombre de
       dimension*/
-      premier_indice = inserer_tab_representation_type(0,0);
+      change_premier_indice(inserer_tab_representation_type(0,0));
 }
 
                         dimension DE nom_type POINT_VIRGULE {
       /*Mise à jour des 2 premières cases*/
-      TableRepresentation[premier_indice-1] = $5;
-      TableRepresentation[premier_indice] = nb_dim;
-      premier_indice--;
+      stocker_table_representation(premier_indice()-1, $5);
+      stocker_table_representation(premier_indice(), nb_dim);
+      change_premier_indice(premier_indice()-1);
       $$ = TYPE_TAB;
 }
                        ;
@@ -173,7 +173,7 @@ declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
 declaration_procedure : PROCEDURE {
   nb_parametres = 0;
   /*On reserve une case pour le nombre de parametres*/
-  premier_indice = inserer_tab_representation_type(0,-1);
+  change_premier_indice(inserer_tab_representation_type(0,-1));
 
   /*Mise à jour des num de région*/
   num_region++;
@@ -181,14 +181,14 @@ declaration_procedure : PROCEDURE {
 }
                         IDF liste_parametres {
   /*Mise à jour de la première case*/
-  TableRepresentation[premier_indice] = nb_parametres;
+  stocker_table_representation(premier_indice(), nb_parametres);
 
 }                   corps {
   $$ = inserer_tab_declaration(
       $3,
       PROC,
       tete_pile_region(depiler_pile_region()),
-      premier_indice,
+      premier_indice(),
       nb_ligne
     );
 }
@@ -198,7 +198,7 @@ declaration_fonction  : FONCTION {
   nb_parametres = 0;
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
-  premier_indice = inserer_tab_representation_type(0,0);
+  change_premier_indice(inserer_tab_representation_type(0,0));
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
@@ -206,15 +206,15 @@ declaration_fonction  : FONCTION {
                         IDF liste_parametres RETOURNE type_simple {
 
   /*Mise à jour de la première case*/
-  TableRepresentation[premier_indice-1] = $6;
-  TableRepresentation[premier_indice] = nb_parametres;
-  premier_indice--;
+  stocker_table_representation(premier_indice() - 1, $6);
+  stocker_table_representation(premier_indice(), nb_parametres);
+  change_premier_indice(premier_indice()-1);
 }                   corps {
   $$= inserer_tab_declaration(
       $3,
       FCT,
       tete_pile_region(depiler_pile_region()),
-      premier_indice,
+      premier_indice(),
       nb_ligne
     );
 }
@@ -229,7 +229,8 @@ liste_param : un_param {$$ = $1;}
             ;
 
 un_param : IDF DEUX_POINTS type_simple {
-  nb_parametres+=1; $$ = inserer_tab_representation_type($3, $1);
+  nb_parametres+=1;
+  $$ = inserer_tab_representation_type($3, $1);
   inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
 }
          ;
@@ -517,7 +518,7 @@ composante_afficher : variable       {
                       int num_decla_var = num_decla($1->numlex,
                                                     VAR
                                                     );
-                      int type = TableDeclaration[num_decla_var].description;
+                      int type = valeur_description_tab_decla(num_decla_var);
                       tab_var_format[tab_var_format[0]] = type;
 
                       $$ = $1;
@@ -527,9 +528,9 @@ composante_afficher : variable       {
                   int num_decla_fct = num_decla($1->numlex,
                                                 FCT
                                                 );
-                  int type = TableRepresentation[
-                                TableDeclaration[num_decla_fct].description
-                                ];
+                  int type = valeur_tab_representation(
+                             valeur_description_tab_decla(num_decla_fct)
+                             );
                   tab_var_format[tab_var_format[0]] = type;
 
                       $$ = $1;

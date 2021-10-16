@@ -53,4 +53,13 @@ void afficher_tab_declaration();
   ----------------------------------------------------------------------------*/
 int num_decla(int num_lexico, int nature);
 
+/*----------------------------------------------------------------------------
+ Utilité : Retourne le champs décription à l'indice donnée dans la table des
+          déclarations.
+  Paramètre : - indice : indice en question.
+ ----------------------------------------------------------------------------- */
+ int valeur_description_tab_decla(int indice);
+
+
+
 #endif

@@ -60,7 +60,7 @@ void aff_noeud(arbre a, int prof){
     if(a->numlex > 0){
       printf(
         "|+| (%s), %d, %d, %d, %f\n",
-        TableLexico[a->numlex].lexeme,
+        lexeme(a->numlex),
         a->numdecl,
         a->nature,
         a->entier,

@@ -43,6 +43,24 @@ int inserer_tab_representation_type(int type, int num_lexico){
 
 }
 
+/*----------------------------------------------------------------------------
+ Utilité : Insère à l'indice donné, la valeur donnée.
+  Paramètres : - indice : indice en question.
+              - valeur : valeur à inserer à l'indice donné.
+ ----------------------------------------------------------------------------- */
+void stocker_table_representation(int indice, int valeur){
+  TableRepresentation[indice] = valeur;
+}
+
+/*----------------------------------------------------------------------------
+ Utilité : Retourne le champs, à l'indice donnée, dans la table des réprésentation
+          des types.
+  Paramètre : - indice : indice en question.
+ ----------------------------------------------------------------------------- */
+ int valeur_tab_representation(int indice){
+   return TableRepresentation[indice];
+ }
+
 
 /*----------------------------------------------------------------------------
   Utilité : Affiche la partie rempli de la table des représentations des types
@@ -55,4 +73,20 @@ void afficher_tab_representation(){
     i++;
   }
   printf("\n");
+}
+
+/*----------------------------------------------------------------------------
+ Utilité : Retourne la valeur de la variable globale premier_indice.
+ ----------------------------------------------------------------------------- */
+int premier_indice(){
+   return premier_indice_var;
+}
+
+/*----------------------------------------------------------------------------
+  Utilité : Change la valeur de la variable globale premier_indice par la valeur
+            donnée.
+  Paramètre : - valeur : la valeur en question.
+----------------------------------------------------------------------------- */
+void change_premier_indice(int valeur){
+  premier_indice_var = valeur;
 }
