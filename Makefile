@@ -67,7 +67,7 @@ OBJ_COMPIL_EXT := $(OBJ_COMPIL_EXT) $(OBJ_DIR_TABTYPES)/TabRepresentation.o
 
 CC := gcc
 CPPFLAGS := -Iinc -MMD -MP
-CFLAGS   := -Wall -pedantic -g -O2
+CFLAGS   := -Wall -pedantic -g -O0
 LDFLAGS  :=
 LDLIBS   := -lm
 
