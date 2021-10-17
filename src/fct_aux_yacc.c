@@ -4,7 +4,31 @@
 #include <stdio.h>
 #include "../inc/fct_aux_yacc.h"
 
-// fonction permettant de déterminer combien et quels formats simples se
+// Fonction d'usage du compilateur
+void usage(char *s){
+  fprintf(
+    stderr,
+    "\n%s [aff_lex] [aff_decl] [aff_type] [aff_arbres] < <prog_cpyrr>\n",
+    s
+  );
+  fprintf(
+    stderr,
+    "     * [aff_lex]    1 : afficher table lexico\n"
+  );
+  fprintf(
+    stderr,
+    "     * [aff_decl]   1 : afficher table decla\n"
+  );
+  fprintf(
+    stderr,
+    "     * [aff_types]  1 : afficher table types\n"
+  );
+  fprintf(stderr, "     * [aff_arbres] 1 : afficher arbres\n");
+  fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n\n");
+  exit(-1);
+}
+
+// Fonction permettant de déterminer combien et quels formats simples se
 // trouvent dans une chaine de caractère
 void format(char *str){
   char *ptr = str;

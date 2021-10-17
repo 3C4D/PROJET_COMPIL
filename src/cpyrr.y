@@ -773,6 +773,10 @@ int main(int argc, char *argv[]){
   init_tab_decla();
   init_tab_representation_type();
 
+  // L'utilisateur souhaite afficher l'usage correct' du compilateur
+  if(argc > 1 && (argv[1][0] == 'h' || argv[1][0] == 'H')){
+    usage(argv[0]);
+  }
   // L'utilisateur souhaite afficher les arbres produits par le compilateur
   if(argc > 4 && atoi(argv[4]) == 1){
     aff_arbre++;

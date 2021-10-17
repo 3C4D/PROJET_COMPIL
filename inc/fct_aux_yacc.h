@@ -14,6 +14,9 @@
 int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];
 
+// Fonction d'usage du compilateur
+void usage(char *s);
+
 // fonction permettant de déterminer combien et quels formats simples se
 // trouvent dans une chaine de caractère
 void format(char *str);

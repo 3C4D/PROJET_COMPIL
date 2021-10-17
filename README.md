@@ -9,8 +9,10 @@ fonctionnement.
 
 ## Utilisation du compilateur
 
-### Options
-  - argument 1 : 0 ou 1 (affiche la table lexicographique)
-  - argument 2 : 0 ou 1 (affiche la table des déclarations)
-  - argument 3 : 0 ou 1 (affiche la table de représentation des types)
-  - argument 4 : 0 ou 1 (affiche les arbres)
+### Options (Cf fonction d'usage (option h ou H))
+  - argument 1 :
+    - 1 (affiche la table lexicographique)
+    - h ou H (affiche l'usage correct du compilateur)
+  - argument 2 : 1 (affiche la table des déclarations)
+  - argument 3 : 1 (affiche la table de représentation des types)
+  - argument 4 : 1 (affiche les arbres)
