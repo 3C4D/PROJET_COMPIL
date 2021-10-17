@@ -7,6 +7,12 @@
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabDecla/inc/TabDecla.h"
 
+#define TYPE_INT 0
+#define TYPE_FLOAT 1
+#define TYPE_BOOL 2
+#define TYPE_CHAR 3
+#define TYPE_STR 4
+
 char *yytext;
 int yylex();
 int yyerror();
@@ -23,6 +29,11 @@ int diff = 0;
 int nb_parametres;
 int nb_champs;
 int nb_dim;
+
+// Variables aidant à la vérification sémantique des types (expressions, aff)
+int type_g = 0;
+int type_d = 0;
+int type = 0;
 
 %}
 
@@ -44,6 +55,7 @@ int nb_dim;
   arbre typ1;
   int typ2;
   double typ3;
+  int typ4;
 }
 %token<typ2> IDF CSTE_ENTIERE CSTE_CHAINE TRUE FALSE
 %token<typ2> CSTE_CARACTERE
@@ -240,7 +252,37 @@ instruction : affectation POINT_VIRGULE {$$ = $1;}
             | tant_que {$$ = $1;}
             | afficher POINT_VIRGULE {$$ = $1;}
             | lire POINT_VIRGULE {$$ = $1;}
-            | appel POINT_VIRGULE {$$ = $1;}
+            | appel POINT_VIRGULE {
+
+              // On cherche à savoir si l'on est en face d'une procedure ou bien
+              // d'une fonction
+              // Si une fonction et une procedure du même nom sont définie
+              // dans la même région, alors on prendra par priorité la procedure
+              int num_decl_appel = num_decla($1->numlex, PROC, -1);
+
+              if(num_decl_appel == -1){ // Procedure non trouvée
+                // Une fonction est-elle appelée à la place ?
+                num_decl_appel = num_decla($1->numlex, PROC, -1);
+                if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
+                  fprintf(
+                    stderr,
+                    "\nErreur l:%d -> %s non déclaré.\n",
+                    nb_ligne,
+                    lexeme($1->numlex)
+                    );
+                }
+                else{
+                  $1->numdecl = num_decl_appel;
+                  $1->nature = PROCEDURE;
+                }
+              }
+              else{ // Réglages des élements restés en suspend durant l'appel
+                $1->numdecl = num_decl_appel;
+                $1->nature = PROCEDURE;
+              }
+
+              $$ = $1;
+            }
             | VIDE POINT_VIRGULE {$$ = creer_noeud(-1, -1, VIDE, -1, -1.0);}
             | RETOURNE resultat_retourne POINT_VIRGULE {
               $$ = concat_pere_fils(
@@ -255,12 +297,11 @@ resultat_retourne : un_arg {$$ = $1;}
                   ;
 
 appel : IDF liste_arguments {
-  // A modifier
   $$ = concat_pere_fils(
     creer_noeud(
       $1,
-      num_decla($1, FCT),
-      FONCTION,
+      -1,
+      -1,
       -1,
       -1
     ),
@@ -326,7 +367,7 @@ variable : IDF corps_variable {
   $$ = concat_pere_frere(
         creer_noeud(
           $1,
-          num_decla($1, VAR),
+          num_decla($1, VAR,-1),
           VAR,
           -1,
           -1
@@ -413,32 +454,116 @@ e2 : e2 MULT e3 {
          creer_noeud(-1, -1, ET, -1, -1.0),
          concat_pere_frere($1, $3)
        );
+
+
    }
    | e3 {$$ = $1;}
    ;
 
-e3 : e3 operateur_comp e4 {
+e3 : e3 {type_g = type;} operateur_comp e4 {
      $$ = concat_pere_fils(
-         $2,
-         concat_pere_frere($1, $3)
+         $3,
+         concat_pere_frere($1, $4)
        );
+
+     // Vérification sémantique des types donnés
+     type_d = type;
+
+     // Comparaison de booleen avec autre chose qu'un booleen
+     if((type_g == TYPE_BOOL && type_d != TYPE_BOOL)
+       ||(type_g != TYPE_BOOL && type_d == TYPE_BOOL)
+     ){
+       fprintf(
+         stderr,
+         "\nErreur l:%d -> comparaison d'un booleen avec un non booleen.\n",
+         nb_ligne
+       );
+       erreur_semantique++;
+     }
+
+     // Comparaison entre booleen autres que == et !=
+     if(type_g == TYPE_BOOL && type_d == TYPE_BOOL){
+       if($3->nature != EGAL && $3->nature != DIFFERENT){
+         fprintf(
+           stderr,
+           "\nErreur l:%d -> comparaison d'ordre entre booleens impossible.\n",
+           nb_ligne
+         );
+         erreur_semantique++;
+         type = 0;
+      }
+    }
    }
    | e4 {$$ = $1;}
    ;
 
 e4 : NON e5 {
   $$ = concat_pere_fils(creer_noeud(-1, -1, NON, -1, -1), $2);
+  type = TYPE_BOOL;
 }
-   | e5 {$$ = $1;}
+   | e5 {
+     $$ = $1;
+   }
    ;
 
 e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
-   | CSTE_ENTIERE {$$ = creer_noeud(-1, -1, CSTE_ENTIERE, $1, -1.0);}
-   | CSTE_REELLE  {$$ = creer_noeud(-1, -1, CSTE_REELLE, -1, $1);}
-   | CSTE_CARACTERE {$$ = creer_noeud(-1, -1, CSTE_CARACTERE, $1, -1.0);}
-   | un_booleen {$$ = $1;}
-   | variable {$$ = $1;}
-   | appel  {$$ = $1;}
+   | CSTE_ENTIERE {
+     $$ = creer_noeud(-1, -1, CSTE_ENTIERE, $1, -1.0);
+     type = TYPE_INT;
+   }
+   | CSTE_REELLE  {
+     $$ = creer_noeud(-1, -1, CSTE_REELLE, -1, $1);
+     type = TYPE_FLOAT;
+   }
+   | CSTE_CARACTERE {
+     $$ = creer_noeud(-1, -1, CSTE_CARACTERE, $1, -1.0);
+     type = TYPE_CHAR;
+   }
+   | un_booleen {
+     $$ = $1;
+     type = TYPE_BOOL;
+   }
+   | variable {
+     $$ = $1;
+
+     int num_decla_var = num_decla($1->numlex,VAR,-1);
+     type = valeur_description_tab_decla(num_decla_var);
+
+   }
+   | appel  {
+     // On cherche à savoir si l'on est en face d'une procedure ou bien
+     // d'une fonction
+     // Ici un appel de procedure sera une erreur, une procedure ne renvoyant
+     // rien
+     int num_decl_appel = num_decla($1->numlex, FCT, -1);
+
+     if(num_decl_appel == -1){ // Fonction non trouvée
+       // Une procedure est-elle appelée à la place ?
+       num_decl_appel = num_decla($1->numlex, PROC, -1);
+       if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
+         fprintf(
+           stderr,
+           "\nErreur l:%d -> %s non déclaré.\n",
+           nb_ligne,
+           lexeme($1->numlex)
+           );
+       }
+       else{
+         fprintf(
+           stderr,
+           "\nErreur l:%d -> Appel d'une procedure (%s) dans une expression.\n",
+           nb_ligne,
+           lexeme($1->numlex)
+           );
+       }
+     }
+     else{ // Réglages des élements restés en suspend durant l'appel
+       $1->numdecl = num_decl_appel;
+       $1->nature = PROCEDURE;
+     }
+
+     $$ = $1;
+   }
    ;
 
 un_booleen : TRUE {$$ = creer_noeud(-1, -1, TRUE, -1, -1.0);}
@@ -479,7 +604,7 @@ afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
     // Les cardinaux sont cohérents, on regarde si les éléments sont cohérents
     else{
       for(i = 1; i < tab_format[0]+1; i++){
-        if(tab_format[i] != tab_var_format[i]){
+        if(tab_format[i] != tab_var_format[i] && tab_var_format[i] != -1){
           fprintf(stderr,
             "\nErreur l:%d -> Le format numéro %d ne corespond pas...\n",
             nb_ligne, i
@@ -516,47 +641,71 @@ suite_afficher : VIRGULE {
 composante_afficher : variable       {
                   // On récupère le type de la fonction appellée
                       int num_decla_var = num_decla($1->numlex,
-                                                    VAR
+                                                    VAR,-1
                                                     );
-                      int type = valeur_description_tab_decla(num_decla_var);
-                      tab_var_format[tab_var_format[0]] = type;
+                      int type_var = valeur_description_tab_decla(
+                                      num_decla_var
+                                    );
+                      tab_var_format[tab_var_format[0]] = type_var;
 
                       $$ = $1;
                     }
                     | appel       {
-                  // On récupère le type de la fonction appellée
-                  int num_decla_fct = num_decla($1->numlex,
-                                                FCT
-                                                );
-                  int type = valeur_tab_representation(
-                             valeur_description_tab_decla(num_decla_fct)
-                             );
-                  tab_var_format[tab_var_format[0]] = type;
+    // On cherche à savoir si l'on est en face d'une procedure ou bien
+    // d'une fonction
+    // Ici un appel de procedure sera une erreur, une procedure ne renvoyant
+    // rien
+    int num_decl_appel = num_decla($1->numlex, FCT, -1);
 
-                      $$ = $1;
+    if(num_decl_appel == -1){ // Fonction non trouvée
+      // Une procedure est-elle appelée à la place ?
+      num_decl_appel = num_decla($1->numlex, PROC, -1);
+      if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
+        fprintf(
+          stderr,
+          "\nErreur l:%d -> %s non déclaré.\n",
+          nb_ligne,
+          lexeme($1->numlex)
+          );
+      }
+      else{
+        fprintf(
+          stderr,
+          "\nErreur l:%d -> Affichage d'une procedure (%s) impossible.\n",
+          nb_ligne,
+          lexeme($1->numlex)
+          );
+      }
+    }
+    else{ // Réglages des élements restés en suspend durant l'appel
+      $1->numdecl = num_decl_appel;
+      $1->nature = PROCEDURE;
+    }
+
+    $$ = $1;
                     }
                     | CSTE_ENTIERE       {
-                      tab_var_format[tab_var_format[0]] = 0;
+                      tab_var_format[tab_var_format[0]] = TYPE_INT;
                       $$ = creer_noeud(-1, -1, CSTE_ENTIERE, $1, -1.0);
                     }
                     | CSTE_REELLE       {
-                      tab_var_format[tab_var_format[0]] = 1;
+                      tab_var_format[tab_var_format[0]] = TYPE_FLOAT;
                       $$ = creer_noeud(-1, -1, CSTE_REELLE, -1, $1);
                     }
                     | TRUE       {
-                      tab_var_format[tab_var_format[0]] = 2;
+                      tab_var_format[tab_var_format[0]] = TYPE_BOOL;
                       $$ = creer_noeud(-1, -1, BOOLEEN, 1, -1.0);
                     }
                     | FALSE       {
-                      tab_var_format[tab_var_format[0]] = 2;
+                      tab_var_format[tab_var_format[0]] = TYPE_BOOL;
                       $$ = creer_noeud(-1, -1, BOOLEEN, 0, -1.0);
                     }
                     | CSTE_CARACTERE       {
-                      tab_var_format[tab_var_format[0]] = 3;
+                      tab_var_format[tab_var_format[0]] = TYPE_CHAR;
                       $$ = creer_noeud(-1, -1, CSTE_CARACTERE, $1, -1.0);
                     }
                     | CSTE_CHAINE       {
-                      tab_var_format[tab_var_format[0]] = 4;
+                      tab_var_format[tab_var_format[0]] = TYPE_STR;
                       $$ = creer_noeud($1, -1, CSTE_CHAINE, -1, -1.0);
                     }
                     ;
@@ -590,18 +739,21 @@ int main(){
   init_tab_representation_type();
   yyparse();
 
-  if(syntaxe_correcte){
-    printf("\nSYNTAXE CORRECTE\n\n");
+  if(!syntaxe_correcte){
+    printf("\nSYNTAXE INCORRECTE, COMPILATION IMPOSSIBLE\n\n");
   }
-  if(erreur_semantique){
-    fprintf(stderr, "\nERREURS SEMANTIQUES\n\n");
+  else if(erreur_semantique){
+    fprintf(
+      stderr,
+      "\nSYNTAXE CORRECTE MAIS ERREURS SEMANTIQUES, COMPILATION IMPOSSIBLE\n\n"
+    );
   }
 
-  afficher_tab_representation();
-  printf("\n\n");
+  //afficher_tab_representation();
+  printf("\n");
   afficher_tab_declaration();
-  printf("\n\n");
+  printf("\n");
   affiche_table_lexico();
-  printf("\n\n");
+  printf("\n");
 
 }

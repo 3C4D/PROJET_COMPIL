@@ -154,9 +154,13 @@ void affiche_table_lexico(){
     i++;
     j++;
   }
-  printf("Num | Longueur |    Lexeme    | Indice du suivant \n");
+  printf("\n---------------------TABLE LEXICOGRAPHIQUE-----------------------\n");
+  printf("/--------+----------------+---------------------------+---------\\\n");
+  printf("| Numlex |    Longueur    |           Lexeme          | Suivant |\n");
+  printf("|--------+----------------+---------------------------+---------|\n");
   for(i=0; i<j; i++){
-    printf("%d   | %d        | %s | %d \n",i,TableLexico[i].longueur, TableLexico[i].lexeme,
+    printf("|   %-3d  |       %-8d |     %-21s |    %-4d |\n",i,TableLexico[i].longueur, TableLexico[i].lexeme,
     TableLexico[i].suivant);
   }
+  printf("\\--------+----------------+---------------------------+---------/\n");
 }

@@ -11,6 +11,7 @@
 #define PARAMETRE 4
 #define PROC 5 /*Procédure*/
 #define FCT 6 /*Fonctions*/
+#define APPEL 7 /* Appel */
 
 typedef struct tabDecla{
   int nature;
@@ -50,8 +51,15 @@ void afficher_tab_declaration();
   Paramatères : - num_lexico : numéro du lexème en question.
                 - nature : nature du lexème en question (si c'est une procédure,
                fonction, ...)
+               - region_particuliere : deux cas :
+                  * egal à -1, dans ce cas on cherche le numéro de déclaration
+                    du lexème (si il est déclaré) dans n'importe quelle région
+                    présente dans la pile des régions.
+                  * égal à la région courante , dans ce cas, on regarde si le
+                  le lexème est déjà déclaré dans cette région particuliere;
+
   ----------------------------------------------------------------------------*/
-int num_decla(int num_lexico, int nature);
+int num_decla(int num_lexico, int nature, int region_particuliere);
 
 /*----------------------------------------------------------------------------
  Utilité : Retourne le champs décription à l'indice donnée dans la table des

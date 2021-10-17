@@ -4,7 +4,6 @@
 #include "../inc/TabDecla.h"
 #include "../../inc/fct_aux_yacc.h"
 
-
 /*Initialise la table des déclarations*/
 void init_tab_decla(){
   int i;
@@ -32,7 +31,7 @@ void init_tab_decla(){
 int inserer_tab_declaration(int num_lexico, int nature, int num_region,
                             int num_represention_type, int nb_ligne){
     int i;
-    int num_decla;
+    int num_declaration;
 
     /*-------------------------------------------------------------------------
       On va déterminer si le lexème va dans la table primaire, ou dans la zone
@@ -44,10 +43,11 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
     if(TableDeclaration[num_lexico].nature == -1){ /*Si il n'y a jamais encore eu
                                                    de lexème identiques insérés
                                                    dans la table*/
-      num_decla = num_lexico; /*On va donc insérer les informations du lexème
+      num_declaration = num_lexico; /*On va donc insérer les informations du lexème
                               à l'indice num_lexico*/
 
     }else{ /*Sinon, on va cherche la premier case vide dans la zone de débordement*/
+
       /*Attention surchage possible..*/
       /*On vérifie que l'élément de la table primaire, qui est le même lexeme, n'est
       pas déclaré sous la même nature, et dans la même région*/
@@ -80,12 +80,12 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
 
       i = MAX_TAB_LEX;  /*Donne le premier indice de la zone de débordement*/
       while(TableDeclaration[i].nature != -1){ /*Tant que la case i n'est pas libre*/
+
         /*Gestion de la surcharge possible*/
         /*On vérifie que l'élément i, qui est le même lexème, n'est pas déclaré
         dans la même région ET à la même nature*/
 
-
-        if((TableDeclaration[i].num_region == num_region) && (TableDeclaration[i].nature == nature)){
+        if(num_decla(num_lexico, nature, num_region) != -1){
           switch (nature) {
             case TYPE_STRUCT:
               printf("Problème de sémantique ligne %d : structure de même nom déjà défini dans cette région\n", nb_ligne);
@@ -112,7 +112,7 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
         }
         i++;
       }
-      num_decla = i; /*Première case libre trouvé dans la zone de débordement*/
+      num_declaration = i; /*Première case libre trouvé dans la zone de débordement*/
 
       /*-----------------------------------------------------------------------
         On remet à jour le chainage
@@ -121,35 +121,35 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
       while(TableDeclaration[i].suivant != -1){ /*On regarde si il y a un suivant*/
         i = TableDeclaration[i].suivant;
       }
-      TableDeclaration[i].suivant = num_decla;
+      TableDeclaration[i].suivant = num_declaration;
     }
 
     /*-------------------------------------------------------------------------
       On insère le numéro de la région où se trouve le lexème courant
     --------------------------------------------------------------------------*/
-    TableDeclaration[num_decla].num_region = num_region;
+    TableDeclaration[num_declaration].num_region = num_region;
 
     /*-------------------------------------------------------------------------
        On insère la nature du lexème courant
        -----------------------------------------------------------------------*/
     switch (nature) {
       case TYPE_STRUCT:
-        TableDeclaration[num_decla].nature = 1;
+        TableDeclaration[num_declaration].nature = 1;
         break;
       case TYPE_TAB:
-        TableDeclaration[num_decla].nature = 2;
+        TableDeclaration[num_declaration].nature = 2;
         break;
       case VAR:
-        TableDeclaration[num_decla].nature = 3;
+        TableDeclaration[num_declaration].nature = 3;
         break;
       case PARAMETRE:
-        TableDeclaration[num_decla].nature = 4;
+        TableDeclaration[num_declaration].nature = 4;
         break;
       case PROC:
-        TableDeclaration[num_decla].nature = 5;
+        TableDeclaration[num_declaration].nature = 5;
         break;
       case FCT:
-        TableDeclaration[num_decla].nature = 6;
+        TableDeclaration[num_declaration].nature = 6;
         break;
       default:
         printf("Problème de nature du lexeme dans la table des déclarations\n");
@@ -163,22 +163,22 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
        ----------------------------------------------------------------------*/
 
     if((nature == TYPE_STRUCT) || (nature == TYPE_TAB)){
-      TableDeclaration[num_decla].description = num_represention_type;
-      TableDeclaration[num_decla].exec = -1;  /*laisse vide pour le moment*/
+      TableDeclaration[num_declaration].description = num_represention_type;
+      TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
 
     }else if((nature == VAR) || (nature == PARAMETRE)){
-      TableDeclaration[num_decla].description = num_represention_type;
-      TableDeclaration[num_decla].exec = -1;  /*laisse vide pour le moment*/
+      TableDeclaration[num_declaration].description = num_represention_type;
+      TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
 
     }else if((nature == PROC) || (nature == FCT)){
-      TableDeclaration[num_decla].description = num_represention_type;
-      TableDeclaration[num_decla].exec = -1;  /*laisse vide pour le moment*/
+      TableDeclaration[num_declaration].description = num_represention_type;
+      TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
 
     }else{
       printf("Problème dans la nature du lexeme dans la table des déclarations\n");
       exit(-1);
     }
-    return num_decla;
+    return num_declaration;
 }
 
 /*----------------------------------------------------------------------------
@@ -193,64 +193,71 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
 /*Affiche la table des déclarations*/
  void afficher_tab_declaration(){
    int i = 0;
-   printf("\n-----------------TABLE DES DECLARATIONS----------------------\n");
-   printf("     |   Nature   |  Indice du suivant   |  Région   |   Description   |  Exécution  \n" );
+   printf("\n######################################   TABLE DES DECLARATIONS   ##############################################\n");
+   printf("/--------------------------+------------+-------------+------------+-----------+-----------------+-------------\\\n");
+   printf("|          Lexeme          |   Indice   |   Nature    |  Suivant   |  Région   |   Description   |  Exécution  |\n" );
+   printf("+--------------------------+------------+-------------+------------+-----------+-----------------+-------------+\n" );
    while(i<30){
      switch (TableDeclaration[i].nature) {
        case TYPE_STRUCT:
-         printf("  %d  |TYPE_STRUCT |         %d           |     %d     |        %d        |  %d  \n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d | TYPE_STRUCT |     %-6d |     %-5d |        %-8d |      %-6d |\n", lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case TYPE_TAB:
-         printf("  %d  |  TYPE_TAB  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d |  TYPE_TAB   |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case VAR:
-         printf("  %d  |  VARIABLE  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d |  VARIABLE   |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PARAMETRE:
-         printf("  %d  | PARAMETRE  |          %d          |     %d     |         %d         |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d | PARAMETRE   |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PROC:
-         printf("  %d  |  PROCEDURE |          %d          |     %d     |         %d        |  %d \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d |  PROCEDURE  |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case FCT:
-         printf("  %d  |  FONCTION  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d |  FONCTION   |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        default:
-        printf("     |           |                      |            |                   |     \n");
+         printf("|                          |            |             |            |           |                 |             |\n");
          break;
        }
        i++;
 
    }
+   printf("\\--------------------------+------------+-------------+------------+-----------+-----------------+-------------/\n" );
 
-   printf("---Zone de débordement ----\n");
+   printf("\n########################################   ZONE DE DEBORDEMENT   ###############################################\n");
+   printf("/--------------------------+------------+-------------+------------+-----------+-----------------+-------------\\\n");
+   printf("|                          |   Indice   |   Nature    |  Suivant   |  Région   |   Description   |  Exécution  |\n" );
+   printf("+--------------------------+------------+-------------+------------+-----------+-----------------+-------------+\n" );
    i = 500;
    while(i<520){
      switch (TableDeclaration[i].nature) {
        case TYPE_STRUCT:
-         printf("  %d  |TYPE_STRUCT |         %d           |     %d     |        %d        |  %d  \n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|                          |    %-7d | TYPE_STRUCT |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case TYPE_TAB:
-         printf("  %d  |  TYPE_TAB  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
-         break;
+         printf("|                          |    %-7d |  TYPE_TAB   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+
        case VAR:
-         printf("  %d  |  VARIABLE  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|                          |    %-7d |  VARIABLE   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PARAMETRE:
-         printf("  %d  | PARAMETRE  |          %d          |     %d     |         %d         |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|                          |    %-7d | PARAMETRE   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PROC:
-         printf("  %d  |  PROCEDURE |          %d          |     %d     |         %d        |  %d \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|                          |    %-7d |  PROCEDURE  |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case FCT:
-         printf("  %d  |  FONCTION  |          %d          |     %d     |        %d        |  %d  \n",i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|                          |    %-7d |  FONCTION   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        default:
-        printf("     |           |                      |            |                   |     \n");
+         printf("|                          |            |             |            |           |                 |             |\n");
          break;
        }
        i++;
    }
+   printf("\\--------------------------+------------+-------------+------------+-----------+-----------------+-------------/\n" );
 }
 
 /*----------------------------------------------------------------------------
@@ -259,11 +266,24 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
   Paramatères : - num_lexico : numéro du lexème en question.
                 - nature : nature du lexème en question (si c'est une procédure,
                fonction, ...)
+               - region_particuliere : deux cas :
+                  * egal à -1, dans ce cas on cherche le numéro de déclaration
+                    du lexème (si il est déclaré) dans n'importe quelle région
+                    présente dans la pile des régions.
+                  * égal à la région courante , dans ce cas, on regarde si le
+                  le lexème est déjà déclaré dans cette région particuliere;
+
   ----------------------------------------------------------------------------*/
-int num_decla(int num_lexico, int nature){
+int num_decla(int num_lexico, int nature, int region_particuliere){
   int num_decla = -1;
-  int derniere_region = -1; /*Region la plus proche de la région courante*/
+  int derniere_region;/*Region la plus proche de la région courante*/
   int chainage = num_lexico; /*Début du chainage*/
+
+  if(region_particuliere == -1){
+    derniere_region = -1; /*On part de rien*/
+  }else{
+    derniere_region = region_particuliere;
+  }
 
   /*Tant qu'il existe une déclaration de même numéro lexicographique*/
   while((chainage != -1) && (TableDeclaration[chainage].nature != -1)){
