@@ -89,3 +89,50 @@ int est_dans_pile_region(int region){
 
   return 0;
 }
+
+// Vérification de la cohérence des types pour une expression renvoyant un
+// résultat numérique (ou caractère), renvoie le type final, -1 si erreur
+int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
+  // L'une des composantes est booleenne
+  if(type_g == TYPE_BOOL || type_d == TYPE_BOOL){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> Opérateur arithmétique impossible sur un booleen.\n",
+      nb_ligne
+    );
+    return -1;
+  }
+
+  if(type_g == TYPE_INT && type_d == TYPE_INT){
+   return TYPE_INT;
+  }
+  if(type_g == TYPE_FLOAT && type_d == TYPE_FLOAT){
+   return TYPE_FLOAT;
+  }
+  if(type_g == TYPE_CHAR && type_d == TYPE_CHAR){
+   return TYPE_CHAR;
+  }
+  else{
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> Opérandes de l'expression de types différents.\n",
+      nb_ligne
+    );
+    return -1;
+  }
+}
+
+// Vérification de la cohérence des types pour une expression renvoyant un
+// booleen
+int verif_type_expr_bool(int type_g, int type_d, int nb_ligne){
+  // L'une des composantes est réelle
+  if(type_g == TYPE_FLOAT || type_d == TYPE_FLOAT){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> Opérateur booleen impossible sur un reel.\n",
+      nb_ligne
+    );
+    return -1;
+  }
+  return 2;
+}

@@ -7,12 +7,6 @@
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabDecla/inc/TabDecla.h"
 
-#define TYPE_INT 0
-#define TYPE_FLOAT 1
-#define TYPE_BOOL 2
-#define TYPE_CHAR 3
-#define TYPE_STR 4
-
 char *yytext;
 int yylex();
 int yyerror();
@@ -34,6 +28,8 @@ int nb_dim;
 int type_g = 0;
 int type_d = 0;
 int type = 0;
+
+int aff_arbre = 0;
 
 %}
 
@@ -88,9 +84,11 @@ liste_declarations : declaration
 
 liste_instructions : DEBUT suite_liste_inst FIN {
   $$ = $2;
-  printf("######## LISTE D'INSTRUCTION ########\n");
-  afficher_arbre($$);
-  printf("\n");
+  if(aff_arbre){
+    printf("######## LISTE D'INSTRUCTION ########\n");
+    afficher_arbre($$);
+    printf("\n");
+  }
 }
                    ;
 
@@ -410,52 +408,87 @@ concatenation : CSTE_CHAINE {
 }
               ;
 
-e1 : e1 PLUS e2 {
+e1 : e1 {type_g = type;} PLUS e2 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, PLUS, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       printf("%d\n", erreur_semantique);
+       type = 0;
+     }
    }
-   | e1 MOINS e2 {
+   | e1 {type_g = type;} MOINS e2 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, MOINS, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
    }
-   | e1 OU e2 {
+   | e1 {type_g = type;} OU e2 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, OU, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
+     type_d = type;
+     if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 2;
+     }
    }
    | e2 {$$ = $1;}
    ;
 
-e2 : e2 MULT e3 {
+e2 : e2 {type_g = type;} MULT e3 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, MULT, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
+
+    type_d = type;
+    if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+      erreur_semantique++;
+      type = 0;
+    }
    }
-   | e2 DIV e3 {
+   | e2 {type_g = type;} DIV e3 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, DIV, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
    }
-   | e2 MODULO e3 {
+   | e2 {type_g = type;} MODULO e3 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, MODULO, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
    }
-   | e2 ET e3 {
+   | e2 {type_g = type;} ET e3 {
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, ET, -1, -1.0),
-         concat_pere_frere($1, $3)
+         concat_pere_frere($1, $4)
        );
-
-
+     type_d = type;
+     if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 2;
+     }
    }
    | e3 {$$ = $1;}
    ;
@@ -667,6 +700,7 @@ composante_afficher : variable       {
           nb_ligne,
           lexeme($1->numlex)
           );
+        erreur_semantique++;
       }
       else{
         fprintf(
@@ -675,6 +709,7 @@ composante_afficher : variable       {
           nb_ligne,
           lexeme($1->numlex)
           );
+        erreur_semantique++;
       }
     }
     else{ // Réglages des élements restés en suspend durant l'appel
@@ -732,11 +767,17 @@ int yyerror(){
   syntaxe_correcte = 0;
 }
 
-int main(){
+int main(int argc, char *argv[]){
   init_pile_region();
   init_table_lexico();
   init_tab_decla();
   init_tab_representation_type();
+
+  // L'utilisateur souhaite afficher les arbres produits par le compilateur
+  if(argc > 4 && atoi(argv[4]) == 1){
+    aff_arbre++;
+  }
+
   yyparse();
 
   if(!syntaxe_correcte){
@@ -749,11 +790,19 @@ int main(){
     );
   }
 
-  //afficher_tab_representation();
-  printf("\n");
-  afficher_tab_declaration();
-  printf("\n");
-  affiche_table_lexico();
-  printf("\n");
-
+  // L'utilisateur souhaite afficher la table lexicographique
+  if(argc > 1 && atoi(argv[1]) == 1){
+    affiche_table_lexico();
+    printf("\n");
+  }
+  // L'utilisateur souhaite afficher la table des déclarations
+  if(argc > 2 && atoi(argv[2]) == 1){
+    afficher_tab_declaration();
+    printf("\n");
+  }
+  // L'utilisateur souhaite afficher la table de représentations des types
+  if(argc > 3 && atoi(argv[3]) == 1){
+    afficher_tab_representation();
+    printf("\n");
+  }
 }
