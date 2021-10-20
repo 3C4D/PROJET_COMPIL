@@ -68,6 +68,22 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
  ----------------------------------------------------------------------------- */
  int valeur_description_tab_decla(int indice);
 
+ /*----------------------------------------------------------------------------
+  Utilité : Renvoie le numéro de région d'une certaine déclaration
+   Paramètre : - num_decla : numéro de déclaration en question
+  ----------------------------------------------------------------------------- */
+ int region(int num_decla);
 
+ /*----------------------------------------------------------------------------
+  Utilité : Renvoie la nature d'une certaine déclaration
+   Paramètre : - num_decla : numéro de déclaration en question
+  ----------------------------------------------------------------------------- */
+ int nature(int num_decla);
+
+ /*----------------------------------------------------------------------------
+  Utilité :  Renvoie le numéro de déclaration d'une variable
+   Paramètre : - numlex : numéro léxicographique du lexeme
+  ----------------------------------------------------------------------------- */
+ int num_decla_variable(int numlex);
 
 #endif

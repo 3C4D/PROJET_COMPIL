@@ -6,6 +6,7 @@
 #include "../TabLexico/inc/TabLexico.h"
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabDecla/inc/TabDecla.h"
+#include "../inc/macros_arbres.h"
 
 char *yytext;
 int yylex();
@@ -25,11 +26,14 @@ int nb_champs;
 int nb_dim;
 
 // Variables aidant à la vérification sémantique des types (expressions, aff)
+int type_var_affectation = 0;
 int type_g = 0;
 int type_d = 0;
 int type = 0;
 
 int aff_arbre = 0;
+
+int numero_var = INIT;
 
 %}
 
@@ -92,9 +96,20 @@ liste_instructions : DEBUT suite_liste_inst FIN {
 }
                    ;
 
-suite_liste_inst : instruction {$$ = $1;}
-                 | suite_liste_inst instruction {
-                   $$ = concat_pere_frere($1, $2);
+suite_liste_inst : instruction {
+  $$ = concat_pere_fils(
+      creer_noeud(-1, -1, A_LISTE_INSTR, -1, -1.0),
+      $1
+    );
+}
+                 | instruction suite_liste_inst  {
+                   $$ = concat_pere_fils(
+                       creer_noeud(-1, -1, A_LISTE_INSTR, -1, -1.0),
+                       concat_pere_frere(
+                           $1,
+                           $2
+                          )
+                      );
                  }
                  ;
 
@@ -245,46 +260,41 @@ un_param : IDF DEUX_POINTS type_simple {
 }
          ;
 
-instruction : affectation POINT_VIRGULE {$$ = $1;}
+instruction : affectation POINT_VIRGULE {
+  $$ = concat_pere_fils(
+      creer_noeud(-1, -1, A_AFFECTATION, -1, -1.0),
+      $1
+    );
+}
             | condition {$$ = $1;}
             | tant_que {$$ = $1;}
             | afficher POINT_VIRGULE {$$ = $1;}
             | lire POINT_VIRGULE {$$ = $1;}
             | appel POINT_VIRGULE {
 
-              // On cherche à savoir si l'on est en face d'une procedure ou bien
-              // d'une fonction
-              // Si une fonction et une procedure du même nom sont définie
-              // dans la même région, alors on prendra par priorité la procedure
+              // Un appel sans exploitation de la valeur de retour doit être une
+              // procedure, sinon erreur
               int num_decl_appel = num_decla($1->numlex, PROC, -1);
 
-              if(num_decl_appel == -1){ // Procedure non trouvée
-                // Une fonction est-elle appelée à la place ?
-                num_decl_appel = num_decla($1->numlex, PROC, -1);
-                if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
-                  fprintf(
-                    stderr,
-                    "\nErreur l:%d -> %s non déclaré.\n",
-                    nb_ligne,
-                    lexeme($1->numlex)
-                    );
-                }
-                else{
-                  $1->numdecl = num_decl_appel;
-                  $1->nature = PROCEDURE;
-                }
+              if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
+                fprintf(
+                  stderr,
+                  "\nErreur l:%d -> procedure %s non déclarée.\n",
+                  nb_ligne,
+                  lexeme($1->numlex)
+                  );
               }
-              else{ // Réglages des élements restés en suspend durant l'appel
+              else{
                 $1->numdecl = num_decl_appel;
-                $1->nature = PROCEDURE;
+                $1->nature = A_APPEL_PROC;
               }
 
               $$ = $1;
             }
-            | VIDE POINT_VIRGULE {$$ = creer_noeud(-1, -1, VIDE, -1, -1.0);}
+            | VIDE POINT_VIRGULE {$$ = creer_noeud(-1, -1, A_VIDE, -1, -1.0);}
             | RETOURNE resultat_retourne POINT_VIRGULE {
               $$ = concat_pere_fils(
-                  creer_noeud(-1, -1, RETOURNE, -1, -1.0),
+                  creer_noeud(-1, -1, A_RETOURNE, -1, -1.0),
                   $2
                 );
             }
@@ -313,9 +323,14 @@ liste_arguments : PARENTHESE_OUVRANTE liste_args PARENTHESE_FERMANTE {
 }
                 ;
 
-liste_args : un_arg {$$ = $1;}
-           | liste_args VIRGULE un_arg {
-             $$ = concat_pere_frere($1, $3);
+liste_args : un_arg {
+  $$ = concat_pere_fils(creer_noeud(-1, -1, A_LISTE_ARG, -1, -1.0), $1);
+}
+           | un_arg VIRGULE liste_args {
+             $$ = concat_pere_fils(
+               creer_noeud(-1, -1, A_LISTE_ARG, -1, -1.0),
+               concat_pere_frere($1, $3)
+               );
            }
            | {$$ = creer_arbre_vide();}
            ;
@@ -323,106 +338,307 @@ liste_args : un_arg {$$ = $1;}
 un_arg : expression {$$ = $1;}
        ;
 
-condition : SI expression ALORS liste_instructions sinon {
-  $$ = concat_pere_fils(
-      creer_noeud(-1, -1, SI, -1, -1.0),
-      concat_pere_frere(
-        $2,
-        concat_pere_fils($4, $5)
-      )
-    );
-}
+ condition : SI expression ALORS liste_instructions sinon {
+   if(est_vide($5)){
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_SI_ALORS, -1, -1.0),
+         concat_pere_frere(
+           $2,
+           concat_pere_frere($4, $5)
+         )
+       );
+    }
+    else{
+      $$ = concat_pere_fils(
+          creer_noeud(-1, -1, A_SI_ALORS_SINON, -1, -1.0),
+          concat_pere_frere(
+            $2,
+            concat_pere_frere($4, $5)
+          )
+        );
+     }
+ }
           ;
 
 sinon : SINON liste_instructions {
-  $$ = concat_pere_fils(
-      creer_noeud(-1, -1, SINON, -1, -1.0),
-      $2
-    );
+  $$ = $2;
 }
       | {$$ = creer_arbre_vide();}
       ;
 
 tant_que : TANT_QUE expression FAIRE liste_instructions {
   $$ = concat_pere_fils(
-      creer_noeud(-1, -1, TANT_QUE, -1, -1.0),
+      creer_noeud(-1, -1, A_TANT_QUE, -1, -1.0),
       concat_pere_frere($2, $4)
     );
 }
 
-affectation : variable OPAFF expression {
-  $$ = concat_pere_fils(
-      creer_noeud(-1, -1, OPAFF, -1, -1.0),
-      concat_pere_frere(
-        $1,
-        $3
-      )
+affectation : variable {type_var_affectation = type;} OPAFF expression {
+
+  // Affectation de deux choses de type différent
+  if(type_var_affectation != type){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> affectation de deux choses de types différents.\n",
+      nb_ligne
     );
+    erreur_semantique++;
+    $$ = creer_noeud(-1, -1, -1, -1, -1.0);
+  }
+  else{
+    $$ = concat_pere_fils(
+        creer_noeud(-1, -1, A_AFFECTATION, -1, -1.0),
+        concat_pere_frere(
+          $1,
+          $4
+        )
+      );
+    }
 }
             ;
 
-variable : IDF corps_variable {
-  $$ = concat_pere_frere(
-        creer_noeud(
-          $1,
-          num_decla($1, VAR,-1),
-          VAR,
-          -1,
-          -1
-        ),
-        $2
-      );
+variable : IDF {
+
+    // L'IDF ne correpond pas à un champ, on cherche ce qu'il peut être
+    if(numero_var != STRUCTURE){
+      int num_decla_idf = num_decla_variable($1);
+
+      // Elément non déclaré
+      if(num_decla_idf == -1){
+        fprintf(
+          stderr,
+          "\nErreur l:%d -> %s non déclaré.\n",
+          nb_ligne,
+          lexeme($1)
+        );
+        erreur_semantique++;
+      }
+      // Cet IDF correspond à une variable (ou à un paramètre)
+      else if(nature(num_decla_idf) == VAR
+          || nature(num_decla_idf) == PARAMETRE){
+        type = valeur_description_tab_decla(num_decla_idf);
+
+        if(type > 4){     // La variable est une srtucture
+          numero_var = STRUCTURE;
+        }
+        else{             // La variable est de type simple
+          numero_var = VAR_SIMPLE;
+        }
+      }
+      // Cet IDF correspond à tableau, le corps sera probablement une dimension
+      // sinon c'est une erreur
+      else if(nature(num_decla_idf) == TYPE_TAB){
+        type = valeur_tab_types(
+            valeur_description_tab_decla(num_decla_idf)+1
+          );
+        numero_var = DIMENSION;
+      }
+      // Cas non traité ?
+      else{
+        fprintf(stderr,"\nErreur...\n");
+      }
+    }
+    // L'IDF correspond à un champ de la structure
+    else {
+      int i = 0;
+      // Premier indice de la struct dans la table des types
+      int indice_struct = valeur_description_tab_decla(type);
+      int indice_lexeme_champ = indice_struct + 2;
+
+      type = -1;
+      while(i != valeur_tab_types(indice_struct) && type == -1){
+        // L'IDF appelé est bien un champ de la structure
+        if(valeur_tab_types(indice_lexeme_champ) == $1){
+          // On retient le type et on sort
+          type = valeur_tab_types(indice_lexeme_champ-1);
+        }
+        indice_lexeme_champ += 2;
+        i++;
+      }
+
+      if(type == -1){
+        fprintf(
+          stderr,
+          "\nErreur l:%d -> %s : aucun champ correspondant.\n",
+          nb_ligne,
+          lexeme($1)
+        );
+        erreur_semantique++;
+      }
+    }
+
+} corps_variable {
+  if(erreur_semantique){
+    $$ = creer_noeud(
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+        );
+  }
+  else{
+    int num_decla_idf = num_decla_variable($1);
+
+    // Champs car aucune erreur sémantique et pas une variable
+    if(num_decla_idf == -1){
+      $$ = concat_pere_fils(
+            creer_noeud(
+              $1,
+              -1,
+              A_CHAMP,
+              -1,
+              -1
+            ),
+            $3
+          );
+    }
+    else{
+      if(nature(num_decla_idf) == VAR
+           || nature(num_decla_idf) == PARAMETRE){
+        $$ = concat_pere_fils(
+              creer_noeud(
+                $1,
+                num_decla_idf,
+                A_VAR,
+                -1,
+                -1
+              ),
+              $3
+            );
+      }
+      // Cet IDF correspond à un tableau, le corps sera probablement une
+      // dimension, sinon, c'est une erreur
+      else{
+        $$ = concat_pere_fils(
+              creer_noeud(
+                $1,
+                num_decla_idf,
+                A_TAB,
+                -1,
+                -1
+              ),
+              $3
+            );
+      }
+    }
+  }
+  numero_var = INIT;
 }
          ;
 
 corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
-  $$ = concat_pere_frere(
-      concat_pere_frere(
-        creer_noeud(-1, -1, TABLEAU, -1, -1.0),
-        $2
-      ),
-      $4
+
+  if(numero_var == VAR_SIMPLE){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> impossible d'indicer une variable.\n",
+      nb_ligne
     );
+    erreur_semantique++;
+    $$ = creer_noeud(
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      );
+  }
+  else if(numero_var == STRUCTURE){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> impossible d'indicer une structure.\n",
+      nb_ligne
+    );
+    erreur_semantique++;
+    $$ = creer_noeud(
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      );
+  }
+  else{
+    $$ = concat_pere_fils($2, $4);
+    }
 }
-               | POINT variable {
-  $$ = concat_pere_frere(
-      creer_noeud(-1, -1, POINT, -1, -1.0),
-      $2
-    );
+               | POINT {
+
+   if(numero_var == VAR_SIMPLE){
+     fprintf(
+       stderr,
+       "\nErreur l:%d -> une variable simple ne possède pas de champs.\n",
+       nb_ligne
+     );
+     erreur_semantique++;
+   }
+   else if(numero_var == DIMENSION && type < 4){
+     fprintf(
+       stderr,
+       "\nErreur l:%d -> Un tableau de types simple n'a pas de champ.\n",
+       nb_ligne
+     );
+     erreur_semantique++;
+
+   }
                }
+    variable {
+      if(!erreur_semantique){
+        $$ = $3;
+      }else{
+        $$ = creer_noeud(
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          );
+      }
+    }
                | {$$ = creer_arbre_vide();}
                ;
 
-expression : concatenation {$$ = $1;}
-           | e1 {$$ = $1;}
+expression : concatenation {
+  $$ = concat_pere_fils(creer_noeud(-1, -1, A_EXPRESSION, -1, -1.0), $1);
+  type = TYPE_STR;
+}
+           | e1 {
+  $$ = concat_pere_fils(creer_noeud(-1, -1, A_EXPRESSION, -1, -1.0), $1);
+}
            ;
 
 concatenation : CSTE_CHAINE {
   $$ = creer_noeud($1, -1, CSTE_CHAINE, -1, -1.0);
 }
               | CSTE_CHAINE PLUS concatenation {
-  $$ = concat_pere_frere(
-    creer_noeud($1, -1, CSTE_CHAINE, -1, -1.0),
-    $3
+  $$ = concat_pere_fils(
+    creer_noeud(1, -1, A_CONCAT, -1, -1.0),
+    concat_pere_frere(
+      creer_noeud($1, -1, A_CSTE_CHAINE, -1, -1.0),
+      $3
+      )
   );
 }
               ;
 
 e1 : e1 {type_g = type;} PLUS e2 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, PLUS, -1, -1.0),
+         creer_noeud(-1, -1, A_PLUS, -1, -1.0),
          concat_pere_frere($1, $4)
        );
      type_d = type;
      if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
        erreur_semantique++;
-       printf("%d\n", erreur_semantique);
        type = 0;
+     }
+     else{
+       type = type_g;
      }
    }
    | e1 {type_g = type;} MOINS e2 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, MOINS, -1, -1.0),
+         creer_noeud(-1, -1, A_MOINS, -1, -1.0),
          concat_pere_frere($1, $4)
        );
      type_d = type;
@@ -430,24 +646,27 @@ e1 : e1 {type_g = type;} PLUS e2 {
        erreur_semantique++;
        type = 0;
      }
+     else{
+       type = type_g;
+     }
    }
    | e1 {type_g = type;} OU e2 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, OU, -1, -1.0),
+         creer_noeud(-1, -1, A_OU, -1, -1.0),
          concat_pere_frere($1, $4)
        );
      type_d = type;
      if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
        erreur_semantique++;
-       type = 2;
      }
+     type = TYPE_BOOL;
    }
    | e2 {$$ = $1;}
    ;
 
 e2 : e2 {type_g = type;} MULT e3 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, MULT, -1, -1.0),
+         creer_noeud(-1, -1, A_MULT, -1, -1.0),
          concat_pere_frere($1, $4)
        );
 
@@ -456,21 +675,27 @@ e2 : e2 {type_g = type;} MULT e3 {
       erreur_semantique++;
       type = 0;
     }
+    else{
+      type = type_g;
+    }
    }
    | e2 {type_g = type;} DIV e3 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, DIV, -1, -1.0),
+         creer_noeud(-1, -1, A_DIV, -1, -1.0),
          concat_pere_frere($1, $4)
        );
      type_d = type;
      if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
        erreur_semantique++;
        type = 0;
+     }
+     else{
+       type = type_g;
      }
    }
    | e2 {type_g = type;} MODULO e3 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, MODULO, -1, -1.0),
+         creer_noeud(-1, -1, A_MODULO, -1, -1.0),
          concat_pere_frere($1, $4)
        );
      type_d = type;
@@ -478,17 +703,20 @@ e2 : e2 {type_g = type;} MULT e3 {
        erreur_semantique++;
        type = 0;
      }
+     else{
+       type = type_g;
+     }
    }
    | e2 {type_g = type;} ET e3 {
      $$ = concat_pere_fils(
-         creer_noeud(-1, -1, ET, -1, -1.0),
+         creer_noeud(-1, -1, A_ET, -1, -1.0),
          concat_pere_frere($1, $4)
        );
      type_d = type;
      if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
        erreur_semantique++;
-       type = 2;
      }
+     type = TYPE_BOOL;
    }
    | e3 {$$ = $1;}
    ;
@@ -516,6 +744,7 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
 
      // Comparaison entre booleen autres que == et !=
      if(type_g == TYPE_BOOL && type_d == TYPE_BOOL){
+       type = TYPE_BOOL;
        if($3->nature != EGAL && $3->nature != DIFFERENT){
          fprintf(
            stderr,
@@ -523,15 +752,16 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
            nb_ligne
          );
          erreur_semantique++;
-         type = 0;
       }
     }
+
+    type = TYPE_BOOL;
    }
    | e4 {$$ = $1;}
    ;
 
 e4 : NON e5 {
-  $$ = concat_pere_fils(creer_noeud(-1, -1, NON, -1, -1), $2);
+  $$ = concat_pere_fils(creer_noeud(-1, -1, A_NON, -1, -1), $2);
   type = TYPE_BOOL;
 }
    | e5 {
@@ -541,15 +771,15 @@ e4 : NON e5 {
 
 e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
    | CSTE_ENTIERE {
-     $$ = creer_noeud(-1, -1, CSTE_ENTIERE, $1, -1.0);
+     $$ = creer_noeud(-1, -1, A_CSTE_ENT, $1, -1.0);
      type = TYPE_INT;
    }
    | CSTE_REELLE  {
-     $$ = creer_noeud(-1, -1, CSTE_REELLE, -1, $1);
+     $$ = creer_noeud(-1, -1, A_CSTE_REEL, -1, $1);
      type = TYPE_FLOAT;
    }
    | CSTE_CARACTERE {
-     $$ = creer_noeud(-1, -1, CSTE_CARACTERE, $1, -1.0);
+     $$ = creer_noeud(-1, -1, A_CSTE_CHAR, $1, -1.0);
      type = TYPE_CHAR;
    }
    | un_booleen {
@@ -558,10 +788,6 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
    }
    | variable {
      $$ = $1;
-
-     int num_decla_var = num_decla($1->numlex,VAR,-1);
-     type = valeur_description_tab_decla(num_decla_var);
-
    }
    | appel  {
      // On cherche à savoir si l'on est en face d'une procedure ou bien
@@ -592,23 +818,23 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
      }
      else{ // Réglages des élements restés en suspend durant l'appel
        $1->numdecl = num_decl_appel;
-       $1->nature = PROCEDURE;
+       $1->nature = A_APPEL_FCT;
      }
 
      $$ = $1;
    }
    ;
 
-un_booleen : TRUE {$$ = creer_noeud(-1, -1, TRUE, -1, -1.0);}
-           | FALSE {$$ = creer_noeud(-1, -1, TRUE, -1, -1.0);}
+un_booleen : TRUE {$$ = creer_noeud(-1, -1, A_TRUE, -1, -1.0);}
+           | FALSE {$$ = creer_noeud(-1, -1, A_TRUE, -1, -1.0);}
            ;
 
-operateur_comp : EGAL  {$$ = creer_noeud(-1, -1, EGAL, -1, -1.0);}
-               | DIFFERENT  {$$ = creer_noeud(-1, -1, DIFFERENT, -1, -1.0);}
-               | SUP  {$$ = creer_noeud(-1, -1, SUP, -1, -1);}
-               | SUP_EGAL {$$ = creer_noeud(-1, -1, SUP_EGAL, -1, -1.0);}
-               | INF  {$$ = creer_noeud(-1, -1, INF, -1, -1);}
-               | INF_EGAL {$$ = creer_noeud(-1, -1, INF_EGAL, -1, -1.0);}
+operateur_comp : EGAL  {$$ = creer_noeud(-1, -1, A_EGAL, -1, -1.0);}
+               | DIFFERENT  {$$ = creer_noeud(-1, -1, A_DIFFERENT, -1, -1.0);}
+               | SUP  {$$ = creer_noeud(-1, -1, A_SUP, -1, -1);}
+               | SUP_EGAL {$$ = creer_noeud(-1, -1, A_SUP_EGAL, -1, -1.0);}
+               | INF  {$$ = creer_noeud(-1, -1, A_INF, -1, -1);}
+               | INF_EGAL {$$ = creer_noeud(-1, -1, A_INF_EGAL, -1, -1.0);}
                ;
 
 afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
@@ -649,9 +875,9 @@ afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
   }
   PARENTHESE_FERMANTE {
     $$ = concat_pere_fils(
-      creer_noeud(-1, -1, AFFICHER, -1, -1.0),
+      creer_noeud(-1, -1, A_AFFICHER, -1, -1.0),
         concat_pere_frere(
-          creer_noeud($3, -1, CSTE_CHAINE, -1, -1.0),
+          creer_noeud($3, -1, A_CSTE_CHAINE, -1, -1.0),
           $5
         )
       );
@@ -663,24 +889,20 @@ suite_afficher : VIRGULE {
                 }
   composante_afficher
   suite_afficher {
-    $$ = concat_pere_frere($3, $4);
+    $$ = concat_pere_fils(
+      creer_noeud(-1, -1, A_LISTE_ARG, -1, -1),
+      concat_pere_frere($3, $4)
+    );
   }
                | {
-    $$ = creer_noeud(-1, -1, CSTE_CHAINE, -1, -1.0);
+    $$ = creer_arbre_vide();
   }
                ;
 
 
 composante_afficher : variable       {
-                  // On récupère le type de la fonction appellée
-                      int num_decla_var = num_decla($1->numlex,
-                                                    VAR,-1
-                                                    );
-                      int type_var = valeur_description_tab_decla(
-                                      num_decla_var
-                                    );
-                      tab_var_format[tab_var_format[0]] = type_var;
-
+                      // On récupère le type de la variable appellée
+                      tab_var_format[tab_var_format[0]] = type;
                       $$ = $1;
                     }
                     | appel       {
@@ -714,49 +936,54 @@ composante_afficher : variable       {
     }
     else{ // Réglages des élements restés en suspend durant l'appel
       $1->numdecl = num_decl_appel;
-      $1->nature = PROCEDURE;
+      $1->nature = A_APPEL_FCT;
     }
 
     $$ = $1;
                     }
                     | CSTE_ENTIERE       {
                       tab_var_format[tab_var_format[0]] = TYPE_INT;
-                      $$ = creer_noeud(-1, -1, CSTE_ENTIERE, $1, -1.0);
+                      $$ = creer_noeud(-1, -1, A_CSTE_ENT, $1, -1.0);
                     }
                     | CSTE_REELLE       {
                       tab_var_format[tab_var_format[0]] = TYPE_FLOAT;
-                      $$ = creer_noeud(-1, -1, CSTE_REELLE, -1, $1);
+                      $$ = creer_noeud(-1, -1, A_CSTE_REEL, -1, $1);
                     }
                     | TRUE       {
                       tab_var_format[tab_var_format[0]] = TYPE_BOOL;
-                      $$ = creer_noeud(-1, -1, BOOLEEN, 1, -1.0);
+                      $$ = creer_noeud(-1, -1, A_TRUE, 1, -1.0);
                     }
                     | FALSE       {
                       tab_var_format[tab_var_format[0]] = TYPE_BOOL;
-                      $$ = creer_noeud(-1, -1, BOOLEEN, 0, -1.0);
+                      $$ = creer_noeud(-1, -1, A_FALSE, -1, -1.0);
                     }
                     | CSTE_CARACTERE       {
                       tab_var_format[tab_var_format[0]] = TYPE_CHAR;
-                      $$ = creer_noeud(-1, -1, CSTE_CARACTERE, $1, -1.0);
+                      $$ = creer_noeud(-1, -1, A_CSTE_CHAR, $1, -1.0);
                     }
                     | CSTE_CHAINE       {
                       tab_var_format[tab_var_format[0]] = TYPE_STR;
-                      $$ = creer_noeud($1, -1, CSTE_CHAINE, -1, -1.0);
+                      $$ = creer_noeud($1, -1, A_CSTE_CHAINE, -1, -1.0);
                     }
                     ;
 
 lire : LIRE PARENTHESE_OUVRANTE liste_variables PARENTHESE_FERMANTE {
   $$ = concat_pere_fils(
-    creer_noeud(inserer_tab_lex("lire"), -1, LIRE, -1, -1.0),
+    creer_noeud(-1, -1, A_LIRE, -1, -1.0),
     $3
   );
 }
      ;
 
 liste_variables : variable VIRGULE liste_variables {
-  $$ = concat_pere_frere($1, $3);
+  $$ = concat_pere_fils(
+    creer_noeud(-1, -1, A_LISTE_VAR, -1, -1),
+    concat_pere_frere($1, $3)
+  );
 }
-                | variable {$$ = $1;}
+                | variable {
+  $$ = concat_pere_fils(creer_noeud(-1, -1, A_LISTE_VAR, -1, -1), $1);
+}
                 ;
 
 

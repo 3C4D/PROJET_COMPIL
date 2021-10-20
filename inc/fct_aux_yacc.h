@@ -5,11 +5,17 @@
 
 #define MAX_REGION 40
 #define MAX_FORMAT 40
+
 #define TYPE_INT 0
 #define TYPE_FLOAT 1
 #define TYPE_BOOL 2
 #define TYPE_CHAR 3
 #define TYPE_STR 4
+
+#define INIT 0
+#define STRUCTURE 1
+#define DIMENSION 2
+#define VAR_SIMPLE 3
 
 int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];

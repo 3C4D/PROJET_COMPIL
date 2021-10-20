@@ -51,5 +51,10 @@ int premier_indice();
   ----------------------------------------------------------------------------- */
 void change_premier_indice(int valeur);
 
+/*----------------------------------------------------------------------------
+  Utilité : Renvoie la donnée contenue à l'index indice.
+  Paramètre : - indice : indice que de la table dont on veut connaitre la donnée
+----------------------------------------------------------------------------- */
+int valeur_tab_types(int indice);
 
 #endif
