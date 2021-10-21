@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../../TabLexico/inc/TabLexico.h"
+#include "../../TabRepresentation/inc/TabRepresentation.h"
 #include "../inc/TabDecla.h"
 #include "../../inc/fct_aux_yacc.h"
 
@@ -30,7 +31,7 @@ void init_tab_decla(){
  -----------------------------------------------------------------------------*/
 int inserer_tab_declaration(int num_lexico, int nature, int num_region,
                             int num_represention_type, int nb_ligne){
-    int i;
+    int i,j,n;
     int num_declaration;
 
     /*-------------------------------------------------------------------------
@@ -165,6 +166,22 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
     if((nature == TYPE_STRUCT) || (nature == TYPE_TAB)){
       TableDeclaration[num_declaration].description = num_represention_type;
       TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
+
+      /*Vérification qu'il n'y ai pas plusieurs champs identiques (de même lexeme)
+      dans une structure*/
+      if(nature == TYPE_STRUCT){
+        n=valeur_tab_representation(num_represention_type); /*indique le nombre
+                                                            de champs*/
+        for(i=2; i<3*n; i=i+3){
+          for(j=2;j<3*n;j=j+3){
+            if(valeur_tab_representation(num_represention_type+i) == valeur_tab_representation(num_represention_type+j)){
+              printf("Erreur sémantique ligne %d : Deux champs de la structures portent le même nom\n",nb_ligne );
+              j=3*n;
+              i=3*n;
+            }
+          }
+        }
+      }
 
     }else if((nature == VAR) || (nature == PARAMETRE)){
       TableDeclaration[num_declaration].description = num_represention_type;

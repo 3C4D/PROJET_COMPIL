@@ -19,7 +19,6 @@ void init_tab_representation_type(){
               - num_lexico : vaut le numéro lexico du lexeme, OU -1 si on veut juste
                 remplir la/les premières caractéristique
  ----------------------------------------------------------------------------- */
- // (Manque la champs execution)
 int inserer_tab_representation_type(int type, int num_lexico){
   int premier_indice; /*Indice dans la table des représentation de la première
                        case vide*/
@@ -33,12 +32,15 @@ int inserer_tab_representation_type(int type, int num_lexico){
   /*Valeur du premier champs : nombre de champs, ou le numéro du type d'un champs*/
   TableRepresentation[premier_indice] = type;
 
+
   /*Si on ne rempli pas les premières cases de la table avec nombre champs etc*/
   if(num_lexico != -1){
     TableRepresentation[premier_indice + 1] = num_lexico;
-    return (premier_indice+1);
+    TableRepresentation[premier_indice + 2] = -11; /*Champs exec*/
+    return (premier_indice+2);
   }else{
-    return premier_indice;
+    TableRepresentation[premier_indice + 1] = -11; /*Champs exec*/
+    return (premier_indice+1);
   }
 
 }
