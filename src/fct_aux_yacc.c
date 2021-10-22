@@ -169,22 +169,25 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
   int nb_arg;
   int i;
 
+
+
   if(nature(num_decla) ==  PROC){
+      nb_arg = valeur_tab_representation(valeur_description_tab_decla(num_decla));
       indice = valeur_description_tab_decla(num_decla)+1;
   }else{
-    indice = valeur_description_tab_decla(num_decla)+3;
+    nb_arg = valeur_tab_representation(valeur_description_tab_decla(num_decla)+1);
+    indice = valeur_description_tab_decla(num_decla)+2;
   }
-  nb_arg = valeur_tab_representation(indice);
 
   /*On vérifie que le nombre d'argument est le même que le nombre de parametre*/
   if(nb_arg == tab_arg_appel[0]){
     for(i=1; i<nb_arg+1; i++){
-      indice += 2;
       /*On vérifie que le type de chaque argument correspond au type du parametre*/
       if(tab_arg_appel[i] != valeur_tab_representation(indice)){
         printf("Erreur sémantique ligne %d : paramètre de mauvais type dans l'appel\n",nb_ligne);
         return -1;
       }
+      indice += 2;
     }
   }else{
     printf("Erreur sémantique ligne %d : nombre de paramètre de l'appel incorrect\n",nb_ligne);
