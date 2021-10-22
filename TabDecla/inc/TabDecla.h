@@ -5,6 +5,7 @@
 
 #define MAX_TAB_DECLA 5000
 
+#define TYPE_BASE 0
 #define TYPE_STRUCT 1
 #define TYPE_TAB 2 /*Type tableau*/
 #define VAR 3 /*Variable*/

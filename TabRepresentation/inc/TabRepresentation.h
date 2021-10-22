@@ -2,6 +2,8 @@
 #ifndef  TAB_REPRESENTATION_H
 #define TAB_REPRESENTATION_H
 
+#include "../../TabDecla/inc/TabDecla.h"
+
 #define MAX_TAB_RPZ 300
 
 int TableRepresentation[MAX_TAB_RPZ];
@@ -17,8 +19,9 @@ void init_tab_representation_type();
                  de champs/paramètre/dimension, OU le type de retour d'une fonction
               - num_lexico : vaut le numéro lexico du lexeme, OU -1 si on veut juste
                 remplir la/les premières caractéristique
+              - nature : précise la nature.
  ----------------------------------------------------------------------------- */
-int inserer_tab_representation_type(int type, int num_lexico);
+int inserer_tab_representation_type(int type, int num_lexico, int nature);
 
 /*----------------------------------------------------------------------------
  Utilité : Insère à l'indice donné, la valeur donnée.
@@ -56,5 +59,12 @@ void change_premier_indice(int valeur);
   Paramètre : - indice : indice que de la table dont on veut connaitre la donnée
 ----------------------------------------------------------------------------- */
 int valeur_tab_types(int indice);
+
+/*----------------------------------------------------------------------------
+  Utilité : Vérifie la sémantique d'une structure : si i l n'y pas plusieurs
+  champs de même lexème.
+  Paramètre : - indice : indice que de la table dont on veut connaitre la donnée
+----------------------------------------------------------------------------- */
+int verif_surchage_struct(int premier_indice, int nb_ligne);
 
 #endif

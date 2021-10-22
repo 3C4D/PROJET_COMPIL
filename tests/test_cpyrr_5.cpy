@@ -83,7 +83,7 @@ var bonjour: maStruct89;
   monTab56[x42b+2*(4+6%28)] := 2;
   monTab56[fibo(x42b)] := x42b-85;
   // On appelle notre fonction
-  afficher("%d\n", fibo(x42b));
+  afficher("%d\n", fibo());
   afficher("%d\n", fibo(x42b + 5 - (6%(3/5))));
-  afficher("%d\n", fibo(6));
+  afficher("%d\n", fibo("caca"));
 }

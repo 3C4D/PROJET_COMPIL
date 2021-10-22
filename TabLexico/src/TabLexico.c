@@ -32,8 +32,28 @@ void init_table_lexico(){
     TableHC[i] = -1;
   }
 
+
+
   /*Initialisation de la table lexicographique*/
-  for(i=0; i<500 ;i++){
+  
+  /*Initialisation des types de bases*/
+  TableLexico[0].longueur = 3;
+  TableLexico[0].lexeme = "int";
+  TableLexico[0].suivant = -1;
+
+  TableLexico[1].longueur = 5;
+  TableLexico[1].lexeme = "float";
+  TableLexico[1].suivant = -1;
+
+  TableLexico[2].longueur = 4;
+  TableLexico[2].lexeme = "bool";
+  TableLexico[2].suivant = -1;
+
+  TableLexico[3].longueur = 4;
+  TableLexico[3].lexeme = "char";
+  TableLexico[3].suivant = -1;
+
+  for(i=4; i<500 ;i++){
     TableLexico[i].longueur = -1;
     TableLexico[i].lexeme = NULL;
     TableLexico[i].suivant = -1;

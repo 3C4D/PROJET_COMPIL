@@ -50,4 +50,7 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne);
 // booleen
 int verif_type_expr_bool(int type_g, int type_d, int nb_ligne);
 
+//Vérifie si un appel de fonction ou procédure, est correctement fait
+int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne);
+
 #endif

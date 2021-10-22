@@ -8,12 +8,38 @@
 /*Initialise la table des déclarations*/
 void init_tab_decla(){
   int i;
-  for(i=0; i<MAX_TAB_DECLA; i++){
+
+  /*Initialisation des types de bases*/
+  TableDeclaration[0].nature = TYPE_BASE;
+  TableDeclaration[0].suivant = -1;
+  TableDeclaration[0].num_region = -1;
+  TableDeclaration[0].description = -1;
+  TableDeclaration[0].exec = 1;
+
+  TableDeclaration[1].nature = TYPE_BASE;
+  TableDeclaration[1].suivant = -1;
+  TableDeclaration[1].num_region = -1;
+  TableDeclaration[1].description = -1;
+  TableDeclaration[1].exec = 1;
+
+  TableDeclaration[2].nature = TYPE_BASE;
+  TableDeclaration[2].suivant = -1;
+  TableDeclaration[2].num_region = -1;
+  TableDeclaration[2].description = -1;
+  TableDeclaration[2].exec = 1;
+
+  TableDeclaration[3].nature = TYPE_BASE;
+  TableDeclaration[3].suivant = -1;
+  TableDeclaration[3].num_region = -1;
+  TableDeclaration[3].description = -1;
+  TableDeclaration[3].exec = 1;
+
+  for(i=4; i<MAX_TAB_DECLA; i++){
     TableDeclaration[i].nature = -1;
     TableDeclaration[i].suivant = -1;
-    TableDeclaration[i].num_region=-1;
+    TableDeclaration[i].num_region= -1;
     TableDeclaration[i].description = -1;
-    TableDeclaration[i].exec=-1;
+    TableDeclaration[i].exec= -1;
   }
 }
 
@@ -31,7 +57,7 @@ void init_tab_decla(){
  -----------------------------------------------------------------------------*/
 int inserer_tab_declaration(int num_lexico, int nature, int num_region,
                             int num_represention_type, int nb_ligne){
-    int i,j,n;
+    int i;
     int num_declaration;
 
     /*-------------------------------------------------------------------------
@@ -167,22 +193,6 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
       TableDeclaration[num_declaration].description = num_represention_type;
       TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
 
-      /*Vérification qu'il n'y ai pas plusieurs champs identiques (de même lexeme)
-      dans une structure*/
-      if(nature == TYPE_STRUCT){
-        n=valeur_tab_representation(num_represention_type); /*indique le nombre
-                                                            de champs*/
-        for(i=2; i<3*n; i=i+3){
-          for(j=2;j<3*n;j=j+3){
-            if(valeur_tab_representation(num_represention_type+i) == valeur_tab_representation(num_represention_type+j)){
-              printf("Erreur sémantique ligne %d : Deux champs de la structures portent le même nom\n",nb_ligne );
-              j=3*n;
-              i=3*n;
-            }
-          }
-        }
-      }
-
     }else if((nature == VAR) || (nature == PARAMETRE)){
       TableDeclaration[num_declaration].description = num_represention_type;
       TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
@@ -216,6 +226,9 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
    printf("+--------------------------+------------+-------------+------------+-----------+-----------------+-------------+\n" );
    while(i<30){
      switch (TableDeclaration[i].nature) {
+       case TYPE_BASE :
+         printf("|    %-21s |     %-6d |  TYPE_BASE  |     %-6d |     %-5d |        %-8d |      %-6d |\n", lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         break;
        case TYPE_STRUCT:
          printf("|    %-21s |     %-6d | TYPE_STRUCT |     %-6d |     %-5d |        %-8d |      %-6d |\n", lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
@@ -226,7 +239,7 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
          printf("|    %-21s |     %-6d |  VARIABLE   |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PARAMETRE:
-         printf("|    %-21s |     %-6d | PARAMETRE   |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|    %-21s |     %-6d |  PARAMETRE  |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PROC:
          printf("|    %-21s |     %-6d |  PROCEDURE  |     %-6d |     %-5d |        %-8d |      %-6d |\n",lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
@@ -260,7 +273,7 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
          printf("|                          |    %-7d |  VARIABLE   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PARAMETRE:
-         printf("|                          |    %-7d | PARAMETRE   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
+         printf("|                          |    %-7d |  PARAMETRE  |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
        case PROC:
          printf("|                          |    %-7d |  PROCEDURE  |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);

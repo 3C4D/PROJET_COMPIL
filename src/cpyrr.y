@@ -17,6 +17,7 @@ extern int nb_ligne;
 int syntaxe_correcte = 1;
 int erreur_semantique = 0;
 int tab_var_format[40];
+int tab_arg_appel[40];
 
 int num_region = 0;
 int diff = 0;
@@ -133,7 +134,7 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
 suite_declaration_type : STRUCT {
       /*Réservation d'une case pour mettre le nombre de champs*/
       nb_champs = 0;
-      change_premier_indice(inserer_tab_representation_type(0, -1));
+      change_premier_indice(inserer_tab_representation_type(0, -1, TYPE_STRUCT));
 }
                         liste_champs FSTRUCT {
       /*Mise à jour de la première case, on retrouve l'indice de la première
@@ -141,12 +142,15 @@ suite_declaration_type : STRUCT {
 
       stocker_table_representation(premier_indice(), nb_champs);
       $$= TYPE_STRUCT;
+      if(verif_surchage_struct(premier_indice(),nb_ligne) == -1){
+        erreur_semantique++;
+      }
 }
                        | TABLEAU {
       nb_dim = 0;
       /*On reserve 2cases, une pour le type des éléments, une pour le nombre de
       dimension*/
-      change_premier_indice(inserer_tab_representation_type(0,0));
+      change_premier_indice(inserer_tab_representation_type(0,0, TYPE_TAB));
 }
 
                         dimension DE nom_type POINT_VIRGULE {
@@ -166,7 +170,7 @@ liste_dimensions : une_dimension { $$ = $1;}
                 ;
 
 une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {
-  nb_dim += 1;$$=inserer_tab_representation_type($1, $3);
+  nb_dim += 1;$$=inserer_tab_representation_type($1, $3, TYPE_TAB);
 }
               ;
 
@@ -175,7 +179,7 @@ liste_champs : un_champ {$$ = $1;}
              ;
 
 un_champ : IDF DEUX_POINTS nom_type {
-  nb_champs += 1;$$ = inserer_tab_representation_type($3, $1);
+  nb_champs += 1;$$ = inserer_tab_representation_type($3, $1, TYPE_STRUCT);
 }
          ;
 
@@ -198,7 +202,7 @@ declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
 declaration_procedure : PROCEDURE {
   nb_parametres = 0;
   /*On reserve une case pour le nombre de parametres*/
-  change_premier_indice(inserer_tab_representation_type(0,-1));
+  change_premier_indice(inserer_tab_representation_type(0,-1, PROC));
 
   /*Mise à jour des num de région*/
   num_region++;
@@ -223,7 +227,7 @@ declaration_fonction  : FONCTION {
   nb_parametres = 0;
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
-  change_premier_indice(inserer_tab_representation_type(0,0));
+  change_premier_indice(inserer_tab_representation_type(0,0,FCT));
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
@@ -255,7 +259,7 @@ liste_param : un_param {$$ = $1;}
 
 un_param : IDF DEUX_POINTS type_simple {
   nb_parametres+=1;
-  $$ = inserer_tab_representation_type($3, $1);
+  $$ = inserer_tab_representation_type($3, $1, FCT);
   inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
 }
          ;
@@ -287,6 +291,9 @@ instruction : affectation POINT_VIRGULE {
               else{
                 $1->numdecl = num_decl_appel;
                 $1->nature = A_APPEL_PROC;
+                if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+                  erreur_semantique++;
+                }
               }
 
               $$ = $1;
@@ -304,7 +311,7 @@ resultat_retourne : un_arg {$$ = $1;}
                   | {$$ = creer_arbre_vide();}
                   ;
 
-appel : IDF liste_arguments {
+appel : IDF {tab_arg_appel[0] = 0;} liste_arguments {
   $$ = concat_pere_fils(
     creer_noeud(
       $1,
@@ -313,8 +320,9 @@ appel : IDF liste_arguments {
       -1,
       -1
     ),
-    $2
+    $3
   );
+
 }
       ;
 
@@ -335,7 +343,10 @@ liste_args : un_arg {
            | {$$ = creer_arbre_vide();}
            ;
 
-un_arg : expression {$$ = $1;}
+un_arg : expression {$$ = $1;
+                     tab_arg_appel[0]++;
+
+                     tab_arg_appel[tab_arg_appel[0]]=type;}
        ;
 
  condition : SI expression ALORS liste_instructions sinon {
@@ -819,6 +830,9 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
      else{ // Réglages des élements restés en suspend durant l'appel
        $1->numdecl = num_decl_appel;
        $1->nature = A_APPEL_FCT;
+       if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+         erreur_semantique++;
+       }
      }
 
      $$ = $1;
@@ -937,6 +951,9 @@ composante_afficher : variable       {
     else{ // Réglages des élements restés en suspend durant l'appel
       $1->numdecl = num_decl_appel;
       $1->nature = A_APPEL_FCT;
+      if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+        erreur_semantique++;
+      }
     }
 
     $$ = $1;

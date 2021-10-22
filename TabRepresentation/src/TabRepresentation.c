@@ -18,8 +18,9 @@ void init_tab_representation_type(){
                  de champs/paramètre/dimension, OU le type de retour d'une fonction
               - num_lexico : vaut le numéro lexico du lexeme, OU -1 si on veut juste
                 remplir la/les premières caractéristique
+              - nature : précise la nature.
  ----------------------------------------------------------------------------- */
-int inserer_tab_representation_type(int type, int num_lexico){
+int inserer_tab_representation_type(int type, int num_lexico, int nature){
   int premier_indice; /*Indice dans la table des représentation de la première
                        case vide*/
   premier_indice =0;
@@ -29,18 +30,53 @@ int inserer_tab_representation_type(int type, int num_lexico){
     premier_indice++; /*On incrémente l'indice*/
   }
 
-  /*Valeur du premier champs : nombre de champs, ou le numéro du type d'un champs*/
-  TableRepresentation[premier_indice] = type;
+  switch (nature) {
+    case TYPE_STRUCT:
+      if(num_lexico == -1){ /*Signifie qu'on veut remplir la toute premiere case
+                            c-a-d le nombre de champs de la structure*/
+        TableRepresentation[premier_indice] = type;
 
+        return premier_indice;
 
-  /*Si on ne rempli pas les premières cases de la table avec nombre champs etc*/
-  if(num_lexico != -1){
-    TableRepresentation[premier_indice + 1] = num_lexico;
-    TableRepresentation[premier_indice + 2] = -11; /*Champs exec*/
-    return (premier_indice+2);
-  }else{
-    TableRepresentation[premier_indice + 1] = -11; /*Champs exec*/
-    return (premier_indice+1);
+      }else{ /*C'est qu'on est face à un champs de la structure */
+        TableRepresentation[premier_indice] = type;
+        TableRepresentation[premier_indice + 1] = num_lexico;
+        TableRepresentation[premier_indice + 2] = -11; /*Deplacement à l'execution*/
+        return (premier_indice+2);
+      }
+      break;
+    case TYPE_TAB:
+      /*Soit le type des éléments du tableau, soit la borne inf d'une des dimensions*/
+      TableRepresentation[premier_indice] = type;
+      /*Soit le nombre de dimension, soit la borne sup d'une des dimensions*/
+      TableRepresentation[premier_indice + 1] = num_lexico;
+
+      return (premier_indice+1);
+      break;
+    case FCT:
+      /*Soit le type de retour de la fonction, soit le type d'un des paramètres*/
+      TableRepresentation[premier_indice] = type;
+      /*Soit le nombre de paramètre, soit le numéro lexico d'un des paramètres*/
+      TableRepresentation[premier_indice+1] = num_lexico;
+
+      return (premier_indice+1);
+      break;
+    case PROC:
+      if(num_lexico == -1){ /*On veut rentrer le nombre de paramètre*/
+        TableRepresentation[premier_indice] = type;
+        return premier_indice;
+      }else{/*Sinon c'est qu'on est face à un parametre de la procédure*/
+        /*Le type de ce paramètre*/
+        TableRepresentation[premier_indice] = type;
+        /*Son numéro lexicographique*/
+        TableRepresentation[premier_indice + 1] = num_lexico;
+
+        return (premier_indice+1);
+      }
+      break;
+    default:
+      printf("Problème de nature dans l'insertion dans la table des représentations des types \n");
+      exit(-1);
   }
 
 }
@@ -62,7 +98,6 @@ void stocker_table_representation(int indice, int valeur){
  int valeur_tab_representation(int indice){
    return TableRepresentation[indice];
  }
-
 
 /*----------------------------------------------------------------------------
   Utilité : Affiche la partie rempli de la table des représentations des types
@@ -99,4 +134,28 @@ void change_premier_indice(int valeur){
 ----------------------------------------------------------------------------- */
 int valeur_tab_types(int indice){
   return TableRepresentation[indice];
+}
+
+/*----------------------------------------------------------------------------
+  Utilité : Vérifie la sémantique d'une structure : si i l n'y pas plusieurs
+  champs de même lexème.
+  Paramètre : - indice : indice que de la table dont on veut connaitre la donnée
+----------------------------------------------------------------------------- */
+int verif_surchage_struct(int premier_indice, int nb_ligne){
+  int i, j;
+  int nb_champs;
+  nb_champs = TableRepresentation[premier_indice];
+  for(i = 2 ; i<3*nb_champs +1; i= i+3){
+    for(j=2 ; j<3*nb_champs+1; j = j+3){
+      /*Si on a deux numéros lexicographique identique pour deux champs différents*/
+      if(i != j){
+        if(TableRepresentation[premier_indice+i] == TableRepresentation[premier_indice+j]){
+          printf("Erreur sémantique l %d : des champs de la structure on le même nom\n", nb_ligne);
+          return -1;
+        }
+      }
+    }
+  }
+
+  return 0;
 }
