@@ -19,6 +19,10 @@ proc camembert(coulant:int; pascoulant:bool; cremeux:char)
     {
     void;
     }
+    func cochon(coulant:int) return int
+    {
+    void;
+    }
 {
 
     void;

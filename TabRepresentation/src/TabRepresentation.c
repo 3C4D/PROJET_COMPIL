@@ -13,7 +13,7 @@ void init_tab_representation_type(){
 
 /*----------------------------------------------------------------------------
  Utilité : Insère les caractèristique d'un types, d'une procédure, ou d'une fonction
- et renvoie l'indice de la dernière case non vide
+ et renvoie l'indice de la premiere case qui était vide.
   Paramètres : - type : vaut le numéro de déclaration du type du lexème OU le nombre
                  de champs/paramètre/dimension, OU le type de retour d'une fonction
               - num_lexico : vaut le numéro lexico du lexeme, OU -1 si on veut juste
@@ -42,7 +42,7 @@ int inserer_tab_representation_type(int type, int num_lexico, int nature){
         TableRepresentation[premier_indice] = type;
         TableRepresentation[premier_indice + 1] = num_lexico;
         TableRepresentation[premier_indice + 2] = -11; /*Deplacement à l'execution*/
-        return (premier_indice+2);
+        return (premier_indice);
       }
       break;
     case TYPE_TAB:
@@ -51,7 +51,7 @@ int inserer_tab_representation_type(int type, int num_lexico, int nature){
       /*Soit le nombre de dimension, soit la borne sup d'une des dimensions*/
       TableRepresentation[premier_indice + 1] = num_lexico;
 
-      return (premier_indice+1);
+      return (premier_indice);
       break;
     case FCT:
       /*Soit le type de retour de la fonction, soit le type d'un des paramètres*/
@@ -59,7 +59,7 @@ int inserer_tab_representation_type(int type, int num_lexico, int nature){
       /*Soit le nombre de paramètre, soit le numéro lexico d'un des paramètres*/
       TableRepresentation[premier_indice+1] = num_lexico;
 
-      return (premier_indice+1);
+      return premier_indice;
       break;
     case PROC:
       if(num_lexico == -1){ /*On veut rentrer le nombre de paramètre*/
@@ -71,7 +71,7 @@ int inserer_tab_representation_type(int type, int num_lexico, int nature){
         /*Son numéro lexicographique*/
         TableRepresentation[premier_indice + 1] = num_lexico;
 
-        return (premier_indice+1);
+        return premier_indice;
       }
       break;
     default:

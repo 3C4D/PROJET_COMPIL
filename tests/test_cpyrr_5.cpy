@@ -25,6 +25,7 @@ var nbTerme : int;
     }
   return terme2;
 }
+
 proc fibo(numeroTerme:int)
 var terme1 : int;
 var terme2 : int;

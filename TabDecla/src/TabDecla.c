@@ -48,6 +48,8 @@ void init_tab_decla(){
                     courant
   Paramètres : - num_lexico : numéro lexicographique du lexeme courant
               - nature
+              - num_region_engendree : (Procédure ou fonction) numéro de la
+              région engendrée, -1 pour les autres nature.
               - num_region
               - num_represention_type : (Variable ou paramatère) numéro de
                 déclaration du type du lexème
@@ -55,8 +57,8 @@ void init_tab_decla(){
                la table des représentation
               - nb_ligne : numéro de la ligne à laquelle on est.
  -----------------------------------------------------------------------------*/
-int inserer_tab_declaration(int num_lexico, int nature, int num_region,
-                            int num_represention_type, int nb_ligne){
+int inserer_tab_declaration(int num_lexico, int nature,
+                           int num_region, int num_represention_type, int nb_ligne){
     int i;
     int num_declaration;
 
@@ -209,6 +211,17 @@ int inserer_tab_declaration(int num_lexico, int nature, int num_region,
 }
 
 /*----------------------------------------------------------------------------
+ Utilité : Rempli le champs exec pour une fonction/procédure avec le num_region_engendree
+  Paramètre :  num_region_engendree : numéro de la région engendrée par la
+              prodédure/fonction en question.
+ ----------------------------------------------------------------------------- */
+ void inserer_exec_tab_decla(int num_decla, int num_region_engendree){
+   TableDeclaration[num_decla].exec = num_region_engendree;
+ }
+
+
+
+/*----------------------------------------------------------------------------
  Utilité : Retourne le champs décription à l'indice donnée dans la table des
           déclarations.
   Paramètre : - indice : indice en question.
@@ -334,6 +347,9 @@ int num_decla(int num_lexico, int nature, int region_particuliere){
 
   return num_decla;
 }
+
+
+
 
 /*----------------------------------------------------------------------------
  Utilité : Renvoie le numéro de région d'une certaine déclaration

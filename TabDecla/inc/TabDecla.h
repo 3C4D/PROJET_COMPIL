@@ -41,7 +41,16 @@ void init_tab_decla();
               - nb_ligne : numéro de la ligne à laquelle on est.
  -----------------------------------------------------------------------------*/
 int inserer_tab_declaration(int num_lexico, int nature, int num_region,
-                            int num_represention_type, int nb_ligne);
+                            int num_represention_type,
+                              int nb_ligne);
+
+
+/*----------------------------------------------------------------------------
+Utilité : Rempli le champs exec pour une fonction/procédure avec le num_region_engendree
+Paramètre :  num_region_engendree : numéro de la région engendrée par la
+                                    prodédure/fonction en question.
+----------------------------------------------------------------------------- */
+void inserer_exec_tab_decla(int num_decla, int num_region_engendree);
 
 /*Affiche la table des déclarations*/
 void afficher_tab_declaration();

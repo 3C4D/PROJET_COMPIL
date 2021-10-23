@@ -20,6 +20,7 @@ int tab_arg_appel[40];
 int syntaxe_correcte = 1;
 int erreur_semantique = 0;
 int num_region = 0;
+int num_region_engendree;
 int diff = 0;
 
 int nb_parametres;
@@ -119,7 +120,7 @@ declaration : declaration_type
             ;
 
 declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
-  $$ = inserer_tab_declaration(
+  inserer_tab_declaration(
       $2,
       $4,
       tete_pile_region(),
@@ -132,7 +133,8 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
 suite_declaration_type : STRUCT {
     /*Réservation d'une case pour mettre le nombre de champs*/
     nb_champs = 0;
-    change_premier_indice(inserer_tab_representation_type(0, -1, TYPE_STRUCT));
+    change_premier_indice(inserer_tab_representation_type(-99, -1, TYPE_STRUCT));
+
 }
                         liste_champs FSTRUCT {
     /*Mise à jour de la première case, on retrouve l'indice de la première
@@ -148,14 +150,13 @@ suite_declaration_type : STRUCT {
       nb_dim = 0;
       /*On reserve 2cases, une pour le type des éléments, une pour le nombre de
       dimension*/
-      change_premier_indice(inserer_tab_representation_type(0,0, TYPE_TAB));
+      change_premier_indice(inserer_tab_representation_type(-99,-99, TYPE_TAB));
 }
 
                         dimension DE nom_type POINT_VIRGULE {
       /*Mise à jour des 2 premières cases*/
-      stocker_table_representation(premier_indice()-1, $5);
-      stocker_table_representation(premier_indice(), nb_dim);
-      change_premier_indice(premier_indice()-1);
+      stocker_table_representation(premier_indice(), $5);
+      stocker_table_representation(premier_indice()+1, nb_dim);
       $$ = TYPE_TAB;
 }
                        ;
@@ -193,57 +194,67 @@ type_simple : ENTIER {$$= 0;}
             ;
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
-  $$ = inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);
+   inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);
 }
                       ;
 
-declaration_procedure : PROCEDURE {
+declaration_procedure : PROCEDURE IDF {
   nb_parametres = 0;
   /*On reserve une case pour le nombre de parametres*/
-  change_premier_indice(inserer_tab_representation_type(0,-1, PROC));
+  change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
+
+  inserer_tab_declaration(
+      $2,
+      PROC,
+      tete_pile_region(),
+      premier_indice(),
+      nb_ligne
+    );
 
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
 }
-                        IDF liste_parametres {
+                      liste_parametres {
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), nb_parametres);
 
 }                   corps {
-  $$ = inserer_tab_declaration(
-      $3,
-      PROC,
-      tete_pile_region(depiler_pile_region()),
-      premier_indice(),
-      nb_ligne
-    );
+    num_region_engendree = tete_pile_region();
+    depiler_pile_region();
+
+   inserer_exec_tab_decla(num_decla($2, PROC, tete_pile_region()),num_region_engendree);
+
 }
                       ;
 
-declaration_fonction  : FONCTION {
+declaration_fonction  : FONCTION IDF{
   nb_parametres = 0;
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
-  change_premier_indice(inserer_tab_representation_type(0,0,FCT));
+  change_premier_indice(inserer_tab_representation_type(-99,-99,FCT));
+
+  inserer_tab_declaration(
+      $2,
+      FCT,
+      tete_pile_region(),
+      premier_indice(),
+      nb_ligne
+    );
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
 }
-                        IDF liste_parametres RETOURNE type_simple {
+                        liste_parametres RETOURNE type_simple {
 
   /*Mise à jour de la première case*/
-  stocker_table_representation(premier_indice() - 1, $6);
-  stocker_table_representation(premier_indice(), nb_parametres);
-  change_premier_indice(premier_indice()-1);
+  stocker_table_representation(premier_indice(), $6);
+  stocker_table_representation(premier_indice()+1, nb_parametres);
 }                   corps {
-  $$= inserer_tab_declaration(
-      $3,
-      FCT,
-      tete_pile_region(depiler_pile_region()),
-      premier_indice(),
-      nb_ligne
-    );
+  num_region_engendree = tete_pile_region();
+  depiler_pile_region();
+
+ inserer_exec_tab_decla(num_decla($2, FCT, tete_pile_region()),num_region_engendree);
 }
                       ;
 
@@ -257,7 +268,8 @@ liste_param : un_param {$$ = $1;}
 
 un_param : IDF DEUX_POINTS type_simple {
   nb_parametres+=1;
-  $$ = inserer_tab_representation_type($3, $1, FCT);
+
+  inserer_tab_representation_type($3, $1, FCT);
   inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
 }
          ;
@@ -1032,7 +1044,8 @@ int main(int argc, char *argv[]){
   else if(erreur_semantique){
     fprintf(
       stderr,
-      "\nLA SYNTAXE EST CORRECTE MAIS IL Y A %d ERREURS SEMANTIQUES\n"
+      "\nLA SYNTAXE EST CORRECTE MAIS IL Y A %d ERREURS SEMANTIQUES\n",
+      erreur_semantique
     );
   }
 
