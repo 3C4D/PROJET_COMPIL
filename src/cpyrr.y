@@ -14,26 +14,24 @@ int yyerror();
 
 extern int nb_ligne;
 
-int syntaxe_correcte = 1;
-int erreur_semantique = 0;
 int tab_var_format[40];
 int tab_arg_appel[40];
 
+int syntaxe_correcte = 1;
+int erreur_semantique = 0;
 int num_region = 0;
 int diff = 0;
 
 int nb_parametres;
 int nb_champs;
 int nb_dim;
+int aff_arbre = 0;
 
 // Variables aidant à la vérification sémantique des types (expressions, aff)
 int type_var_affectation = 0;
 int type_g = 0;
 int type_d = 0;
 int type = 0;
-
-int aff_arbre = 0;
-
 int numero_var = INIT;
 
 %}
@@ -132,19 +130,19 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
                  ;
 
 suite_declaration_type : STRUCT {
-      /*Réservation d'une case pour mettre le nombre de champs*/
-      nb_champs = 0;
-      change_premier_indice(inserer_tab_representation_type(0, -1, TYPE_STRUCT));
+    /*Réservation d'une case pour mettre le nombre de champs*/
+    nb_champs = 0;
+    change_premier_indice(inserer_tab_representation_type(0, -1, TYPE_STRUCT));
 }
                         liste_champs FSTRUCT {
-      /*Mise à jour de la première case, on retrouve l'indice de la première
-      case*/
+    /*Mise à jour de la première case, on retrouve l'indice de la première
+    case*/
 
-      stocker_table_representation(premier_indice(), nb_champs);
-      $$= TYPE_STRUCT;
-      if(verif_surchage_struct(premier_indice(),nb_ligne) == -1){
-        erreur_semantique++;
-      }
+    stocker_table_representation(premier_indice(), nb_champs);
+    $$= TYPE_STRUCT;
+    if(verif_surchage_struct(premier_indice(),nb_ligne) == -1){
+      erreur_semantique++;
+    }
 }
                        | TABLEAU {
       nb_dim = 0;
@@ -276,35 +274,35 @@ instruction : affectation POINT_VIRGULE {
             | lire POINT_VIRGULE {$$ = $1;}
             | appel POINT_VIRGULE {
 
-              // Un appel sans exploitation de la valeur de retour doit être une
-              // procedure, sinon erreur
-              int num_decl_appel = num_decla($1->numlex, PROC, -1);
+          // Un appel sans exploitation de la valeur de retour doit être une
+          // procedure, sinon erreur
+          int num_decl_appel = num_decla($1->numlex, PROC, -1);
 
-              if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
-                fprintf(
-                  stderr,
-                  "\nErreur l:%d -> procedure %s non déclarée.\n",
-                  nb_ligne,
-                  lexeme($1->numlex)
-                  );
-              }
-              else{
-                $1->numdecl = num_decl_appel;
-                $1->nature = A_APPEL_PROC;
-                if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
-                  erreur_semantique++;
-                }
-              }
+          if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
+            fprintf(
+              stderr,
+              "\nErreur l:%d -> procedure %s non déclarée.\n",
+              nb_ligne,
+              lexeme($1->numlex)
+              );
+          }
+          else{
+            $1->numdecl = num_decl_appel;
+            $1->nature = A_APPEL_PROC;
+            if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+              erreur_semantique++;
+            }
+          }
 
-              $$ = $1;
-            }
-            | VIDE POINT_VIRGULE {$$ = creer_noeud(-1, -1, A_VIDE, -1, -1.0);}
-            | RETOURNE resultat_retourne POINT_VIRGULE {
-              $$ = concat_pere_fils(
-                  creer_noeud(-1, -1, A_RETOURNE, -1, -1.0),
-                  $2
-                );
-            }
+          $$ = $1;
+        }
+        | VIDE POINT_VIRGULE {$$ = creer_noeud(-1, -1, A_VIDE, -1, -1.0);}
+        | RETOURNE resultat_retourne POINT_VIRGULE {
+          $$ = concat_pere_fils(
+              creer_noeud(-1, -1, A_RETOURNE, -1, -1.0),
+              $2
+            );
+        }
             ;
 
 resultat_retourne : un_arg {$$ = $1;}
@@ -463,7 +461,7 @@ variable : IDF {
           // On retient le type et on sort
           type = valeur_tab_types(indice_lexeme_champ-1);
         }
-        indice_lexeme_champ += 2;
+        indice_lexeme_champ += 3;
         i++;
       }
 
@@ -1029,12 +1027,12 @@ int main(int argc, char *argv[]){
   yyparse();
 
   if(!syntaxe_correcte){
-    printf("\nSYNTAXE INCORRECTE, COMPILATION IMPOSSIBLE\n\n");
+    printf("\nLA SYNTAXE N'EST PAS RESPECTEE, COMPILATION IMPOSSIBLE\n\n");
   }
   else if(erreur_semantique){
     fprintf(
       stderr,
-      "\nSYNTAXE CORRECTE MAIS ERREURS SEMANTIQUES, COMPILATION IMPOSSIBLE\n\n"
+      "\nLA SYNTAXE EST CORRECTE MAIS IL Y A %d ERREURS SEMANTIQUES\n"
     );
   }
 
