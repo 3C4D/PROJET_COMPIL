@@ -2,8 +2,9 @@
 
 ## Utilisation du Makefile
 
-La commande `make` va compiler l'exécutable bin/cpyrr qui permettra de pouvoir
-être utilisé afin de compiler un programme CPYRR
+La commande `make` va compiler l'exécutable bin/cpyrr qui permettra compiler un
+programme dans le langage CPYRR et l'exécutable VM/bin/machine_virtuelle qui
+permettra d'exécuter le programme compilé.
 
 ## Utilisation du compilateur
 
