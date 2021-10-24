@@ -25,7 +25,6 @@ var nbTerme : int;
     }
   return terme2;
 }
-
 proc fibo(numeroTerme:int)
 var terme1 : int;
 var terme2 : int;
@@ -53,14 +52,14 @@ var x42b : int;
 var y12 : bool;
 var variableInutile : float;
 var variableInutile2 : char;
-type monTab56 : array [5_6,2_7] of int;
+type monTab56 : array [5_6,7_2] of int;
 type maStruct88 : struct
-  ch1:int
+  ch1:str[50]
 fstruct
 type maStruct89 : struct
   ch1:int;
   ch2:char;
-  ch3:monTab56;
+  ch3:str[60];
   ch4:maStruct88
 fstruct
 

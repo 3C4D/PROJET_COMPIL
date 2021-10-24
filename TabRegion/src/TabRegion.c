@@ -40,15 +40,15 @@ void inserer_arbre_tab_region(arbre a){
 /*Affiche la table des régions*/
 void afficher_tab_region(){
   int i;
-  printf("\n######################################   TABLE DES REGIONS   ##############################################\n");
-  printf("/----------+--------+-----+-------+\\\n");
-  printf("Num région | Taille | NIS | Arbre \n");
-  printf("+----------+--------+-----+-------+\n" );
+  printf("\n######   TABLE DES REGIONS   ######\n");
+  printf("/------------+--------+-----+-------+\\\n");
+  printf("| Num région | Taille | NIS | Arbre |\n");
+  printf("+------------+--------+-----+-------+\n" );
   i=0;
   while(TableRegion[i].taille != -1){
-    printf("%-11d | %-8d | %-5d | \n",i, TableRegion[i].taille, TableRegion[i].NIS);
+    printf("|     %-6d |   %-4d |  %-2d |       |\n",i, TableRegion[i].taille, TableRegion[i].NIS);
     i++;
   }
-  printf("\\----------+--------+-----+-------/\n" );
+  printf("\\------------+--------+-----+-------/\n" );
 
 }

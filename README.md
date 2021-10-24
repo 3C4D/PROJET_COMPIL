@@ -7,11 +7,15 @@ La commande `make` va compiler l'exécutable bin/cpyrr qui permettra de pouvoir
 
 ## Utilisation du compilateur
 
-### Options (Cf fonction d'usage (option h ou H))
-  - argument 1 :
-    - 1 (affiche la table lexicographique)
-    - h ou H (affiche l'usage correct du compilateur)
-  - argument 2 : 1 (affiche la table des déclarations)
-  - argument 3 : 1 (affiche la table de représentation des types)
-  - argument 4 : 1 (affiche la table des régions)
-  - argument 5 : 1 (affiche les arbres)
+### Options
+```
+./bin/cpyrr [OPTIONS] <prog_cpyrr> <output>
+     * [OPTIONS] :
+         * l : afficher table decla
+         * d : afficher table decla
+         * t : afficher table types
+         * r : afficher table regions
+         * a : afficher arbres
+     * <prog_cpyrr> : programme cpyrr
+     * <output> : nom du programme généré
+```

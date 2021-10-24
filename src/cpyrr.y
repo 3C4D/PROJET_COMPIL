@@ -8,12 +8,17 @@
 #include "../TabDecla/inc/TabDecla.h"
 #include "../inc/macros_arbres.h"
 #include "../TabRegion/inc/TabRegion.h"
+#include "../GenTexte/inc/GenTexte.h"
 
 char *yytext;
 int yylex();
 int yyerror();
 
 extern int nb_ligne;
+extern FILE *yyin;
+
+// Flags d'affichage
+int flags[] = {0, 0, 0, 0, 0};
 
 int tab_var_format[40];
 int tab_arg_appel[40];
@@ -28,7 +33,6 @@ int diff = 0;
 int nb_parametres;
 int nb_champs;
 int nb_dim;
-int aff_arbre = 0;
 
 // Variables aidant à la vérification sémantique des types (expressions, aff)
 int type_var_affectation = 0;
@@ -90,7 +94,7 @@ liste_declarations : declaration
 
 liste_instructions : DEBUT suite_liste_inst FIN {
   $$ = $2;
-  if(aff_arbre){
+  if(flags[4]){
     printf("######## LISTE D'INSTRUCTION ########\n");
     afficher_arbre($$);
     printf("\n");
@@ -1040,6 +1044,7 @@ liste_variables : variable VIRGULE liste_variables {
 int yyerror(){
   fprintf(stderr, "\nErreur de syntaxe ligne %d : %s\n\n", nb_ligne, yytext);
   syntaxe_correcte = 0;
+  return -1;
 }
 
 int main(int argc, char *argv[]){
@@ -1049,19 +1054,33 @@ int main(int argc, char *argv[]){
   init_tab_representation_type();
   init_tab_region();
 
-  // L'utilisateur souhaite afficher l'usage correct' du compilateur
-  if(argc > 1 && (argv[1][0] == 'h' || argv[1][0] == 'H')){
+  if(argc < 3 || argc > 4){
     usage(argv[0]);
+    exit(-1);
   }
-  // L'utilisateur souhaite afficher les arbres produits par le compilateur
-  if(argc > 5 && atoi(argv[5]) == 1){
-    aff_arbre++;
+
+  // On essaye d'ouvrir le dernier argument passé au compilateur
+  if(argc == 3){
+    yyin = fopen(argv[1], "r");
+  }
+  else{
+    yyin = fopen(argv[2], "r");
+    analyse_options(argv[1], flags);
+  }
+  if(yyin == NULL){
+    fprintf(
+      stderr,
+      "%s n'est pas un fichier, arret de la compilation\n",
+      argv[argc-2]
+    );
+    exit(-1);
   }
 
   yyparse();
 
   if(!syntaxe_correcte){
     printf("\nLA SYNTAXE N'EST PAS RESPECTEE, COMPILATION IMPOSSIBLE\n\n");
+    exit(-1);
   }
   else if(erreur_semantique){
     fprintf(
@@ -1069,27 +1088,32 @@ int main(int argc, char *argv[]){
       "\nLA SYNTAXE EST CORRECTE MAIS IL Y A %d ERREURS SEMANTIQUES\n",
       erreur_semantique
     );
+    exit(-1);
   }
 
   // L'utilisateur souhaite afficher la table lexicographique
-  if(argc > 1 && atoi(argv[1]) == 1){
+  if(flags[0]){
     affiche_table_lexico();
     printf("\n");
   }
   // L'utilisateur souhaite afficher la table des déclarations
-  if(argc > 2 && atoi(argv[2]) == 1){
+  if(flags[1]){
     afficher_tab_declaration();
     printf("\n");
   }
   // L'utilisateur souhaite afficher la table de représentations des types
-  if(argc > 3 && atoi(argv[3]) == 1){
+  if(flags[2]){
     afficher_tab_representation();
     printf("\n");
   }
 
   // L'utilisateur souhaite afficher la table des régions
-  if(argc > 4 && atoi(argv[4]) == 1){
+  if(flags[3]){
     afficher_tab_region();
     printf("\n");
   }
+
+  // Génération du texte intermédiaire
+  generer_texte_intermediaire(argv[3]);
+  exit(0);
 }

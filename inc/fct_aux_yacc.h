@@ -55,24 +55,27 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne);
 // booleen
 int verif_type_expr_bool(int type_g, int type_d, int nb_ligne);
 
-//Vérifie si un appel de fonction ou procédure, est correctement fait
+// Vérifie si un appel de fonction ou procédure, est correctement fait
 int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne);
 
-//Retourne la valeur du dernier déplacement
+// Retourne la valeur du dernier déplacement
 int deplacement();
 
-//Modifie la valeur du champs deplacement_var
+// Modifie la valeur du champs deplacement_var
 void change_deplacement(int valeur);
 
-//Retourne la valeur du dernier deplacement_struct
+// Retourne la valeur du dernier deplacement_struct
 int deplacement_struct();
 
-//Modifie la valeur du champs deplacement_struct
+// Modifie la valeur du champs deplacement_struct
 void change_deplacement_struct(int valeur);
 
-//Modifie la valeur de nis_region
+// Modifie la valeur de nis_region
 void change_NIS(int valeur);
 
-//Renvoie la valeur de nis_region
+// Renvoie la valeur de nis_region
 int nis();
+
+// Analyse les options passées au compilateur et lève les flags adéquats
+void analyse_options(char *s, int *flags);
 #endif

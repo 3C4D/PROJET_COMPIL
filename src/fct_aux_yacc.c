@@ -9,29 +9,15 @@
 
 // Fonction d'usage du compilateur
 void usage(char *s){
-  fprintf(
-    stderr,
-    "\n%s [aff_lex] [aff_decl] [aff_type] [aff_region] [aff_arbres] < <prog_cpyrr>\n",
-    s
-  );
-  fprintf(
-    stderr,
-    "     * [aff_lex]    1 : afficher table lexico\n"
-  );
-  fprintf(
-    stderr,
-    "     * [aff_decl]   1 : afficher table decla\n"
-  );
-  fprintf(
-    stderr,
-    "     * [aff_types]  1 : afficher table types\n"
-  );
-  fprintf(
-    stderr,
-    "     * [aff_region]  1 : afficher table régions\n"
-  );
-  fprintf(stderr, "     * [aff_arbres] 1 : afficher arbres\n");
-  fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n\n");
+  fprintf(stderr,"\n%s [OPTIONS] <prog_cpyrr> <output>\n", s);
+  fprintf(stderr,"     * [OPTIONS] :\n");
+  fprintf(stderr,"         * l : afficher table decla\n");
+  fprintf(stderr,"         * d : afficher table decla\n");
+  fprintf(stderr,"         * t : afficher table types\n");
+  fprintf(stderr,"         * r : afficher table regions\n");
+  fprintf(stderr,"         * a : afficher arbres\n");
+  fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n");
+  fprintf(stderr, "     * <output> : nom du programme généré\n\n");
   exit(-1);
 }
 
@@ -174,8 +160,6 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
   int nb_arg;
   int i;
 
-
-
   if(nature(num_decla) ==  PROC){
       nb_arg = valeur_tab_representation(valeur_description_tab_decla(num_decla));
       indice = valeur_description_tab_decla(num_decla)+1;
@@ -229,4 +213,30 @@ void change_NIS(int valeur){
 //Renvoie la valeur de nis_region
 int nis(){
   return nis_region;
+}
+
+// Analyse les options passées au compilateur et lève les flags adéquats
+void analyse_options(char *s, int *flags){
+  while(*s != '\0'){
+    switch(*s){
+      case 'l':
+        flags[0]++;
+        break;
+      case 'd':
+        flags[1]++;
+        break;
+      case 't':
+        flags[2]++;
+        break;
+      case 'r':
+        flags[3]++;
+        break;
+      case 'a':
+        flags[4]++;
+        break;
+      default :
+        break;
+    }
+    s++;
+  }
 }
