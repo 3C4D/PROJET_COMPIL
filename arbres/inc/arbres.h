@@ -22,7 +22,7 @@ arbre creer_arbre_vide();
 int est_vide(arbre a);
 
 // Crée un noeud avec ses caractéristiques
-arbre creer_noeud(int numlex, int numdecl, int nature, int val_e, int val_r);
+arbre creer_noeud(int numlex, int numdecl, int nature, int val_e, double val_r);
 
 // Concaténation du pere et du fils
 arbre concat_pere_fils(arbre pere, arbre fils);
