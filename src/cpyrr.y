@@ -80,8 +80,8 @@ int numero_var = INIT;
 %%
 programme : PROG {change_NIS(1); change_deplacement(0);} corps {$$ = $3; inserer_tab_region(deplacement(), 0);}
 
-corps : liste_declarations liste_instructions {$$ = $2;}
-      | liste_instructions {$$ = $1;}
+corps : liste_declarations liste_instructions {$$ = $2; inserer_arbre_tab_region($2);}
+      | liste_instructions {$$ = $1;  inserer_arbre_tab_region($1);}
       ;
 
 liste_declarations : declaration

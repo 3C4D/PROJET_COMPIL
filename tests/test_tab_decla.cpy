@@ -20,13 +20,15 @@ proc camembert(coulant:int; pascoulant:bool; cremeux:char)
     proc violette(koli : int)
     var coucou : float;
     {
-    void;
+    coucou := 4.3;
     }
     var coucou3 : int;
     func cochon(coulant:int) return int
     var lol:coucou;
     {
-    void;
+    if(coulant>0) then{
+     void;
+    }
     }
     var essaie:int;
 {
