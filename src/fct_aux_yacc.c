@@ -195,3 +195,23 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
   }
   return 0;
 }
+
+//Retourne la valeur du dernier déplacement
+int deplacement(){
+  return deplacement_var;
+}
+
+//Modifie la valeur du champs deplacement_var
+void change_deplacement(int valeur){
+  deplacement_var = valeur;
+}
+
+//Retourne la valeur du dernier deplacement_struct
+int deplacement_struct(){
+  return deplacement_structure;
+}
+
+//Modifie la valeur du champs deplacement_struct
+void change_deplacement_struct(int valeur){
+  deplacement_structure = valeur;
+}

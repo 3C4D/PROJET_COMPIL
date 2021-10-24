@@ -61,6 +61,9 @@ int inserer_tab_declaration(int num_lexico, int nature,
                            int num_region, int num_represention_type, int nb_ligne){
     int i;
     int num_declaration;
+    int taille;
+    int nb_dim;
+    int nb_champs;
 
     /*-------------------------------------------------------------------------
       On va déterminer si le lexème va dans la table primaire, ou dans la zone
@@ -164,9 +167,28 @@ int inserer_tab_declaration(int num_lexico, int nature,
     switch (nature) {
       case TYPE_STRUCT:
         TableDeclaration[num_declaration].nature = 1;
+
+        /*On calcule la taille de la structure*/
+        nb_champs = valeur_tab_representation(num_represention_type);
+        taille = 0;
+
+        for(i=1; i<nb_champs*3; i = i+3){
+            /*On ajoute la taille du type de chaque champs*/
+            taille = taille + valeur_exec_tab_decla((valeur_tab_representation(num_represention_type + i)));
+        }
+
         break;
       case TYPE_TAB:
         TableDeclaration[num_declaration].nature = 2;
+
+        /*On calcule la taille du tableau*/
+        taille = valeur_exec_tab_decla(valeur_tab_representation(num_represention_type)); //Taille du type des éléments du tableau
+        nb_dim = valeur_tab_representation(num_represention_type + 1);
+
+        for(i=2; i<nb_dim*2 + 1; i= i+2){
+          taille = taille*(valeur_tab_representation(num_represention_type +i +1) - valeur_tab_representation(num_represention_type + i ) +1 );
+        }
+
         break;
       case VAR:
         TableDeclaration[num_declaration].nature = 3;
@@ -193,7 +215,7 @@ int inserer_tab_declaration(int num_lexico, int nature,
 
     if((nature == TYPE_STRUCT) || (nature == TYPE_TAB)){
       TableDeclaration[num_declaration].description = num_represention_type;
-      TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
+      TableDeclaration[num_declaration].exec = taille;  /*Taille de la structure, ou du tableau*/
 
     }else if((nature == VAR) || (nature == PARAMETRE)){
       TableDeclaration[num_declaration].description = num_represention_type;
@@ -365,6 +387,14 @@ int region(int num_decla){
  ----------------------------------------------------------------------------- */
 int nature(int num_decla){
   return TableDeclaration[num_decla].nature;
+}
+
+/*----------------------------------------------------------------------------
+ Utilité : Renvoie le champs execution d'une certaine déclaration
+  Paramètre : - num_decla : numéro de déclaration en question
+ ----------------------------------------------------------------------------- */
+int valeur_exec_tab_decla(int num_decla){
+  return TableDeclaration[num_decla].exec;
 }
 
 /*----------------------------------------------------------------------------

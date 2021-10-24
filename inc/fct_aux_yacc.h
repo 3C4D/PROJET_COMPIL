@@ -19,6 +19,8 @@
 
 int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];
+int deplacement_var;
+int deplacement_structure;
 
 // Fonction d'usage du compilateur
 void usage(char *s);
@@ -52,5 +54,17 @@ int verif_type_expr_bool(int type_g, int type_d, int nb_ligne);
 
 //Vérifie si un appel de fonction ou procédure, est correctement fait
 int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne);
+
+//Retourne la valeur du dernier déplacement
+int deplacement();
+
+//Modifie la valeur du champs deplacement_var
+void change_deplacement(int valeur);
+
+//Retourne la valeur du dernier deplacement_struct
+int deplacement_struct();
+
+//Modifie la valeur du champs deplacement_struct
+void change_deplacement_struct(int valeur);
 
 #endif

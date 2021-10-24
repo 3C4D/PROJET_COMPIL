@@ -21,6 +21,7 @@ int syntaxe_correcte = 1;
 int erreur_semantique = 0;
 int num_region = 0;
 int num_region_engendree;
+int num_declaration;
 int diff = 0;
 
 int nb_parametres;
@@ -76,7 +77,7 @@ int numero_var = INIT;
 %type<typ1> resultat_retourne
 
 %%
-programme : PROG corps {$$ = $2;}
+programme : PROG corps {$$ = $2; change_deplacement(0); /*On initialise à 0*/}
 
 corps : liste_declarations liste_instructions {$$ = $2;}
       | liste_instructions {$$ = $1;}
@@ -135,6 +136,8 @@ suite_declaration_type : STRUCT {
     nb_champs = 0;
     change_premier_indice(inserer_tab_representation_type(-99, -1, TYPE_STRUCT));
 
+    /*On remet à 0 pour dire qu'on est dans une nouvelle structure*/
+    change_deplacement_struct(0);
 }
                         liste_champs FSTRUCT {
     /*Mise à jour de la première case, on retrouve l'indice de la première
@@ -178,7 +181,10 @@ liste_champs : un_champ {$$ = $1;}
              ;
 
 un_champ : IDF DEUX_POINTS nom_type {
-  nb_champs += 1;$$ = inserer_tab_representation_type($3, $1, TYPE_STRUCT);
+  nb_champs += 1; $$ = inserer_tab_representation_type($3, $1, TYPE_STRUCT);
+  stocker_table_representation($$+2, deplacement_struct());
+  change_deplacement_struct(deplacement_struct() + valeur_exec_tab_decla($3));
+  printf("%d \n", deplacement_struct());
 }
          ;
 
@@ -194,7 +200,9 @@ type_simple : ENTIER {$$= 0;}
             ;
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
-   inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);
+   num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);
+   inserer_exec_tab_decla(num_declaration, deplacement());
+   change_deplacement(deplacement() + valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }
                       ;
 
@@ -202,6 +210,8 @@ declaration_procedure : PROCEDURE IDF {
   nb_parametres = 0;
   /*On reserve une case pour le nombre de parametres*/
   change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
+  /*On remet à 0 la champs déplacement_var*/
+  change_deplacement(0);
 
   inserer_tab_declaration(
       $2,
@@ -223,6 +233,9 @@ declaration_procedure : PROCEDURE IDF {
     num_region_engendree = tete_pile_region();
     depiler_pile_region();
 
+    /*On remet le deplacement à 0 car on sort de la région*/
+    change_deplacement(0);
+
    inserer_exec_tab_decla(num_decla($2, PROC, tete_pile_region()),num_region_engendree);
 
 }
@@ -233,6 +246,9 @@ declaration_fonction  : FONCTION IDF{
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
   change_premier_indice(inserer_tab_representation_type(-99,-99,FCT));
+  /*On remet à 0 la champs déplacement_var*/
+  change_deplacement(0);
+
 
   inserer_tab_declaration(
       $2,
@@ -254,6 +270,9 @@ declaration_fonction  : FONCTION IDF{
   num_region_engendree = tete_pile_region();
   depiler_pile_region();
 
+  /*On remet le deplacement à 0 car on sort de la région*/
+  change_deplacement(0);
+
  inserer_exec_tab_decla(num_decla($2, FCT, tete_pile_region()),num_region_engendree);
 }
                       ;
@@ -270,7 +289,9 @@ un_param : IDF DEUX_POINTS type_simple {
   nb_parametres+=1;
 
   inserer_tab_representation_type($3, $1, FCT);
-  inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
+  num_declaration = inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
+  inserer_exec_tab_decla(num_declaration, deplacement());
+  change_deplacement(deplacement() + valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }
          ;
 

@@ -91,9 +91,17 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
  int nature(int num_decla);
 
  /*----------------------------------------------------------------------------
+  Utilité : Renvoie le champs execution d'une certaine déclaration
+   Paramètre : - num_decla : numéro de déclaration en question
+  ----------------------------------------------------------------------------- */
+ int valeur_exec_tab_decla(int num_decla);
+
+ /*----------------------------------------------------------------------------
   Utilité :  Renvoie le numéro de déclaration d'une variable
    Paramètre : - numlex : numéro léxicographique du lexeme
   ----------------------------------------------------------------------------- */
  int num_decla_variable(int numlex);
+
+
 
 #endif
