@@ -13,4 +13,5 @@ La commande `make` va compiler l'exécutable bin/cpyrr qui permettra de pouvoir
     - h ou H (affiche l'usage correct du compilateur)
   - argument 2 : 1 (affiche la table des déclarations)
   - argument 3 : 1 (affiche la table de représentation des types)
-  - argument 4 : 1 (affiche les arbres)
+  - argument 4 : 1 (affiche la table des régions)
+  - argument 5 : 1 (affiche les arbres)

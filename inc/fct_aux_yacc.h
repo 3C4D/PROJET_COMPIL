@@ -3,6 +3,8 @@
 #ifndef FCT_AUX_YACC_H_
 #define FCT_AUX_YACC_H_
 
+#include "../TabRegion/inc/TabRegion.h"
+
 #define MAX_REGION 40
 #define MAX_FORMAT 40
 
@@ -19,8 +21,9 @@
 
 int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];
-int deplacement_var;
+int deplacement_var[MAX_REGION];
 int deplacement_structure;
+int nis_region;
 
 // Fonction d'usage du compilateur
 void usage(char *s);
@@ -67,4 +70,9 @@ int deplacement_struct();
 //Modifie la valeur du champs deplacement_struct
 void change_deplacement_struct(int valeur);
 
+//Modifie la valeur de nis_region
+void change_NIS(int valeur);
+
+//Renvoie la valeur de nis_region
+int nis();
 #endif

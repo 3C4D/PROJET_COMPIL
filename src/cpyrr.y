@@ -7,6 +7,7 @@
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabDecla/inc/TabDecla.h"
 #include "../inc/macros_arbres.h"
+#include "../TabRegion/inc/TabRegion.h"
 
 char *yytext;
 int yylex();
@@ -77,7 +78,7 @@ int numero_var = INIT;
 %type<typ1> resultat_retourne
 
 %%
-programme : PROG corps {$$ = $2; change_deplacement(0); /*On initialise à 0*/}
+programme : PROG {change_NIS(1); change_deplacement(0);} corps {$$ = $3; inserer_tab_region(deplacement(), 0);}
 
 corps : liste_declarations liste_instructions {$$ = $2;}
       | liste_instructions {$$ = $1;}
@@ -184,7 +185,7 @@ un_champ : IDF DEUX_POINTS nom_type {
   nb_champs += 1; $$ = inserer_tab_representation_type($3, $1, TYPE_STRUCT);
   stocker_table_representation($$+2, deplacement_struct());
   change_deplacement_struct(deplacement_struct() + valeur_exec_tab_decla($3));
-  printf("%d \n", deplacement_struct());
+
 }
          ;
 
@@ -202,7 +203,7 @@ type_simple : ENTIER {$$= 0;}
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
    num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);
    inserer_exec_tab_decla(num_declaration, deplacement());
-   change_deplacement(deplacement() + valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
+   change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }
                       ;
 
@@ -210,8 +211,6 @@ declaration_procedure : PROCEDURE IDF {
   nb_parametres = 0;
   /*On reserve une case pour le nombre de parametres*/
   change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
-  /*On remet à 0 la champs déplacement_var*/
-  change_deplacement(0);
 
   inserer_tab_declaration(
       $2,
@@ -224,20 +223,22 @@ declaration_procedure : PROCEDURE IDF {
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
+  change_NIS(1); //Car on rentre dans une région
+
 }
                       liste_parametres {
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), nb_parametres);
 
 }                   corps {
-    num_region_engendree = tete_pile_region();
-    depiler_pile_region();
+   num_region_engendree = tete_pile_region();
+   change_NIS(-1); //Car on sort d'une région
+   inserer_tab_region(deplacement(), nis());
 
-    /*On remet le deplacement à 0 car on sort de la région*/
-    change_deplacement(0);
+   depiler_pile_region();
+
 
    inserer_exec_tab_decla(num_decla($2, PROC, tete_pile_region()),num_region_engendree);
-
 }
                       ;
 
@@ -246,9 +247,6 @@ declaration_fonction  : FONCTION IDF{
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
   change_premier_indice(inserer_tab_representation_type(-99,-99,FCT));
-  /*On remet à 0 la champs déplacement_var*/
-  change_deplacement(0);
-
 
   inserer_tab_declaration(
       $2,
@@ -257,9 +255,12 @@ declaration_fonction  : FONCTION IDF{
       premier_indice(),
       nb_ligne
     );
+
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
+  change_NIS(1); //On ajoute un niveau d'imbrication car on rentre dans une nouvelle région
+
 }
                         liste_parametres RETOURNE type_simple {
 
@@ -268,12 +269,11 @@ declaration_fonction  : FONCTION IDF{
   stocker_table_representation(premier_indice()+1, nb_parametres);
 }                   corps {
   num_region_engendree = tete_pile_region();
+  change_NIS(-1); //Car on sort d'une région
+  inserer_tab_region(deplacement(), nis());
   depiler_pile_region();
 
-  /*On remet le deplacement à 0 car on sort de la région*/
-  change_deplacement(0);
-
- inserer_exec_tab_decla(num_decla($2, FCT, tete_pile_region()),num_region_engendree);
+  inserer_exec_tab_decla(num_decla($2, FCT, tete_pile_region()),num_region_engendree);
 }
                       ;
 
@@ -291,7 +291,7 @@ un_param : IDF DEUX_POINTS type_simple {
   inserer_tab_representation_type($3, $1, FCT);
   num_declaration = inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
   inserer_exec_tab_decla(num_declaration, deplacement());
-  change_deplacement(deplacement() + valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
+  change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }
          ;
 
@@ -1047,13 +1047,14 @@ int main(int argc, char *argv[]){
   init_table_lexico();
   init_tab_decla();
   init_tab_representation_type();
+  init_tab_region();
 
   // L'utilisateur souhaite afficher l'usage correct' du compilateur
   if(argc > 1 && (argv[1][0] == 'h' || argv[1][0] == 'H')){
     usage(argv[0]);
   }
   // L'utilisateur souhaite afficher les arbres produits par le compilateur
-  if(argc > 4 && atoi(argv[4]) == 1){
+  if(argc > 5 && atoi(argv[5]) == 1){
     aff_arbre++;
   }
 
@@ -1083,6 +1084,12 @@ int main(int argc, char *argv[]){
   // L'utilisateur souhaite afficher la table de représentations des types
   if(argc > 3 && atoi(argv[3]) == 1){
     afficher_tab_representation();
+    printf("\n");
+  }
+
+  // L'utilisateur souhaite afficher la table des régions
+  if(argc > 4 && atoi(argv[4]) == 1){
+    afficher_tab_region();
     printf("\n");
   }
 }

@@ -5,12 +5,13 @@
 #include "../inc/fct_aux_yacc.h"
 #include "../TabDecla/inc/TabDecla.h"
 #include "../TabRepresentation/inc/TabRepresentation.h"
+#include "../TabRegion/inc/TabRegion.h"
 
 // Fonction d'usage du compilateur
 void usage(char *s){
   fprintf(
     stderr,
-    "\n%s [aff_lex] [aff_decl] [aff_type] [aff_arbres] < <prog_cpyrr>\n",
+    "\n%s [aff_lex] [aff_decl] [aff_type] [aff_region] [aff_arbres] < <prog_cpyrr>\n",
     s
   );
   fprintf(
@@ -24,6 +25,10 @@ void usage(char *s){
   fprintf(
     stderr,
     "     * [aff_types]  1 : afficher table types\n"
+  );
+  fprintf(
+    stderr,
+    "     * [aff_region]  1 : afficher table régions\n"
   );
   fprintf(stderr, "     * [aff_arbres] 1 : afficher arbres\n");
   fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n\n");
@@ -198,12 +203,12 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
 
 //Retourne la valeur du dernier déplacement
 int deplacement(){
-  return deplacement_var;
+  return deplacement_var[tete_pile_region()];
 }
 
 //Modifie la valeur du champs deplacement_var
 void change_deplacement(int valeur){
-  deplacement_var = valeur;
+  deplacement_var[tete_pile_region()] += valeur;
 }
 
 //Retourne la valeur du dernier deplacement_struct
@@ -214,4 +219,14 @@ int deplacement_struct(){
 //Modifie la valeur du champs deplacement_struct
 void change_deplacement_struct(int valeur){
   deplacement_structure = valeur;
+}
+
+//Modifie la valeur de nis_region
+void change_NIS(int valeur){
+  nis_region += valeur;
+}
+
+//Renvoie la valeur de nis_region
+int nis(){
+  return nis_region;
 }

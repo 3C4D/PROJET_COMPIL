@@ -1,22 +1,18 @@
 # TOUT POUR LA TABLE LEXICOGRAPHIQUE
 SRC_DIR_TABLEX := TabLexico/src
 OBJ_DIR_TABLEX := TabLexico/obj
-EXE_TABLEX := $(BIN_DIR_TABLEX)/TabLexico_test
 
 # TOUT POUT LA TABLE DES DECLARATION
 SRC_DIR_TABDECLA := TabDecla/src
 OBJ_DIR_TABDECLA := TabDecla/obj
-EXE_TABDECLA := $(BIN_DIR_TABDECLA)/TabDecla_test
 
 # TOUT POUT LA TABLE DE REPRESENTATION DES TYPES
 SRC_DIR_TABTYPES := TabRepresentation/src
 OBJ_DIR_TABTYPES := TabRepresentation/obj
-EXE_TABTYPES := $(BIN_DIR_TABTYPES)/TabRepresentation_test
 
 # TOUT POUT LA TABLE DES REGION
-SRC_DIR_TABDECL := tabdecl/src
-OBJ_DIR_TABDECL := tabdecl/obj
-EXE_REGION := $(BIN_DIR_REGION)/TabRegion_test
+SRC_DIR_TABREG := TabRegion/src
+OBJ_DIR_TABREG := TabRegion/obj
 
 # TOUT POUR LES ARBRES
 SRC_DIR_ARBRES := arbres/src
@@ -41,8 +37,8 @@ OBJ_TABDECLA := $(SRC_TABDECLA:$(SRC_DIR_TABDECLA)/%.c=$(OBJ_DIR_TABDECLA)/%.o)
 SRC_TABTYPES := $(wildcard $(SRC_DIR_TABTYPES)/*.c)
 OBJ_TABTYPES := $(SRC_TABTYPES:$(SRC_DIR_TABTYPES)/%.c=$(OBJ_DIR_TABTYPES)/%.o)
 
-SRC_REGION := $(wildcard $(SRC_DIR_REGION)/*.c)
-OBJ_REGION := $(SRC_REGION:$(SRC_DIR_REGION)/%.c=$(OBJ_DIR_REGION)/%.o)
+SRC_TABREG := $(wildcard $(SRC_DIR_TABREG)/*.c)
+OBJ_TABREG := $(SRC_TABREG:$(SRC_DIR_TABREG)/%.c=$(OBJ_DIR_TABREG)/%.o)
 
 SRC_TABDECLA := $(wildcard $(SRC_DIR_TABDECLA)/*.c)
 OBJ_TABDECLA := $(SRC_TABDECLA:$(SRC_DIR_TABDECLA)/%.c=$(OBJ_DIR_TABDECLA)/%.o)
@@ -58,10 +54,11 @@ OBJ_COMPIL_EXT := $(OBJ_DIR_TABLEX)/TabLexico.o
 OBJ_COMPIL_EXT := $(OBJ_COMPIL_EXT) $(OBJ_DIR_TABDECLA)/TabDecla.o
 OBJ_COMPIL_EXT := $(OBJ_COMPIL_EXT) $(OBJ_DIR_ARBRES)/arbres.o
 OBJ_COMPIL_EXT := $(OBJ_COMPIL_EXT) $(OBJ_DIR_TABTYPES)/TabRepresentation.o
+OBJ_COMPIL_EXT := $(OBJ_COMPIL_EXT) $(OBJ_DIR_TABREG)/TabRegion.o
 
 CC := gcc
 CPPFLAGS := -Iinc -MMD -MP
-CFLAGS   := -Wall -pedantic -g -O0
+CFLAGS   := -Wall -pedantic -g -O3
 LDFLAGS  :=
 LDLIBS   := -lm
 
@@ -84,10 +81,6 @@ $(EXE_COMPIL): obj bin $(SRC_COMPIL) $(OBJ_COMPIL_EXT)
 	gcc -o $(OBJ_DIR_COMPIL)/cpyrr.tab.o -c $(OBJ_DIR_COMPIL)/cpyrr.tab.c
 	gcc -o $(EXE_COMPIL) $(OBJ_COMPIL) $(OBJ_COMPIL_EXT)
 
-# COMPILATION DE L'EXECUTABLE DE TEST DE LA TABLE LEXICOGRAPHIQUE
-$(EXE_TABLEX): $(OBJ_TABLEX) | $(BIN_DIR_TABLEX)
-	$(CC) $(CFLAGS) $^ -o $@
-
 ########################## COMPILATION DES SOURCES #############################
 $(OBJ_DIR_TABLEX)/%.o: $(SRC_DIR_TABLEX)/%.c | $(OBJ_DIR_TABLEX)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -98,8 +91,8 @@ $(OBJ_DIR_TABDECLA)/%.o: $(SRC_DIR_TABDECLA)/%.c | $(OBJ_DIR_TABDECLA)
 $(OBJ_DIR_TABTYPES)/%.o: $(SRC_DIR_TABTYPES)/%.c | $(OBJ_DIR_TABTYPES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-#$(OBJ_DIR_TABREGION)/%.o: $(SRC_DIR_TABREGION)/%.c | $(OBJ_DIR_TABREGION)
-#	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+$(OBJ_DIR_TABREG)/%.o: $(SRC_DIR_TABREG)/%.c | $(OBJ_DIR_TABREG)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR_ARBRES)/%.o: $(SRC_DIR_ARBRES)/%.c | $(OBJ_DIR_ARBRES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -108,25 +101,17 @@ $(OBJ_DIR_ARBRES)/%.o: $(SRC_DIR_ARBRES)/%.c | $(OBJ_DIR_ARBRES)
 ########################### CREATION DES DOSSIERS ##############################
 $(OBJ_DIR_TABLEX) $(OBJ_DIR_TABTYPES) $(OBJ_DIR_ARBRES) $(OBJ_DIR_TABDECLA):
 	mkdir -p $@
-#$(OBJ_DIR_TABREGION):
-	mkdir -p $@
-$(OBJ_DIR_COMPIL) $(BIN_DIR_COMPIL):
+$(OBJ_DIR_TABREG) $(OBJ_DIR_COMPIL) $(BIN_DIR_COMPIL):
 	mkdir -p $@
 
 ################################# NETTOYAGE ####################################
 clean:
 	@$(RM) -rv $(OBJ_DIR_TABLEX) $(OBJ_DIR_TABDECLA) $(OBJ_DIR_COMPIL)
-	#@$(RM) -rv $(OBJ_DIR_TABREGION) $(BIN_DIR_TABREGION)
+	@$(RM) -rv $(OBJ_DIR_TABREG) $(BIN_DIR_TABREG)
 	@$(RM) -rv $(OBJ_DIR_TABTYPES) $(OBJ_DIR_ARBRES)
 
 ############################# NETTOYAGE COMPLET ################################
 clean_all:
 	@$(RM) -rv $(OBJ_DIR_TABLEX) $(OBJ_DIR_TABTYPES) $(OBJ_DIR_ARBRES)
-	@$(RM) -rv $(OBJ_DIR_TABDECLA) $(BIN_DIR_COMPIL) $(OBJ_DIR_COMPIL)
-	#@$(RM) -rv $(OBJ_DIR_TABREGION) $(BIN_DIR_TABREGION)
-
--include $(OBJ_TABLEX:.o=.d)
--include $(OBJ_TABDECLA:.o=.d)
--include $(OBJ_TABTYPES:.o=.d)
-#-include $(OBJ_TABREGION:.o=.d)
--include $(OBJ_ARBRES:.o=.d)
+	@$(RM) -rv $(OBJ_DIR_TABDECLA) $(OBJ_DIR_TABREG) $(BIN_DIR_TABREG)
+	@$(RM) -rv $(BIN_DIR_COMPIL) $(OBJ_DIR_COMPIL)
