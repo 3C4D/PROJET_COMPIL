@@ -40,4 +40,12 @@ arbre concat_pere_frere(arbre pere, arbre fils);
 // Permet d'afficher un arbre de dans le teminal
 void afficher_arbre(arbre a);
 
+// Permet de sauver un arbre sous la forme d'un tableau de ses noeuds (parcours
+// préfixé)
+void sauver_arbre(FILE *fic, arbre a);
+
+// Permet de charger un arbre à partir d'un tableau contenant ses noeuds
+// (parcours préfixé)
+arbre charger_arbre(tab_arbre *t);
+
 #endif

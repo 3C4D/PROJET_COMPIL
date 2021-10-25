@@ -74,29 +74,12 @@ void generer_texte_intermediaire(char *nom_fic){
   }
   fprintf(fic, "-1|");
 
-  // TABLE DES REGIONS
-  i = 500;
-  while(TableDeclaration[i].nature != -1){
-    fprintf(
-      fic,
-      "%d|%d|%d|%d|%d|",
-      TableDeclaration[i].nature,
-      TableDeclaration[i].suivant,
-      TableDeclaration[i].num_region,
-      TableDeclaration[i].description,
-      TableDeclaration[i].exec
-    );
-    i++;
-  }
-  fprintf(fic, "-1|-1|-1|-1|-1|");
-
   // TABLE REGIONS
   i = 0;
-  while(TableRegion[i] != -1){
-    fprintf(fic, "%d|", TableRepresentation[i]);
+  while(TableRegion[i].NIS != -1){
+    fprintf(fic, "%d|%d|", TableRegion[i].taille, TableRegion[i].NIS);
+    sauver_arbre(fic, TableRegion[i].arbre_region);
+    fprintf(fic, "-99|-99|-99|-99|-99|");
     i++;
   }
-  fprintf(fic, "-1|");
-
-  serialize();
 }
