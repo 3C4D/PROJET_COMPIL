@@ -145,3 +145,48 @@ void aff_noeud(arbre a, int prof){
 void afficher_arbre(arbre a){
   aff_noeud(a, 0);
 }
+
+// serialize
+void serialize(FILE *fic, arbre a){
+  if(est_vide(a)){
+    fprintf(fic, "$|")
+  }
+
+  else{
+    fprintf(
+      fic,
+      "%d|%d|%d|%d|%f",
+      a->numlex,
+      a->numdecl,
+      a->nature,
+      a->entier,
+      a->reel
+    );
+  }
+
+  serialize(a->fils_gauche);
+  serialize(a->frere_droit);
+}
+
+arbre deserialize(tab_arbre t){
+  arbre a = creer_arbre_vide();
+  deserialize_aux(tab_arbre t, a);
+  return a;
+}
+
+void deserialize_aux(tab_arbre **t, arbre a){
+  if(t[0] != NULL){
+    a = creer_noeud(
+      **t.numlex
+      **t.numdecl
+      **t.nature
+      **t.entier
+      **t.reel
+    );
+
+    *t += 1;
+    a->fils_gauche = deserialize_aux(t, a->fils_gauche);
+    *t += 1;
+    a->fils_droit = deserialize_aux(t, a->frere_droit);
+  }
+}

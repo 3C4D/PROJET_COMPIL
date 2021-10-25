@@ -1059,12 +1059,22 @@ int main(int argc, char *argv[]){
     exit(-1);
   }
 
-  // On essaye d'ouvrir le dernier argument passé au compilateur
+  // On essaye d'ouvrir l'avant dernier argument passé au compilateur
   if(argc == 3){
     yyin = fopen(argv[1], "r");
+    // On vérifie que l'output n'est pas déjà pris
+    if(fopen(argv[2], "r") != NULL){
+      fprintf(stderr, "Le fichier output existe déjà\n");
+      exit(-1);
+    }
   }
   else{
     yyin = fopen(argv[2], "r");
+    // On vérifie que l'output n'est pas déjà pris
+    if(fopen(argv[3], "r") != NULL){
+      fprintf(stderr, "Le fichier output existe déjà\n");
+      exit(-1);
+    }
     analyse_options(argv[1], flags);
   }
   if(yyin == NULL){
@@ -1114,6 +1124,11 @@ int main(int argc, char *argv[]){
   }
 
   // Génération du texte intermédiaire
-  generer_texte_intermediaire(argv[3]);
+  if(argc == 3){
+    generer_texte_intermediaire(argv[2]);
+  }
+  else{
+    generer_texte_intermediaire(argv[3]);
+  }
   exit(0);
 }
