@@ -64,6 +64,7 @@ type maStruct89 : struct
 fstruct
 
 var bonjour: maStruct89;
+var tab: monTab56;
 {
   // affectation arithmérique
   x42b := (12 + (4 - 8 % 12) * 6);
@@ -80,8 +81,8 @@ var bonjour: maStruct89;
   // chaine
   bonjour.ch4.ch1 := "salut";
   // tableau
-  monTab56[x42b+2*(4+6%28)] := 2;
-  monTab56[fibo(x42b)] := x42b-85;
+  tab[x42b+2*(4+6%28) := 2;
+  tab[fibo(x42b)] := x42b-85;
   // On appelle notre fonction
   afficher("%d\n", fibo(2));
   afficher("%d\n", fibo(x42b + 5 - (6%(3/5))));

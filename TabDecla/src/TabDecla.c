@@ -405,26 +405,15 @@ int num_decla_variable(int numlex){
   // On recherche à quoi correspond la variable
   int num_decla_param = num_decla(numlex,PARAMETRE,-1);
   int num_decla_var = num_decla(numlex,VAR,-1);
-  int num_decla_tableau = num_decla(numlex,TYPE_TAB,-1);
 
-  if(num_decla_var == -1 && num_decla_tableau == -1 && num_decla_param == -1){
+  if(num_decla_var == -1 && num_decla_param == -1){
     return -1;
   }
   else if(num_decla_var > num_decla_param){
-    if(num_decla_var > num_decla_tableau){
-      return num_decla_var;           // VARIABLE SIMPLE
-    }
-    else{
-      return num_decla_tableau;       // TABLEAU
-    }
+    return num_decla_var;           // VARIABLE SIMPLE
   }
   else{
-    if(num_decla_param > num_decla_tableau){
-      return num_decla_param;        // PARAMETRE (equivalent à une var simple)
-    }
-    else{
-      return num_decla_tableau;       // TABLEAU
-    }
+    return num_decla_param;       // PARAMETRE
   }
   return -1;
 }

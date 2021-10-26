@@ -465,19 +465,16 @@ variable : IDF {
         type = valeur_description_tab_decla(num_decla_idf);
 
         if(type > 4){     // La variable est une srtucture
-          numero_var = STRUCTURE;
+          if(nature(type) == TYPE_STRUCT){
+            numero_var = STRUCTURE;
+          }
+          else{
+            numero_var = DIMENSION;
+          }
         }
         else{             // La variable est de type simple
           numero_var = VAR_SIMPLE;
         }
-      }
-      // Cet IDF correspond à tableau, le corps sera probablement une dimension
-      // sinon c'est une erreur
-      else if(nature(num_decla_idf) == TYPE_TAB){
-        type = valeur_tab_types(
-            valeur_description_tab_decla(num_decla_idf)+1
-          );
-        numero_var = DIMENSION;
       }
       // Cas non traité ?
       else{
@@ -513,7 +510,8 @@ variable : IDF {
       }
     }
 
-} corps_variable {
+}
+  corps_variable {
   if(erreur_semantique){
     $$ = creer_noeud(
             -1,
