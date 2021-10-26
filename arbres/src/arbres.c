@@ -168,8 +168,8 @@ void sauver_arbre(FILE *fic, arbre a){
 }
 
 // Fonction récursive utilisée par charger_arbre(tab_arbre *t)
-void charger_arbre_aux(tab_arbre **t, arbre a){
-  if(t[0] != NULL){
+arbre charger_arbre_aux(tab_arbre **t, arbre a){
+  if((**t).nature != -1 && (**t).nature != -99){
     a = creer_noeud(
       (**t).numlex,
       (**t).numdecl,
@@ -177,18 +177,19 @@ void charger_arbre_aux(tab_arbre **t, arbre a){
       (**t).entier,
       (**t).reel
     );
-
     *t += 1;
-    charger_arbre_aux(t, a->fils_gauche);
+    a->fils_gauche = charger_arbre_aux(t, a->fils_gauche);
     *t += 1;
-    charger_arbre_aux(t, a->frere_droit);
+    a->frere_droit = charger_arbre_aux(t, a->frere_droit);
+    return a;
   }
+  return creer_arbre_vide();
 }
 
 // Permet de charger un arbre à partir d'un tableau contenant ses noeuds
 // (parcours préfixé)
 arbre charger_arbre(tab_arbre *t){
   arbre a = creer_arbre_vide();
-  charger_arbre_aux(&t, a);
+  a = charger_arbre_aux(&t, a);
   return a;
 }

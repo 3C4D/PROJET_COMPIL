@@ -86,10 +86,6 @@ void generer_texte_intermediaire(char *nom_fic){
 
 // Fonction générant les tables à partir du texte intermédiaire
 void generer_tables(FILE *fic){
-  int i = 0, j = 0, retour = 0, encore = 1;
-  int numero_lex, numero_decl, nature, val_e, val_r
-  tab_arbre tab;
-
   // Initialisation des tables
   init_table_lexico();
   init_tab_decla();
@@ -100,27 +96,5 @@ void generer_tables(FILE *fic){
   charger_table_lexico(fic);
   charger_table_decla(fic);
   charger_table_representation(fic);
-
-  //Table des régions
-  do{
-    retour = fscanf(fic, "%d|%d|", &TableRegion[i].taille, &TableRegion[i].NIS);
-    printf("%d %d\n", TableRegion[i].taille, TableRegion[i].NIS);
-
-    j = 0;
-    do{
-      retour = fscanf(
-        fic,
-        "%d|%d|%d|%d|%lf|",
-        &tab[i].numlex,
-        &tab[i].numdecl,
-        &tab[i].nature,
-        &tab[i].entier,
-        &tab[i].reel
-      );
-      j++;
-    }while(retour != -1 && tab[j-1].nature != -1);
-
-    i++;
-  }while(retour != -1 && TableRegion[i-1].NIS != -1);
-
+  charger_table_region(fic);
 }

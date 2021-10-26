@@ -12,5 +12,5 @@ func factorielle(n:int) return int{
 }
 
 {
-    affiche(factorielle(5));
+    afficher("%d", factorielle(5));
 }

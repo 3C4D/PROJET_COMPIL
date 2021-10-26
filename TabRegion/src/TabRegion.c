@@ -50,5 +50,31 @@ void afficher_tab_region(){
     i++;
   }
   printf("\\------------+--------+-----+-------/\n" );
+}
 
+// Charge la table lexico à partir du texte intermédiaire
+void charger_table_region(FILE *fic){
+  int i = 0, j, retour = 0;
+  tab_arbre tab[2000];
+  do{
+    retour = fscanf(fic, "%d|%d|", &TableRegion[i].taille, &TableRegion[i].NIS);
+
+    if(TableRegion[i].NIS != -1){
+      j = 0;
+      do{
+        retour = fscanf(
+          fic,
+          "%d|%d|%d|%d|%lf|",
+          &tab[j].numlex,
+          &tab[j].numdecl,
+          &tab[j].nature,
+          &tab[j].entier,
+          &tab[j].reel
+        );
+        j++;
+      }while(retour != -1 && tab[j-1].nature != -99);
+      TableRegion[i].arbre_region = charger_arbre(tab);
+    }
+    i++;
+  }while(retour != -1 && TableRegion[i-1].NIS != -1);
 }

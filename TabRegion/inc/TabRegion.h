@@ -35,4 +35,7 @@ void inserer_arbre_tab_region(arbre a);
 /*Affiche la table des régions*/
 void afficher_tab_region();
 
+// Charge la table lexico à partir du texte intermédiaire
+void charger_table_region(FILE *fic);
+
 #endif

@@ -168,5 +168,4 @@ void charger_table_representation(FILE *fic){
     retour = fscanf(fic, "%d|", &TableRepresentation[i]);
     i++;
   }while(retour != -1 && TableRepresentation[i-1] != -1);
-  afficher_tab_representation();
 }
