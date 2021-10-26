@@ -35,7 +35,7 @@ void init_table_lexico(){
 
 
   /*Initialisation de la table lexicographique*/
-  
+
   /*Initialisation des types de bases*/
   TableLexico[0].longueur = 3;
   TableLexico[0].lexeme = "int";
@@ -100,6 +100,10 @@ int inserer_tab_lex(char * lexeme){
     TableHC[hcl] = numLexicoLc; /*On insère le numéro lexicographique du lexeme
                                   courant*/
     TableLexico[numLexicoLc].lexeme =(char*)malloc(sizeof(char)*(longueurLexeme+1));
+    if(TableLexico[numLexicoLc].lexeme == NULL){
+      fprintf(stderr, "Erreur d'allocation\n");
+      exit(-1);
+    }
     /*On insère en toute sécurité le lexème car on sait qu'il ne peut pas être
      en double*/
      for(int j =0; j<longueurLexeme;j++){
@@ -183,4 +187,46 @@ void affiche_table_lexico(){
     TableLexico[i].suivant);
   }
   printf("\\--------+----------------+---------------------------+---------/\n");
+}
+
+// Charge la table lexico à partir du texte intermédiaire
+void charger_table_lexico(FILE *fic){
+  int i = 0, j, retour = 0;
+  char c;
+  do{
+    // On cherche la longueur
+    retour = fscanf(
+                fic,
+                "%d|",
+                &TableLexico[i].longueur
+              );
+
+    // On cherche le lexème
+    // On alloue la chaine dans la table lexico
+    TableLexico[i].lexeme = malloc(
+      sizeof(char)
+      *
+      TableLexico[i].longueur+1
+    );
+    if(TableLexico[i].lexeme == NULL){
+      fprintf(stderr, "Erreur d'allocation\n");
+      exit(-1);
+    }
+    j = 0;
+    while((c = fgetc(fic)) != '|'){
+      TableLexico[i].lexeme[j] = c;
+      j++;
+    }
+    TableLexico[i].lexeme[j] = '\0';
+
+
+    // On cherche le suivant
+    retour = fscanf(
+                fic,
+                "%d|",
+                &TableLexico[i].suivant
+              );
+    i++;
+  }while(retour != -1 && TableLexico[i-1].longueur != -1);
+  TableLexico[i-1].lexeme = NULL;
 }

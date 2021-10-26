@@ -41,7 +41,8 @@ char * lexeme(int num_lexico);
 /* Affiche la table lexicographique */
 void affiche_table_lexico();
 
-
+// Fonction remplissant la table lexico
+void charger_table_lexico(FILE *fic);
 
 
 

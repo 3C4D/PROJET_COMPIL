@@ -102,6 +102,7 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
   ----------------------------------------------------------------------------- */
  int num_decla_variable(int numlex);
 
-
+ // Charge la table des déclaration à partir du texte intermédiaire
+ void charger_table_decla(FILE *fic);
 
 #endif

@@ -428,3 +428,36 @@ int num_decla_variable(int numlex){
   }
   return -1;
 }
+
+// Charge la table des déclarations à partir du texte intermédiaire
+void charger_table_decla(FILE *fic){
+  int i = 0, retour = 0;
+  // table decla (zone normale)
+  do{
+    retour = fscanf(
+      fic,
+      "%d|%d|%d|%d|%d|",
+      &TableDeclaration[i].nature,
+      &TableDeclaration[i].suivant,
+      &TableDeclaration[i].num_region,
+      &TableDeclaration[i].description,
+      &TableDeclaration[i].exec
+    );
+    i++;
+  }while(retour != -1 && TableDeclaration[i-1].nature != -1);
+
+  i = 500;
+  // table decla (zone normale)
+  do{
+    retour = fscanf(
+      fic,
+      "%d|%d|%d|%d|%d|",
+      &TableDeclaration[i].nature,
+      &TableDeclaration[i].suivant,
+      &TableDeclaration[i].num_region,
+      &TableDeclaration[i].description,
+      &TableDeclaration[i].exec
+    );
+    i++;
+  }while(retour != -1 && TableDeclaration[i-1].nature != -1);
+}

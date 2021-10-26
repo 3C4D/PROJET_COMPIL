@@ -14,13 +14,7 @@ typedef struct arbre{
   struct arbre *frere_droit;
 }* arbre;
 
-typedef struct tab_arbre{
-  int numlex;
-  int numdecl;
-  int nature;
-  int entier;
-  double reel;
-}tab_arbre;
+typedef struct arbre[500] tab_arbre;
 
 // Crée un arbre vide
 arbre creer_arbre_vide();

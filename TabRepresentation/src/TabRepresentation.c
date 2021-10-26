@@ -159,3 +159,14 @@ int verif_surchage_struct(int premier_indice, int nb_ligne){
 
   return 0;
 }
+
+// Charge la table des représentations à partir du texte intermédiaire
+void charger_table_representation(FILE *fic){
+  int i = 0, retour = 0;
+
+  do{
+    retour = fscanf(fic, "%d|", &TableRepresentation[i]);
+    i++;
+  }while(retour != -1 && TableRepresentation[i-1] != -1);
+  afficher_tab_representation();
+}
