@@ -105,4 +105,8 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
  // Charge la table des déclaration à partir du texte intermédiaire
  void charger_table_decla(FILE *fic);
 
+ // Renvoie le numéro de déclaration de la fct/proc représentant une région
+ // donnée, -1 sinon
+ int num_decl_reg(int num_region);
+
 #endif

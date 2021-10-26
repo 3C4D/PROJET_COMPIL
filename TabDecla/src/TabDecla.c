@@ -413,7 +413,7 @@ int num_decla_variable(int numlex){
     return num_decla_var;           // VARIABLE SIMPLE
   }
   else{
-    return num_decla_param;       // PARAMETRE
+    return num_decla_param;         // PARAMETRE
   }
   return -1;
 }
@@ -449,4 +449,18 @@ void charger_table_decla(FILE *fic){
     );
     i++;
   }while(retour != -1 && TableDeclaration[i-1].nature != -1);
+}
+
+// Renvoie le numéro de déclaration de la fct/proc représentant une région
+// donnée, -1 sinon
+int num_decl_reg(int num_region){
+ int i = 0, num_decl = -1;
+ while(i < 4999){
+   if(valeur_exec_tab_decla(i) == num_region
+   && (nature(i) == PROC || nature(i) == FCT)){
+     num_decl = i;
+   }
+   i++;
+ }
+ return num_decl;
 }

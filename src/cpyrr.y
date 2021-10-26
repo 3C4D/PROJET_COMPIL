@@ -23,12 +23,19 @@ int flags[] = {0, 0, 0, 0, 0};
 int tab_var_format[40];
 int tab_arg_appel[40];
 
+// Tableaux servant à la vérification sémantiques des retours de fct/proc
+int inst_retour[40];
+
 int syntaxe_correcte = 1;
 int erreur_semantique = 0;
 int num_region = 0;
 int num_region_engendree;
 int num_declaration;
 int diff = 0;
+
+// Variable servant à déterminer si l'on est dans une imbrication
+// (ex : dans un if)
+int imbrique = 0;
 
 int nb_parametres;
 int nb_champs;
@@ -82,7 +89,13 @@ int numero_var = INIT;
 %type<typ1> resultat_retourne
 
 %%
-programme : PROG {change_NIS(1); change_deplacement(0);} corps {$$ = $3; inserer_tab_region(deplacement(), 0);}
+programme : PROG {
+          change_NIS(1);
+          change_deplacement(0);
+          inst_retour[0] = 0;
+}
+          corps {$$ = $3; inserer_tab_region(deplacement(), 0);}
+          ;
 
 corps : liste_declarations liste_instructions {$$ = $2; inserer_arbre_tab_region($2);}
       | liste_instructions {$$ = $1;  inserer_arbre_tab_region($1);}
@@ -212,6 +225,7 @@ declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
                       ;
 
 declaration_procedure : PROCEDURE IDF {
+  int num_avant;
   nb_parametres = 0;
   /*On reserve une case pour le nombre de parametres*/
   change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
@@ -224,29 +238,29 @@ declaration_procedure : PROCEDURE IDF {
       nb_ligne
     );
 
+  num_avant = tete_pile_region();
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
   change_NIS(1); //Car on rentre dans une région
 
+  inserer_exec_tab_decla(num_decla($2, PROC, num_avant),tete_pile_region());
 }
                       liste_parametres {
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), nb_parametres);
 
-}                   corps {
-   num_region_engendree = tete_pile_region();
+}
+                      corps {
    change_NIS(-1); //Car on sort d'une région
    inserer_tab_region(deplacement(), nis());
 
    depiler_pile_region();
-
-
-   inserer_exec_tab_decla(num_decla($2, PROC, tete_pile_region()),num_region_engendree);
 }
                       ;
 
-declaration_fonction  : FONCTION IDF{
+declaration_fonction  : FONCTION IDF {
+  int num_avant;
   nb_parametres = 0;
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
@@ -260,24 +274,33 @@ declaration_fonction  : FONCTION IDF{
       nb_ligne
     );
 
+  num_avant = tete_pile_region();
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
   change_NIS(1); //On ajoute un niveau d'imbrication car on rentre dans une nouvelle région
 
+  inserer_exec_tab_decla(num_decla($2, FCT, num_avant),tete_pile_region());
 }
                         liste_parametres RETOURNE type_simple {
 
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), $6);
   stocker_table_representation(premier_indice()+1, nb_parametres);
-}                   corps {
-  num_region_engendree = tete_pile_region();
+}
+                    corps {
+  if(inst_retour[tete_pile_region()] == 0){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> aucune instruction de retour pour la fonction %s.\n",
+      nb_ligne,
+      lexeme($2)
+    );
+   erreur_semantique++;
+  }
   change_NIS(-1); //Car on sort d'une région
   inserer_tab_region(deplacement(), nis());
   depiler_pile_region();
-
-  inserer_exec_tab_decla(num_decla($2, FCT, tete_pile_region()),num_region_engendree);
 }
                       ;
 
@@ -306,7 +329,7 @@ instruction : affectation POINT_VIRGULE {
     );
 }
             | condition {$$ = $1;}
-            | tant_que {$$ = $1;}
+            | {imbrique++;} tant_que {$$ = $2;imbrique--;}
             | afficher POINT_VIRGULE {$$ = $1;}
             | lire POINT_VIRGULE {$$ = $1;}
             | appel POINT_VIRGULE {
@@ -322,6 +345,7 @@ instruction : affectation POINT_VIRGULE {
               nb_ligne,
               lexeme($1->numlex)
               );
+            erreur_semantique++;
           }
           else{
             $1->numdecl = num_decl_appel;
@@ -342,8 +366,44 @@ instruction : affectation POINT_VIRGULE {
         }
             ;
 
-resultat_retourne : un_arg {$$ = $1;}
-                  | {$$ = creer_arbre_vide();}
+resultat_retourne : un_arg {
+  $$ = $1;
+  if(nature(num_decl_reg(tete_pile_region())) != FCT){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> instruction de retour non vide pour une procedure.\n",
+      nb_ligne
+    );
+    erreur_semantique++;
+  }
+  else if(
+    valeur_tab_representation(
+      valeur_description_tab_decla(num_decl_reg(tete_pile_region()))
+    )
+    != type
+  ){
+    fprintf(
+      stderr,
+      "\nErreur l:%d -> type de retour incorrect.\n",
+      nb_ligne
+    );
+    erreur_semantique++;
+  }
+  else if(!imbrique){
+    inst_retour[tete_pile_region()]++;
+  }
+}
+                  | {
+    $$ = creer_arbre_vide();
+    if(nature(num_decl_reg(tete_pile_region())) == FCT){
+      fprintf(
+        stderr,
+        "\nErreur l:%d -> instruction de retour vide dans une fonction.\n",
+        nb_ligne
+      );
+      erreur_semantique++;
+    }
+}
                   ;
 
 appel : IDF {tab_arg_appel[0] = 0;} liste_arguments {
@@ -384,13 +444,14 @@ un_arg : expression {$$ = $1;
                      tab_arg_appel[tab_arg_appel[0]]=type;}
        ;
 
- condition : SI expression ALORS liste_instructions sinon {
-   if(est_vide($5)){
+ condition : {imbrique++;} SI expression
+            ALORS liste_instructions {imbrique--;} sinon {
+   if(est_vide($7)){
      $$ = concat_pere_fils(
          creer_noeud(-1, -1, A_SI_ALORS, -1, -1.0),
          concat_pere_frere(
-           $2,
-           concat_pere_frere($4, $5)
+           $3,
+           concat_pere_frere($5, $7)
          )
        );
     }
@@ -398,8 +459,8 @@ un_arg : expression {$$ = $1;
       $$ = concat_pere_fils(
           creer_noeud(-1, -1, A_SI_ALORS_SINON, -1, -1.0),
           concat_pere_frere(
-            $2,
-            concat_pere_frere($4, $5)
+            $3,
+            concat_pere_frere($5, $7)
           )
         );
      }
@@ -1088,7 +1149,6 @@ int main(int argc, char *argv[]){
 
   if(!syntaxe_correcte){
     printf("\nLA SYNTAXE N'EST PAS RESPECTEE, COMPILATION IMPOSSIBLE\n\n");
-    exit(-1);
   }
   else if(erreur_semantique){
     fprintf(
@@ -1096,7 +1156,6 @@ int main(int argc, char *argv[]){
       "\nLA SYNTAXE EST CORRECTE MAIS IL Y A %d ERREURS SEMANTIQUES\n",
       erreur_semantique
     );
-    exit(-1);
   }
 
   // L'utilisateur souhaite afficher la table lexicographique
@@ -1122,10 +1181,10 @@ int main(int argc, char *argv[]){
   }
 
   // Génération du texte intermédiaire
-  if(argc == 3){
+  if(argc == 3 && !erreur_semantique && syntaxe_correcte){
     generer_texte_intermediaire(argv[2]);
   }
-  else{
+  else if(!erreur_semantique && syntaxe_correcte){
     generer_texte_intermediaire(argv[3]);
   }
   exit(0);

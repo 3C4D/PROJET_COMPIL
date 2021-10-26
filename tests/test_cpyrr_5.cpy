@@ -33,7 +33,7 @@ var nbTerme : int;
 {
     if numeroTerme <= 0
     then{
-      return 0;
+        void;
     }
     else{
       nbTerme := 2;
@@ -45,7 +45,6 @@ var nbTerme : int;
         terme1 := termeTemp;
       }
     }
-  return terme2;
 }
 // Quelques déclarations utiles de tous types
 var x42b : int;
@@ -54,13 +53,12 @@ var variableInutile : float;
 var variableInutile2 : char;
 type monTab56 : array [5_6,2_7] of int;
 type maStruct88 : struct
-  ch1:str[50]
+  ch1:int
 fstruct
 type maStruct89 : struct
   ch1:int;
   ch2:char;
-  ch3:str[60];
-  ch4:maStruct88
+  ch4:int
 fstruct
 
 var bonjour: maStruct89;
@@ -77,11 +75,8 @@ var tab: monTab56;
   // struct
   bonjour.ch1 := x42b+3*(6%2);
   bonjour.ch2 := variableInutile2;
-  bonjour.ch3 := "sa"+"lur";
-  // chaine
-  bonjour.ch4.ch1 := "salut";
   // tableau
-  tab[x42b+2*(4+6%28) := 2;
+  tab[x42b+2*(4+6%28)] := 2;
   tab[fibo(x42b)] := x42b-85;
   // On appelle notre fonction
   afficher("%d\n", fibo(2));
