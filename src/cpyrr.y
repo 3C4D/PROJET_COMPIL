@@ -175,8 +175,14 @@ suite_declaration_type : STRUCT {
 }
 
                         dimension DE nom_type POINT_VIRGULE {
+      /*Vérification de l'existance du type*/
+
+      if(num_decla_type($5) == -1){
+        printf("Erreur sémantique ligne %d : type nom déclaré.\n", nb_ligne);
+        erreur_semantique++;
+      }
       /*Mise à jour des 2 premières cases*/
-      stocker_table_representation(premier_indice(), $5);
+      stocker_table_representation(premier_indice(), num_decla_type($5));
       stocker_table_representation(premier_indice()+1, nb_dim);
       $$ = TYPE_TAB;
 }
@@ -185,12 +191,18 @@ suite_declaration_type : STRUCT {
 dimension : CROCHET_OUVRANT liste_dimensions CROCHET_FERMANT {$$ = $2;}
           ;
 
-liste_dimensions : une_dimension { $$ = $1;}
+liste_dimensions : une_dimension { $$ = $1; }
                  | liste_dimensions VIRGULE une_dimension
                 ;
 
 une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {
-  nb_dim += 1;$$=inserer_tab_representation_type($1, $3, TYPE_TAB);
+  nb_dim += 1;
+  /*Vérification de l'ordre des bornes*/
+  if($1 > $3){
+    printf("Erreur sémantique ligne %d : problème de dimension dans le tableau, bornes inversées. \n", nb_ligne);
+    erreur_semantique++;
+  }
+  $$=inserer_tab_representation_type($1, $3, TYPE_TAB);
 }
               ;
 
@@ -199,7 +211,7 @@ liste_champs : un_champ {$$ = $1;}
              ;
 
 un_champ : IDF DEUX_POINTS nom_type {
-  nb_champs += 1; $$ = inserer_tab_representation_type($3, $1, TYPE_STRUCT);
+  nb_champs += 1; $$ = inserer_tab_representation_type(num_decla_type($3), $1, TYPE_STRUCT);
   stocker_table_representation($$+2, deplacement_struct());
   change_deplacement_struct(deplacement_struct() + valeur_exec_tab_decla($3));
 
@@ -218,7 +230,7 @@ type_simple : ENTIER {$$= 0;}
             ;
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
-   num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), $4, nb_ligne);
+   num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), num_decla_type($4), nb_ligne);
    inserer_exec_tab_decla(num_declaration, deplacement());
    change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }

@@ -303,7 +303,7 @@ int inserer_tab_declaration(int num_lexico, int nature,
          break;
        case TYPE_TAB:
          printf("|                          |    %-7d |  TYPE_TAB   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
-
+         break;
        case VAR:
          printf("|                          |    %-7d |  VARIABLE   |     %-6d |     %-5d |        %-8d |      %-6d |\n", i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
          break;
@@ -417,6 +417,38 @@ int num_decla_variable(int numlex){
   }
   return -1;
 }
+
+/*----------------------------------------------------------------------------
+ Utilité :  Renvoie le numéro de déclaration d'un type
+  Paramètre : - numlex : numéro léxicographique du lexeme
+ ----------------------------------------------------------------------------- */
+int num_decla_type(int numlex){
+  // On recherche à quoi correspond le type
+  int num_decla_type_s = num_decla(numlex,TYPE_STRUCT,-1);
+  int num_decla_type_t = num_decla(numlex,TYPE_TAB,-1);
+
+  if(numlex < 5 && numlex !=-1){
+    return numlex; // Type de base
+  }else{
+    if(num_decla_type_s == -1 && num_decla_type_t == -1){
+      return -1;
+    }else if(num_decla_type_s == -1){
+      return num_decla_type_t;
+    }else if(num_decla_type_t == -1){
+      return num_decla_type_s;
+    }else {
+      if(region(num_decla_type_s) > region(num_decla_type_t)){
+        return num_decla_type_s;           // Type structure
+      }
+      else{
+        return num_decla_type_t;         // Type tableau
+      }
+  }
+
+}
+return -1;
+}
+
 
 // Charge la table des déclarations à partir du texte intermédiaire
 void charger_table_decla(FILE *fic){

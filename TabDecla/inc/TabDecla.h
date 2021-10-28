@@ -102,6 +102,12 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
   ----------------------------------------------------------------------------- */
  int num_decla_variable(int numlex);
 
+ /*----------------------------------------------------------------------------
+  Utilité :  Renvoie le numéro de déclaration d'un type
+   Paramètre : - numlex : numéro léxicographique du lexeme
+  ----------------------------------------------------------------------------- */
+ int num_decla_type(int numlex);
+
  // Charge la table des déclaration à partir du texte intermédiaire
  void charger_table_decla(FILE *fic);
 
