@@ -139,13 +139,15 @@ declaration : declaration_type
             ;
 
 declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
-  inserer_tab_declaration(
+  if(inserer_tab_declaration(
       $2,
       $4,
       tete_pile_region(),
       premier_indice(),
       nb_ligne
-    );
+    ) == -1){
+      erreur_semantique++;
+    };
 }
                  ;
 
@@ -211,7 +213,12 @@ liste_champs : un_champ {$$ = $1;}
              ;
 
 un_champ : IDF DEUX_POINTS nom_type {
-  nb_champs += 1; $$ = inserer_tab_representation_type(num_decla_type($3), $1, TYPE_STRUCT);
+  nb_champs += 1;
+  if(num_decla_type($3) == -1){
+    printf("Erreur sémantique ligne %d : type du champs %d de la structure non déclaré. \n", nb_ligne, nb_champs);
+    erreur_semantique++;
+  }
+  $$ = inserer_tab_representation_type(num_decla_type($3), $1, TYPE_STRUCT);
   stocker_table_representation($$+2, deplacement_struct());
   change_deplacement_struct(deplacement_struct() + valeur_exec_tab_decla($3));
 
@@ -230,7 +237,14 @@ type_simple : ENTIER {$$= 0;}
             ;
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
+   if(num_decla_type($4) == -1){
+     printf("Erreur sémantique ligne %d : variable de type non déclaré.\n", nb_ligne);
+     erreur_semantique++;
+   }
    num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), num_decla_type($4), nb_ligne);
+   if(num_declaration == -1){
+     erreur_semantique++;
+   }
    inserer_exec_tab_decla(num_declaration, deplacement());
    change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }
@@ -242,13 +256,15 @@ declaration_procedure : PROCEDURE IDF {
   /*On reserve une case pour le nombre de parametres*/
   change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
 
-  inserer_tab_declaration(
+  if(inserer_tab_declaration(
       $2,
       PROC,
       tete_pile_region(),
       premier_indice(),
       nb_ligne
-    );
+    ) == -1){
+      erreur_semantique++;
+    }
 
   num_avant = tete_pile_region();
   /*Mise à jour des num de région*/
@@ -278,13 +294,15 @@ declaration_fonction  : FONCTION IDF {
   et la nature du renvoie*/
   change_premier_indice(inserer_tab_representation_type(-99,-99,FCT));
 
-  inserer_tab_declaration(
+  if(inserer_tab_declaration(
       $2,
       FCT,
       tete_pile_region(),
       premier_indice(),
       nb_ligne
-    );
+    ) == -1 ){
+      erreur_semantique++;
+    }
 
   num_avant = tete_pile_region();
   /*Mise à jour des num de région*/
@@ -295,7 +313,6 @@ declaration_fonction  : FONCTION IDF {
   inserer_exec_tab_decla(num_decla($2, FCT, num_avant),tete_pile_region());
 }
                         liste_parametres RETOURNE type_simple {
-
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), $6);
   stocker_table_representation(premier_indice()+1, nb_parametres);
@@ -329,6 +346,9 @@ un_param : IDF DEUX_POINTS type_simple {
 
   inserer_tab_representation_type($3, $1, FCT);
   num_declaration = inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
+  if(num_declaration == -1){
+    erreur_semantique++;
+  }
   inserer_exec_tab_decla(num_declaration, deplacement());
   change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }

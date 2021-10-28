@@ -87,21 +87,27 @@ int inserer_tab_declaration(int num_lexico, int nature,
         switch (nature) {
           case TYPE_STRUCT:
             printf("Problème de sémantique ligne %d : structure de même nom déjà défini dans cette région\n", nb_ligne);
+            return -1;
             break;
           case TYPE_TAB:
             printf("Problème de sémantique ligne %d : tableau de même nom déjà défini dans cette région\n", nb_ligne);
+            return -1;
             break;
           case VAR:
             printf("Problème de sémantique ligne %d : variable de même nom déjà défini dans cette région\n", nb_ligne);
+            return -1;
             break;
           case PARAMETRE:
             printf("Problème de sémantique ligne %d : paramatère de la fonction de même nom déjà défini dans cette région\n", nb_ligne);
+            return -1;
             break;
           case PROC:
             printf("Problème de sémantique ligne %d : procédure de même nom déjà défini dans cette région\n", nb_ligne);
+            return -1;
             break;
           case FCT:
             printf("Problème de sémantique ligne %d : fonction de même nom déjà défini dans cette région\n", nb_ligne);
+            return -1;
             break;
           default:
             exit(-1);
@@ -447,6 +453,19 @@ int num_decla_type(int numlex){
 
 }
 return -1;
+}
+
+/*----------------------------------------------------------------------------
+ Utilité :  Renvoie 1 si le type correspondant à ce numéro lexico est un type
+ de base, 0 sinon.
+  Paramètre : - numlex : numéro léxicographique du rype
+ ----------------------------------------------------------------------------- */
+int type_base(int num_lexico){
+  if(num_lexico < 5 && num_lexico != -1){
+    return 1;
+  }else{
+    return 0;
+  }
 }
 
 

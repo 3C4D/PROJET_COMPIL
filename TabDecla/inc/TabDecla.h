@@ -108,6 +108,13 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
   ----------------------------------------------------------------------------- */
  int num_decla_type(int numlex);
 
+ /*----------------------------------------------------------------------------
+  Utilité :  Renvoie 1 si le type correspondant à ce numéro lexico est un type
+  de base, 0 sinon.
+   Paramètre : - numlex : numéro léxicographique du rype
+  ----------------------------------------------------------------------------- */
+ int type_base(int num_lexico);
+
  // Charge la table des déclaration à partir du texte intermédiaire
  void charger_table_decla(FILE *fic);
 

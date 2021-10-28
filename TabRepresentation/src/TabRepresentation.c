@@ -139,7 +139,7 @@ int valeur_tab_types(int indice){
 /*----------------------------------------------------------------------------
   Utilité : Vérifie la sémantique d'une structure : si i l n'y pas plusieurs
   champs de même lexème.
-  Paramètre : - indice : indice que de la table dont on veut connaitre la donnée
+  Paramètre : - _premier_indice : indice que de la table dont on veut connaitre la donnée
 ----------------------------------------------------------------------------- */
 int verif_surchage_struct(int premier_indice, int nb_ligne){
   int i, j;
