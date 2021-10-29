@@ -3,7 +3,7 @@ cpyrr
   Programme de test numéro 5 : fonction , booleens, tableaux, structures
 */
 // On cherche à calculer un terme de la suite de fibonnacci en itératif
-func fibo(numeroTerme:int) return int
+fun fibo(numeroTerme:int) return int
 var terme1 : int;
 var terme2 : int;
 var termeTemp : int;

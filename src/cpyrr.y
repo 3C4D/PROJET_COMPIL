@@ -16,7 +16,9 @@ int yyerror();
 
 extern int nb_ligne;
 extern FILE *yyin;
+extern int colonne;
 
+FILE *programme;
 // Flags d'affichage
 int flags[] = {0, 0, 0, 0, 0};
 
@@ -1133,7 +1135,30 @@ liste_variables : variable VIRGULE liste_variables {
 %%
 
 int yyerror(){
-  fprintf(stderr, "\nErreur de syntaxe ligne %d : %s\n\n", nb_ligne, yytext);
+  int i;
+  char c = '\0';
+  // On egraine jusqu'à la ligne
+  for(i = 0; i < nb_ligne-1; i++){
+    c = '\0';
+    while(c != '\n'){
+      c = fgetc(programme);
+    }
+  }
+
+  // On imprime la ligne précédée du numéro de ligne
+  fprintf(stderr, "\nErreur de syntaxe dans le programme\n");
+  fprintf(stderr, " %d |  ", nb_ligne);
+  c = '\0';
+  while(c != '\n'){
+    c = fgetc(programme);
+    fprintf(stderr, "%c", c);
+  }
+
+  for(i = 0; i < colonne+6; i++){
+    fprintf(stderr, " ");
+  }
+  fprintf(stderr, "^\n");
+
   syntaxe_correcte = 0;
   return -1;
 }
@@ -1153,9 +1178,17 @@ int main(int argc, char *argv[]){
     exit(-1);
   }
 
+  // On redirige l'entrée standard du yacc
   if((yyin = fopen(argv[argc-1], "r")) == NULL){
     fprintf(stderr, "\nImpossible d'ouvrir le fichier %s\n", argv[argc-1]);
     usage(argv[0]);
+  }
+  // On initialise notre marqueur d'erreur
+  else{
+    if((programme = fopen(argv[argc-1], "r")) == NULL){
+      fprintf(stderr, "\nImpossible d'ouvrir le fichier %s\n", argv[argc-1]);
+      usage(argv[0]);
+    }
   }
 
   // Pas de fichier output précisé
@@ -1174,17 +1207,6 @@ int main(int argc, char *argv[]){
   }
 
   yyparse();
-
-  if(!syntaxe_correcte){
-    printf("\nLA SYNTAXE N'EST PAS RESPECTEE, COMPILATION IMPOSSIBLE\n\n");
-  }
-  else if(erreur_semantique){
-    fprintf(
-      stderr,
-      "\nLA SYNTAXE EST CORRECTE MAIS IL Y A %d ERREURS SEMANTIQUES\n",
-      erreur_semantique
-    );
-  }
 
   // L'utilisateur souhaite afficher la table lexicographique
   if(flags[0]){

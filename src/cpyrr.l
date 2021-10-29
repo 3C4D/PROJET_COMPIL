@@ -1,10 +1,12 @@
 %{
+#include <string.h>
 #include "../arbres/inc/arbres.h"
 #include "../obj/cpyrr.tab.h"
 #include "../inc/fct_aux_lex.h"
 #include "../TabLexico/inc/TabLexico.h"
 
 int nb_ligne = 1;
+int colonne = 0;
 
 %}
 
@@ -17,80 +19,86 @@ C3 [^"*/]
 \{  {return(DEBUT);}
 \}  {return(FIN);}
 
-\/\/.*$ ;
+\/\/.*$ {nb_ligne++;}
 \/\*({C2}|\"{C1}*\"|\*\**{C3}|\*\**\"{C1}*\")*\*\**\/ {
   calcul_nb_ligne_comm(yytext);
+  nb_ligne--;
 }
 
-"_" {return(SOULIGNE);}
-"." {return(POINT);}
-";" {return(POINT_VIRGULE);}
-":" {return(DEUX_POINTS);}
-"[" {return(CROCHET_OUVRANT);}
-"]" {return(CROCHET_FERMANT);}
-":=" {return(OPAFF);}
+"_" {colonne += 1; return(SOULIGNE);}
+"." {colonne += 1; return(POINT);}
+";" {colonne += 1; return(POINT_VIRGULE);}
+":" {colonne += 1; return(DEUX_POINTS);}
+"[" {colonne += 1; return(CROCHET_OUVRANT);}
+"]" {colonne += 1; return(CROCHET_FERMANT);}
+":=" {colonne += 2; return(OPAFF);}
 
-"=" {return(EGAL);}
-">" {return(SUP);}
-">="  {return(SUP_EGAL);}
-"<" {return(INF);}
-"<="  {return(INF_EGAL);}
-"!="  {return(DIFFERENT);}
+"=" {colonne += 1; return(EGAL);}
+">" {colonne += 1; return(SUP);}
+">="  {colonne += 2; return(SUP_EGAL);}
+"<" {colonne += 1; return(INF);}
+"<="  {colonne += 2; return(INF_EGAL);}
+"!="  {colonne += 2; return(DIFFERENT);}
 
-"(" {return(PARENTHESE_OUVRANTE);}
-")" {return(PARENTHESE_FERMANTE);}
-"," {return(VIRGULE);}
+"(" {colonne += 1; return(PARENTHESE_OUVRANTE);}
+")" {colonne += 1; return(PARENTHESE_FERMANTE);}
+"," {colonne += 1; return(VIRGULE);}
 
-"type"  {return(TYPE);}
-"struct"  {return(STRUCT);}
-"fstruct" {return(FSTRUCT);}
-"array" {return(TABLEAU);}
+"type"  {colonne += 4; return(TYPE);}
+"struct"  {colonne += 6; return(STRUCT);}
+"fstruct" {colonne += 7; return(FSTRUCT);}
+"array" {colonne += 5; return(TABLEAU);}
 
-"int" {return(ENTIER);}
-"float" {return(REEL);}
-"bool"  {return(BOOLEEN);}
-"char"  {return(CARACTERE);}
-"str"  {return(CHAINE);}
-"var" {return(VARIABLE);}
-"proc"  {return(PROCEDURE);}
-"func"  {return(FONCTION);}
+"int" {colonne += 3; return(ENTIER);}
+"float" {colonne += 5; return(REEL);}
+"bool"  {colonne += 4; return(BOOLEEN);}
+"char"  {colonne += 4; return(CARACTERE);}
+"str"  {colonne += 3; return(CHAINE);}
+"var" {colonne += 3; return(VARIABLE);}
+"proc"  {colonne += 4; return(PROCEDURE);}
+"func"  {colonne += 4; return(FONCTION);}
 
-"return"  {return(RETOURNE);}
-"void"  {return(VIDE);}
-"of"  {return(DE);}
+"return"  {colonne += 6; return(RETOURNE);}
+"void"  {colonne += 5; return(VIDE);}
+"of"  {colonne += 2; return(DE);}
 
-"afficher"  {return(AFFICHER);}
-"lire"  {return(LIRE);}
+"afficher"  {colonne += 8; return(AFFICHER);}
+"lire"  {colonne += 4; return(LIRE);}
 
-"if"  {return(SI);}
-"then" {return(ALORS);}
-"else"  {return(SINON);}
+"if"  {colonne += 2; return(SI);}
+"then" {colonne += 4; return(ALORS);}
+"else"  {colonne += 4; return(SINON);}
 
-"while" {return(TANT_QUE);}
-"do"  {return(FAIRE);}
+"while" {colonne += 5; return(TANT_QUE);}
+"do"  {colonne += 2; return(FAIRE);}
 
-"and" {return(ET);}
-"or"  {return(OU);}
-"not" {return(NON);}
+"and" {colonne += 3; return(ET);}
+"or"  {colonne += 2; return(OU);}
+"not" {colonne += 3; return(NON);}
 
-"true"  {yylval.typ2 = 1; return(TRUE);}
-"false" {yylval.typ2 = 0; return(FALSE);}
+"true"  {colonne += 4; yylval.typ2 = 1; return(TRUE);}
+"false" {colonne += 5; yylval.typ2 = 1; return(TRUE);}
 
-"+" {return(PLUS);}
-"-" {return(MOINS);}
-"/" {return(DIV);}
-"*" {return(MULT);}
-"%" {return(MODULO);}
+"+" {colonne++;return(PLUS);}
+"-" {colonne++;return(MOINS);}
+"/" {colonne++;return(DIV);}
+"*" {colonne++;return(MULT);}
+"%" {colonne++;return(MODULO);}
 
 (0|[1-9][0-9]*) {yylval.typ2 = atoi(yytext); return(CSTE_ENTIERE);}
 (0|[1-9][0-9]*)\.([0-9]*)  {yylval.typ3 = atof(yytext); return(CSTE_REELLE);}
 \'.\'  {yylval.typ2 = *yytext; return(CSTE_CARACTERE);}
 \"[^"]*\" {yylval.typ2 = inserer_tab_lex(yytext); return(CSTE_CHAINE);}
 
-[a-zA-Z][a-zA-Z0-9]*  {yylval.typ2 = inserer_tab_lex(yytext); return(IDF);}
+[a-zA-Z][a-zA-Z0-9]*  {
+  yylval.typ2 = inserer_tab_lex(yytext);
+  colonne += strlen(yytext);
+  return(IDF);
+}
 
-\n  {nb_ligne++;}
-[ \t] ;
+\n  {nb_ligne++; colonne = 0;}
+" " {colonne ++;}
+\t  {colonne += 2;}
 
 %%
 
