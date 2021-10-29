@@ -76,6 +76,7 @@ void change_NIS(int valeur);
 // Renvoie la valeur de nis_region
 int nis();
 
-// Analyse les options passées au compilateur et lève les flags adéquats
-void analyse_options(char *s, int *flags);
+// Analyse les options passées au compilateur et lève les flags adéquats,
+// renvoie eventuellement l'index du fichier output dans argv, sinon -1
+int analyse_options(char *argv[], int *flags);
 #endif

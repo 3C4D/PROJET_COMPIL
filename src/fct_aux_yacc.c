@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "../inc/fct_aux_yacc.h"
 #include "../TabDecla/inc/TabDecla.h"
 #include "../TabRepresentation/inc/TabRepresentation.h"
@@ -9,15 +10,18 @@
 
 // Fonction d'usage du compilateur
 void usage(char *s){
-  fprintf(stderr,"\n%s [OPTIONS] <prog_cpyrr> <output>\n", s);
+  fprintf(stderr,"\n%s [OPTIONS] <prog_cpyrr>\n", s);
   fprintf(stderr,"     * [OPTIONS] :\n");
+  fprintf(
+    stderr,
+    "         * o <output> : précision du fichier d'ouput (défaut : a.out)\n"
+  );
   fprintf(stderr,"         * l : afficher table decla\n");
   fprintf(stderr,"         * d : afficher table decla\n");
   fprintf(stderr,"         * t : afficher table types\n");
   fprintf(stderr,"         * r : afficher table regions\n");
   fprintf(stderr,"         * a : afficher arbres\n");
-  fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n");
-  fprintf(stderr, "     * <output> : nom du programme généré\n\n");
+  fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n\n");
   exit(-1);
 }
 
@@ -216,27 +220,55 @@ int nis(){
 }
 
 // Analyse les options passées au compilateur et lève les flags adéquats
-void analyse_options(char *s, int *flags){
-  while(*s != '\0'){
-    switch(*s){
-      case 'l':
-        flags[0]++;
-        break;
-      case 'd':
-        flags[1]++;
-        break;
-      case 't':
-        flags[2]++;
-        break;
-      case 'r':
-        flags[3]++;
-        break;
-      case 'a':
-        flags[4]++;
-        break;
-      default :
-        break;
+int analyse_options(char *argv[], int *flags){
+  int fic = -1;
+  int nb_output = 0;
+  int i = 1;
+
+  while(argv[i+1] != NULL){
+    if(!strcmp("l", argv[i])){    // Lexico
+      flags[0]++;
     }
-    s++;
+    else if(!strcmp("d", argv[i])){   // Déclarations
+      flags[1]++;
+    }
+    else if(!strcmp("t", argv[i])){   // Types
+      flags[2]++;
+    }
+    else if(!strcmp("r", argv[i])){   // Régions
+      flags[3]++;
+    }
+    else if(!strcmp("a", argv[i])){   // Arbres
+      flags[4]++;
+    }
+    else if(!strcmp("o", argv[i])){   // Output
+      if(argv[i+2] == NULL){
+        fprintf(stderr, "\nOption o mais pas de fichier output précisé\n");
+        usage(argv[0]);
+      }
+      fic = i+1;
+
+      // On essaye d'ouvir le fichier d'ouput pour vérification
+      if((fopen(argv[i+1], "r")) != NULL){
+        fprintf(stderr, "\n%s existe déjà\n", argv[i+1]);
+        usage(argv[0]);
+      }
+      // Vérification du nombre de fichier output
+      if(nb_output != 0){
+        fprintf(stderr, "\nNombre de fichier output précisé > 1\n");
+        usage(argv[0]);
+      }
+
+      // On incrémente la vérification du nombre d'appel à o
+      nb_output++;
+      i++;
+    }
+    else{
+      fprintf(stderr, "\nOptions inconnue : %s\n", argv[i]);
+      usage(argv[0]);
+    }
+    i++;
   }
+
+  return fic;
 }

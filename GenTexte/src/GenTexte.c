@@ -10,15 +10,8 @@
 #include "../TabRegion/inc/TabRegion.h"
 
 // Fonction générant le texte intermédiaire à partir des tables
-void generer_texte_intermediaire(char *nom_fic){
-  FILE *fic;
+void generer_texte_intermediaire(FILE *fic){
   int i;
-
-  // Le fichier n'existe pas (vérification précédente), on essaye de le créer
-  if((fic = fopen(nom_fic, "w")) == NULL){
-    fprintf(stderr, "Le fichier output ne peut pas être créé\n");
-    exit(-1);
-  }
 
   // TABLE LEXICO
   i = 0;

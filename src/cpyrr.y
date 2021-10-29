@@ -1139,42 +1139,38 @@ int yyerror(){
 }
 
 int main(int argc, char *argv[]){
+  FILE *fic = NULL;
+  int index_fic;
+
   init_pile_region();
   init_table_lexico();
   init_tab_decla();
   init_tab_representation_type();
   init_tab_region();
 
-  if(argc < 3 || argc > 4){
+  if(argc < 2){
     usage(argv[0]);
     exit(-1);
   }
 
-  // On essaye d'ouvrir l'avant dernier argument passé au compilateur
-  if(argc == 3){
-    yyin = fopen(argv[1], "r");
-    // On vérifie que l'output n'est pas déjà pris
-    if(fopen(argv[2], "r") != NULL){
-      fprintf(stderr, "Le fichier output existe déjà\n");
-      exit(-1);
+  if((yyin = fopen(argv[argc-1], "r")) == NULL){
+    fprintf(stderr, "\nImpossible d'ouvrir le fichier %s\n", argv[argc-1]);
+    usage(argv[0]);
+  }
+
+  // Pas de fichier output précisé
+  if((index_fic = analyse_options(argv, flags)) == -1){
+    if((fic = fopen("a.out", "w")) == NULL){
+      fprintf(stderr, "\nImpossible d'ouvrir le fichier a.out\n");
+      usage(argv[0]);
     }
   }
+  // Fichier précisé, on essaye de le créer
   else{
-    yyin = fopen(argv[2], "r");
-    // On vérifie que l'output n'est pas déjà pris
-    if(fopen(argv[3], "r") != NULL){
-      fprintf(stderr, "Le fichier output existe déjà\n");
-      exit(-1);
+    if((fic = fopen(argv[index_fic], "w")) == NULL){
+      fprintf(stderr, "\nimpossible d'ouvrir %s\n", argv[index_fic]);
+      usage(argv[0]);
     }
-    analyse_options(argv[1], flags);
-  }
-  if(yyin == NULL){
-    fprintf(
-      stderr,
-      "%s n'est pas un fichier, arret de la compilation\n",
-      argv[argc-2]
-    );
-    exit(-1);
   }
 
   yyparse();
@@ -1213,11 +1209,8 @@ int main(int argc, char *argv[]){
   }
 
   // Génération du texte intermédiaire
-  if(argc == 3 && !erreur_semantique && syntaxe_correcte){
-    generer_texte_intermediaire(argv[2]);
-  }
-  else if(!erreur_semantique && syntaxe_correcte){
-    generer_texte_intermediaire(argv[3]);
+  if(!erreur_semantique && syntaxe_correcte){
+    generer_texte_intermediaire(fic);
   }
   exit(0);
 }
