@@ -9,6 +9,7 @@
 #include "../inc/macros_arbres.h"
 #include "../TabRegion/inc/TabRegion.h"
 #include "../GenTexte/inc/GenTexte.h"
+#include "../inc/couleur.h"
 
 char *yytext;
 int yylex();
@@ -17,6 +18,12 @@ int yyerror();
 extern int nb_ligne;
 extern FILE *yyin;
 extern int colonne;
+
+int tab_format[MAX_FORMAT+1];
+int pile_region[MAX_REGION+1];
+int deplacement_var[MAX_REGION];
+int deplacement_structure;
+int nis_region;
 
 FILE *programme;
 // Flags d'affichage
@@ -1145,20 +1152,26 @@ int yyerror(){
     }
   }
 
+  couleur(ROUGEGRAS);
   // On imprime la ligne précédée du numéro de ligne
-  fprintf(stderr, "\nErreur de syntaxe dans le programme\n");
+  fprintf(stderr, "\nErreur de syntaxe\n");
+  couleur(BLANCGRAS);
   fprintf(stderr, " %d |  ", nb_ligne);
+  couleur(RESET);
   c = '\0';
+  c = fgetc(programme);
   while(c != '\n'){
-    c = fgetc(programme);
     fprintf(stderr, "%c", c);
+    c = fgetc(programme);
   }
-
-  for(i = 0; i < colonne+6; i++){
+  couleur(BLANCGRAS);
+  fprintf(stderr, "\n   |");
+  for(i = 0; i < colonne+1; i++){
     fprintf(stderr, " ");
   }
-  fprintf(stderr, "^\n");
-
+  couleur(ROUGEGRAS);
+  fprintf(stderr, "^\n\n");
+  couleur(RESET);
   syntaxe_correcte = 0;
   return -1;
 }
@@ -1191,8 +1204,12 @@ int main(int argc, char *argv[]){
     }
   }
 
+  index_fic = analyse_options(argv, flags);
+
+  yyparse();
+
   // Pas de fichier output précisé
-  if((index_fic = analyse_options(argv, flags)) == -1){
+  if(index_fic == -1){
     if((fic = fopen("a.out", "w")) == NULL){
       fprintf(stderr, "\nImpossible d'ouvrir le fichier a.out\n");
       usage(argv[0]);
@@ -1200,13 +1217,13 @@ int main(int argc, char *argv[]){
   }
   // Fichier précisé, on essaye de le créer
   else{
-    if((fic = fopen(argv[index_fic], "w")) == NULL){
+    if(!erreur_semantique
+    && syntaxe_correcte
+    && (fic = fopen(argv[index_fic], "w")) == NULL){
       fprintf(stderr, "\nimpossible d'ouvrir %s\n", argv[index_fic]);
       usage(argv[0]);
     }
   }
-
-  yyparse();
 
   // L'utilisateur souhaite afficher la table lexicographique
   if(flags[0]){

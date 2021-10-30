@@ -19,12 +19,6 @@
 #define DIMENSION 2
 #define VAR_SIMPLE 3
 
-int tab_format[MAX_FORMAT+1];
-int pile_region[MAX_REGION+1];
-int deplacement_var[MAX_REGION];
-int deplacement_structure;
-int nis_region;
-
 // Fonction d'usage du compilateur
 void usage(char *s);
 

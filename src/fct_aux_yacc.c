@@ -8,6 +8,12 @@
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabRegion/inc/TabRegion.h"
 
+extern int tab_format[MAX_FORMAT+1];
+extern int pile_region[MAX_REGION+1];
+extern int deplacement_var[MAX_REGION];
+extern int deplacement_structure;
+extern int nis_region;
+
 // Fonction d'usage du compilateur
 void usage(char *s){
   fprintf(stderr,"\n%s [OPTIONS] <prog_cpyrr>\n", s);
