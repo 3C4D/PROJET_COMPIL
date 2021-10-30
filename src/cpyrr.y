@@ -11,10 +11,10 @@
 #include "../GenTexte/inc/GenTexte.h"
 #include "../inc/couleur.h"
 
-char *yytext;
 int yylex();
 int yyerror();
 
+extern char *yytext;
 extern int nb_ligne;
 extern FILE *yyin;
 extern int colonne;
