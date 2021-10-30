@@ -1,7 +1,9 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "../inc/TabRepresentation.h"
+
+int TableRepresentation[MAX_TAB_RPZ];
+int premier_indice_var;
 
 /*Initialiser la table des représentation*/
 void init_tab_representation_type(){

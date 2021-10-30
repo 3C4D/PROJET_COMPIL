@@ -6,8 +6,7 @@
 
 #define MAX_TAB_RPZ 300
 
-int TableRepresentation[MAX_TAB_RPZ];
-int premier_indice_var ;
+
 
 /*Initialiser la table des représentation*/
 void init_tab_representation_type();

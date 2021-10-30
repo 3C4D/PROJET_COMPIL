@@ -9,6 +9,10 @@
 #include "../TabDecla/inc/TabDecla.h"
 #include "../TabRegion/inc/TabRegion.h"
 
+extern tabLex TableLexico[MAX_TAB_LEX];
+extern int TableRepresentation[MAX_TAB_RPZ];
+extern tabDecla TableDeclaration[MAX_TAB_DECLA];
+
 // Fonction générant le texte intermédiaire à partir des tables
 void generer_texte_intermediaire(FILE *fic){
   int i;

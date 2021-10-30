@@ -13,8 +13,6 @@ typedef struct tabLex{
   int suivant;
 }tabLex;
 
-tabLex TableLexico[MAX_TAB_LEX];
-
 /*----------------------------------------------------------------------------
   Utilité : Renvoie le HashCode du lexème
   Paramatère : - lexeme : le lexeme en question

@@ -5,6 +5,8 @@
 #include "../inc/TabDecla.h"
 #include "../../inc/fct_aux_yacc.h"
 
+tabDecla TableDeclaration[MAX_TAB_DECLA];
+
 /*Initialise la table des déclarations*/
 void init_tab_decla(){
   int i;

@@ -8,11 +8,11 @@
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabRegion/inc/TabRegion.h"
 
-extern int tab_format[MAX_FORMAT+1];
-extern int pile_region[MAX_REGION+1];
-extern int deplacement_var[MAX_REGION];
-extern int deplacement_structure;
-extern int nis_region;
+int tab_format[MAX_FORMAT+1];
+int pile_region[MAX_REGION+1];
+int deplacement_var[MAX_REGION];
+int deplacement_structure;
+int nis_region;
 
 // Fonction d'usage du compilateur
 void usage(char *s){

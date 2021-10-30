@@ -23,8 +23,6 @@ typedef struct tabDecla{
   int exec; /*Information sur l'exécution*/
 }tabDecla;
 
-tabDecla TableDeclaration[MAX_TAB_DECLA];
-
 /*Initialise la table des déclarations*/
 void init_tab_decla();
 
