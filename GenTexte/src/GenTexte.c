@@ -9,6 +9,7 @@
 #include "../TabDecla/inc/TabDecla.h"
 #include "../TabRegion/inc/TabRegion.h"
 
+extern tabRegion TableRegion[MAX_TAB_REGION];
 extern tabLex TableLexico[MAX_TAB_LEX];
 extern int TableRepresentation[MAX_TAB_RPZ];
 extern tabDecla TableDeclaration[MAX_TAB_DECLA];

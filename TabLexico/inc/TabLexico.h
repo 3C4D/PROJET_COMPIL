@@ -5,8 +5,6 @@
 
 #define MAX_TAB_LEX 500
 
-int TableHC[32];
-
 typedef struct tabLex{
   int longueur;
   char * lexeme;

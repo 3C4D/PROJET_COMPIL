@@ -12,8 +12,6 @@ typedef struct tabRegion{
   arbre arbre_region; /*Pointeur vers l'arbre de la région*/
 }tabRegion;
 
-tabRegion TableRegion[MAX_TAB_REGION];
-
 /*Initialise la table des régions*/
 void init_tab_region();
 

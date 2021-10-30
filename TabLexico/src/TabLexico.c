@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "../inc/TabLexico.h"
 
+int TableHC[32];
 tabLex TableLexico[MAX_TAB_LEX];
 
 /*----------------------------------------------------------------------------

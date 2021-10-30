@@ -3,6 +3,8 @@
 #include "../inc/TabRegion.h"
 #include "../../inc/fct_aux_yacc.h"
 
+tabRegion TableRegion[MAX_TAB_REGION];
+
 /*Initialise la table des régions*/
 void init_tab_region(){
   int i;
