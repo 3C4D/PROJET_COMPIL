@@ -36,4 +36,6 @@ void afficher_tab_region();
 // Charge la table lexico à partir du texte intermédiaire
 void charger_table_region(FILE *fic);
 
+arbre arbre_reg(int i);
+
 #endif

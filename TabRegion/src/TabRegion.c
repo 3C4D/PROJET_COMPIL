@@ -80,3 +80,7 @@ void charger_table_region(FILE *fic){
     i++;
   }while(retour != -1 && TableRegion[i-1].NIS != -1);
 }
+
+arbre arbre_reg(int i){
+  return TableRegion[i].arbre_region;
+}
