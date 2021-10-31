@@ -34,7 +34,7 @@ void generer_texte_intermediaire(FILE *fic){
 
   // TABLE DECLARATION (zone normale)
   i = 0;
-  while(TableDeclaration[i].nature != -1){
+  while(i != 4999){
     fprintf(
       fic,
       "%d|%d|%d|%d|%d|",
@@ -46,7 +46,6 @@ void generer_texte_intermediaire(FILE *fic){
     );
     i++;
   }
-  fprintf(fic, "-1|-1|-1|-1|-1|");
 
   // TABLE DECLARATION (zone de débordement)
   i = 500;

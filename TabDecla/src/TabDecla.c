@@ -475,7 +475,7 @@ int type_base(int num_lexico){
 void charger_table_decla(FILE *fic){
   int i = 0, retour = 0;
   // table decla (zone normale)
-  do{
+  while(i != 4999 && retour != -1){
     retour = fscanf(
       fic,
       "%d|%d|%d|%d|%d|",
@@ -486,22 +486,7 @@ void charger_table_decla(FILE *fic){
       &TableDeclaration[i].exec
     );
     i++;
-  }while(retour != -1 && TableDeclaration[i-1].nature != -1);
-
-  i = 500;
-  // table decla (zone normale)
-  do{
-    retour = fscanf(
-      fic,
-      "%d|%d|%d|%d|%d|",
-      &TableDeclaration[i].nature,
-      &TableDeclaration[i].suivant,
-      &TableDeclaration[i].num_region,
-      &TableDeclaration[i].description,
-      &TableDeclaration[i].exec
-    );
-    i++;
-  }while(retour != -1 && TableDeclaration[i-1].nature != -1);
+  }
 }
 
 // Renvoie le numéro de déclaration de la fct/proc représentant une région
