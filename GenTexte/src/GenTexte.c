@@ -16,7 +16,7 @@ extern tabDecla TableDeclaration[MAX_TAB_DECLA];
 
 // Fonction générant le texte intermédiaire à partir des tables
 void generer_texte_intermediaire(FILE *fic){
-  int i;
+  int i, dernier_index = 0;
 
   // TABLE LEXICO
   i = 0;
@@ -32,9 +32,23 @@ void generer_texte_intermediaire(FILE *fic){
   }
   fprintf(fic, "-1|-1|-1|");
 
+  for(i = 0; i < MAX_TAB_DECLA; i++){
+    if(TableDeclaration[i].nature != -1){
+      dernier_index = i;
+    }
+  }
+  i = 0;
+  while(i < dernier_index){
+    if(TableDeclaration[i].nature == -1){
+      TableDeclaration[i].nature = -99;
+    }
+    i++;
+  }
+
+  afficher_tab_declaration();
   // TABLE DECLARATION (zone normale)
   i = 0;
-  while(i != 4999){
+  while(TableDeclaration[i].nature != -1){
     fprintf(
       fic,
       "%d|%d|%d|%d|%d|",
@@ -46,6 +60,7 @@ void generer_texte_intermediaire(FILE *fic){
     );
     i++;
   }
+  fprintf(fic, "-1|-1|-1|-1|-1|");
 
   // TABLE DECLARATION (zone de débordement)
   i = 500;

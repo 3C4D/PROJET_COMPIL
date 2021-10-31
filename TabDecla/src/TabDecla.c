@@ -474,8 +474,9 @@ int type_base(int num_lexico){
 // Charge la table des déclarations à partir du texte intermédiaire
 void charger_table_decla(FILE *fic){
   int i = 0, retour = 0;
+
   // table decla (zone normale)
-  while(i != 4999 && retour != -1){
+  do{
     retour = fscanf(
       fic,
       "%d|%d|%d|%d|%d|",
@@ -486,6 +487,27 @@ void charger_table_decla(FILE *fic){
       &TableDeclaration[i].exec
     );
     i++;
+  }while(retour != -1 && TableDeclaration[i-1].nature != -1);
+
+  i = 500;
+  // table decla (zone débordement)
+  do{
+    retour = fscanf(
+      fic,
+      "%d|%d|%d|%d|%d|",
+      &TableDeclaration[i].nature,
+      &TableDeclaration[i].suivant,
+      &TableDeclaration[i].num_region,
+      &TableDeclaration[i].description,
+      &TableDeclaration[i].exec
+    );
+    i++;
+  }while(retour != -1 && TableDeclaration[i-1].nature != -1);
+
+  for(i = 0; i < MAX_TAB_DECLA; i++){
+    if(TableDeclaration[i].nature == -99){
+      TableDeclaration[i].nature = -1;
+    }
   }
 }
 
