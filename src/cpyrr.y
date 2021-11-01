@@ -534,13 +534,10 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
   }
   else{
-    $$ = concat_pere_fils(
-        creer_noeud(-1, -1, A_AFFECTATION, -1, -1.0),
-        concat_pere_frere(
+    $$ = concat_pere_frere(
           $1,
           $4
-        )
-      );
+        );
     }
 }
             ;
