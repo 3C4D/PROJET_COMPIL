@@ -639,7 +639,10 @@ variable : IDF {
   else{
     int num_decla_idf = num_decla_variable($1);
     if(num_decla_idf == -1){  // CHAMP
-      $$ = creer_noeud(-1, -1, A_CHAMP, -1, -1.0);
+      $$ = concat_pere_fils(
+        creer_noeud($1, -1, A_CHAMP, -1, -1.0),
+        $3
+      );
     }
 
     if(numero_var == VAR_SIMPLE){
@@ -654,8 +657,17 @@ variable : IDF {
             $3
           );
     }
+    if(numer_var == DIMENSION){
+      $$ = concat_pere_fils(
+          creer_noeud(-$1, num_decla_idf, A_TAB, -1, -1),
+          $3
+        );
+    }
     if(numero_var == STRUCTURE){
-
+      $$ = concat_pere_fils(
+        creer_noeud($1, num_decla_idf, A_STRUCT, -1, -1.0),
+        $3
+      );
     }
   }
   numero_var = INIT;
@@ -688,7 +700,7 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
   }
   else{
     $$ = concat_pere_fils(
-      creer_noeud(-1, -1, A_TAB, -1, -1),
+      creer_noeud(-1, -1, A_DIMENSION, -1, -1),
       concat_pere_frere($2, $4));
     }
 }
