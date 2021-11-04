@@ -45,7 +45,6 @@ void generer_texte_intermediaire(FILE *fic){
     i++;
   }
 
-  afficher_tab_declaration();
   // TABLE DECLARATION (zone normale)
   i = 0;
   while(TableDeclaration[i].nature != -1){

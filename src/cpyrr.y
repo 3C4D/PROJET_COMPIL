@@ -14,8 +14,10 @@
 int yylex();
 int yyerror();
 
+extern FILE *programme;
 extern char *yytext;
 extern int nb_ligne;
+extern int ligne_act;
 extern FILE *yyin;
 extern int colonne;
 
@@ -25,7 +27,6 @@ extern int deplacement_var[MAX_REGION];
 extern int deplacement_structure;
 extern int nis_region;
 
-FILE *programme;
 // Flags d'affichage
 int flags[] = {0, 0, 0, 0, 0};
 
@@ -106,13 +107,36 @@ programme : PROG {
           corps {$$ = $3; inserer_tab_region(deplacement(), 0);}
           ;
 
-corps : liste_declarations liste_instructions {$$ = $2; inserer_arbre_tab_region($2);}
-      | liste_instructions {$$ = $1;  inserer_arbre_tab_region($1);}
+corps : liste_declarations liste_instructions {
+  $$ = $2; inserer_arbre_tab_region($2);
+}
       ;
 
-liste_declarations : declaration
-                   | liste_declarations declaration
+liste_declarations : liste_declarations_type
+                     liste_declarations_variable
+                     liste_declarations_proc_fct
                    ;
+
+liste_declarations_type :
+                        | liste_declarations_type
+                          declaration_type
+                        ;
+
+liste_declarations_variable :
+                            | liste_declarations_variable
+                              declaration_variable
+                              POINT_VIRGULE
+                            ;
+
+liste_declarations_proc_fct :
+                            | liste_declarations_proc_fct
+                              une_declaration_proc_fct
+                            ;
+
+une_declaration_proc_fct :   declaration_procedure
+                           | declaration_fonction
+                           ;
+
 
 liste_instructions : DEBUT suite_liste_inst FIN {
   $$ = $2;
@@ -140,12 +164,6 @@ suite_liste_inst : instruction {
                       );
                  }
                  ;
-
-declaration : declaration_type
-            | declaration_variable POINT_VIRGULE
-            | declaration_procedure
-            | declaration_fonction
-            ;
 
 declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
   if(inserer_tab_declaration(
@@ -189,7 +207,7 @@ suite_declaration_type : STRUCT {
       /*Vérification de l'existance du type*/
 
       if(num_decla_type($5) == -1){
-        printf("Erreur sémantique ligne %d : type nom déclaré.\n", nb_ligne);
+        print_erreur_semantique("type nom déclaré.");
         erreur_semantique++;
       }
       /*Mise à jour des 2 premières cases*/
@@ -210,21 +228,27 @@ une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {
   nb_dim += 1;
   /*Vérification de l'ordre des bornes*/
   if($1 > $3){
-    printf("Erreur sémantique ligne %d : problème de dimension dans le tableau, bornes inversées. \n", nb_ligne);
+    print_erreur_semantique("problème de dimension dans le tableau, bornes inversées.");
     erreur_semantique++;
   }
   $$=inserer_tab_representation_type($1, $3, TYPE_TAB);
 }
               ;
 
-liste_champs : un_champ {$$ = $1;}
-             | liste_champs POINT_VIRGULE un_champ
+liste_champs : un_champ POINT_VIRGULE {$$ = $1;}
+             | liste_champs un_champ POINT_VIRGULE
              ;
 
 un_champ : IDF DEUX_POINTS nom_type {
   nb_champs += 1;
   if(num_decla_type($3) == -1){
-    printf("Erreur sémantique ligne %d : type du champs %d de la structure non déclaré. \n", nb_ligne, nb_champs);
+    char erreur[400];
+    sprintf(
+      erreur,
+      "type du champs %d de la structure non déclaré.",
+      nb_champs
+    );
+    print_erreur_semantique(erreur);
     erreur_semantique++;
   }
   $$ = inserer_tab_representation_type(num_decla_type($3), $1, TYPE_STRUCT);
@@ -247,7 +271,7 @@ type_simple : ENTIER {$$= 0;}
 
 declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
    if(num_decla_type($4) == -1){
-     printf("Erreur sémantique ligne %d : variable de type non déclaré.\n", nb_ligne);
+     print_erreur_semantique("variable de type non déclaré.");
      erreur_semantique++;
    }
    num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), num_decla_type($4), nb_ligne);
@@ -328,13 +352,15 @@ declaration_fonction  : FONCTION IDF {
 }
                     corps {
   if(inst_retour[tete_pile_region()] == 0){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> aucune instruction de retour pour la fonction %s.\n",
-      nb_ligne,
+    char erreur[400];
+    sprintf(
+      erreur,
+      "aucune instruction de retour pour la fonction %s.",
       lexeme($2)
     );
-   erreur_semantique++;
+
+    print_erreur_semantique(erreur);
+    erreur_semantique++;
   }
   change_NIS(-1); //Car on sort d'une région
   inserer_tab_region(deplacement(), nis());
@@ -380,12 +406,13 @@ instruction : affectation POINT_VIRGULE {
           int num_decl_appel = num_decla($1->numlex, PROC, -1);
 
           if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
-            fprintf(
-              stderr,
-              "\nErreur l:%d -> procedure %s non déclarée.\n",
-              nb_ligne,
+            char erreur[400];
+            sprintf(
+              erreur,
+              "procedure %s non déclarée.",
               lexeme($1->numlex)
-              );
+            );
+            print_erreur_semantique(erreur);
             erreur_semantique++;
           }
           else{
@@ -410,10 +437,8 @@ instruction : affectation POINT_VIRGULE {
 resultat_retourne : un_arg {
   $$ = $1;
   if(nature(num_decl_reg(tete_pile_region())) != FCT){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> instruction de retour non vide pour une procedure.\n",
-      nb_ligne
+    print_erreur_semantique(
+      "instruction de retour non vide pour une procedure."
     );
     erreur_semantique++;
   }
@@ -423,10 +448,8 @@ resultat_retourne : un_arg {
     )
     != type
   ){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> type de retour incorrect.\n",
-      nb_ligne
+    print_erreur_semantique(
+      "type de retour incorrect."
     );
     erreur_semantique++;
   }
@@ -437,10 +460,8 @@ resultat_retourne : un_arg {
                   | {
     $$ = creer_arbre_vide();
     if(nature(num_decl_reg(tete_pile_region())) == FCT){
-      fprintf(
-        stderr,
-        "\nErreur l:%d -> instruction de retour vide dans une fonction.\n",
-        nb_ligne
+      print_erreur_semantique(
+        "instruction de retour vide dans une fonction."
       );
       erreur_semantique++;
     }
@@ -525,10 +546,8 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
 
   // Affectation de deux choses de type différent
   if(type_var_affectation != type){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> affectation de deux choses de types différents.\n",
-      nb_ligne
+    print_erreur_semantique(
+      "affectation de deux choses de types différents."
     );
     erreur_semantique++;
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
@@ -550,12 +569,9 @@ variable : IDF {
 
       // Elément non déclaré
       if(num_decla_idf == -1){
-        fprintf(
-          stderr,
-          "\nErreur l:%d -> %s non déclaré.\n",
-          nb_ligne,
-          lexeme($1)
-        );
+        char erreur[400];
+        sprintf(erreur, "%s non déclaré.", lexeme($1));
+        print_erreur_semantique(erreur);
         erreur_semantique++;
       }
       // Cet IDF correspond à une variable (ou à un paramètre)
@@ -577,7 +593,9 @@ variable : IDF {
       }
       // Cas non traité ?
       else{
-        fprintf(stderr,"\nErreur...\n");
+        print_erreur_semantique(
+          "type inconnu."
+        );
       }
     }
     // L'IDF correspond à un champ de la structure
@@ -599,12 +617,9 @@ variable : IDF {
       }
 
       if(type == -1){
-        fprintf(
-          stderr,
-          "\nErreur l:%d -> %s : aucun champ correspondant.\n",
-          nb_ligne,
-          lexeme($1)
-        );
+        char erreur[400];
+        sprintf(erreur, "%s : aucun champ correspondant.", lexeme($1));
+        print_erreur_semantique(erreur);
         erreur_semantique++;
       }
     }
@@ -673,11 +688,7 @@ variable : IDF {
 corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
 
   if(numero_var == VAR_SIMPLE){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> impossible d'indicer une variable.\n",
-      nb_ligne
-    );
+    print_erreur_semantique("impossible d'indicer une variable.");
     erreur_semantique++;
     $$ = creer_noeud(
         -1,
@@ -688,11 +699,7 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
       );
   }
   else if(numero_var == STRUCTURE){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> impossible d'indicer une structure.\n",
-      nb_ligne
-    );
+    print_erreur_semantique("impossible d'indicer une structure.");
     erreur_semantique++;
     $$ = creer_noeud(
         -1,
@@ -709,19 +716,11 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
                | POINT {
 
    if(numero_var == VAR_SIMPLE){
-     fprintf(
-       stderr,
-       "\nErreur l:%d -> une variable simple ne possède pas de champs.\n",
-       nb_ligne
-     );
+     print_erreur_semantique("une variable simple ne possède pas de champs.");
      erreur_semantique++;
    }
    else if(numero_var == DIMENSION && type < 4){
-     fprintf(
-       stderr,
-       "\nErreur l:%d -> Un tableau de types simple n'a pas de champ.\n",
-       nb_ligne
-     );
+     print_erreur_semantique("un tableau de types simple n'a pas de champ.");
      erreur_semantique++;
 
    }
@@ -877,10 +876,8 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
      if((type_g == TYPE_BOOL && type_d != TYPE_BOOL)
        ||(type_g != TYPE_BOOL && type_d == TYPE_BOOL)
      ){
-       fprintf(
-         stderr,
-         "\nErreur l:%d -> comparaison d'un booleen avec un non booleen.\n",
-         nb_ligne
+       print_erreur_semantique(
+         "comparaison d'un booleen avec un non booleen."
        );
        erreur_semantique++;
      }
@@ -889,10 +886,8 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
      if(type_g == TYPE_BOOL && type_d == TYPE_BOOL){
        type = TYPE_BOOL;
        if($3->nature != EGAL && $3->nature != DIFFERENT){
-         fprintf(
-           stderr,
-           "\nErreur l:%d -> comparaison d'ordre entre booleens impossible.\n",
-           nb_ligne
+         print_erreur_semantique(
+           "comparaison d'ordre entre booleens impossible."
          );
          erreur_semantique++;
       }
@@ -905,6 +900,12 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
 
 e4 : NON e5 {
   $$ = concat_pere_fils(creer_noeud(-1, -1, A_NON, -1, -1), $2);
+  if(type != TYPE_INT && type != TYPE_INT){
+    print_erreur_semantique(
+      "opérateur NOT sur autre chose qu'un booleen ou un entier impossible."
+    );
+    erreur_semantique++;
+  }
   type = TYPE_BOOL;
 }
    | e5 {
@@ -943,20 +944,20 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
        // Une procedure est-elle appelée à la place ?
        num_decl_appel = num_decla($1->numlex, PROC, -1);
        if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
-         fprintf(
-           stderr,
-           "\nErreur l:%d -> %s non déclaré.\n",
-           nb_ligne,
-           lexeme($1->numlex)
-           );
+         char erreur[400];
+         sprintf(erreur, "%s non déclaré.", lexeme($1->numlex));
+         print_erreur_semantique(erreur);
+         erreur_semantique++;
        }
        else{
-         fprintf(
-           stderr,
-           "\nErreur l:%d -> Appel d'une procedure (%s) dans une expression.\n",
-           nb_ligne,
+         char erreur[400];
+         sprintf(
+           erreur,
+           "appel d'une procedure (%s) dans une expression.",
            lexeme($1->numlex)
-           );
+         );
+         print_erreur_semantique(erreur);
+         erreur_semantique++;
        }
      }
      else{ // Réglages des élements restés en suspend durant l'appel
@@ -994,15 +995,15 @@ afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
     int i;
     // Trop de formats
     if(tab_format[0] > tab_var_format[0]){
-      fprintf(stderr, "\nErreur l:%d -> afficher, trop de formats\n", nb_ligne);
+      print_erreur_semantique(
+        "trop de formats dans la fonction afficher."
+      );
       erreur_semantique++;
     }
     // Trop d'arguments suivants le format
     else if(tab_var_format[0] > tab_format[0]){
-      fprintf(
-        stderr,
-        "\nErreur l:%d -> afficher, trop d'arguments\n",
-        nb_ligne
+      print_erreur_semantique(
+        "trop d'arguments dans la fonction afficher."
       );
       erreur_semantique++;
     }
@@ -1010,10 +1011,9 @@ afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
     else{
       for(i = 1; i < tab_format[0]+1; i++){
         if(tab_format[i] != tab_var_format[i] && tab_var_format[i] != -1){
-          fprintf(stderr,
-            "\nErreur l:%d -> Le format numéro %d ne corespond pas...\n",
-            nb_ligne, i
-          );
+          char erreur[250];
+          sprintf(erreur, "le format numéro %d ne corespond pas.", i);
+          print_erreur_semantique(erreur);
           erreur_semantique++;
         }
       }
@@ -1062,21 +1062,21 @@ composante_afficher : variable       {
       // Une procedure est-elle appelée à la place ?
       num_decl_appel = num_decla($1->numlex, PROC, -1);
       if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
-        fprintf(
-          stderr,
-          "\nErreur l:%d -> %s non déclaré.\n",
-          nb_ligne,
+        char erreur[400];
+        sprintf(
+          erreur,
+          "%s non déclaré.",
           lexeme($1->numlex)
-          );
+        );
         erreur_semantique++;
       }
       else{
-        fprintf(
-          stderr,
-          "\nErreur l:%d -> Affichage d'une procedure (%s) impossible.\n",
-          nb_ligne,
+        char erreur[400];
+        sprintf(
+          erreur,
+          "affichage d'une procedure (%s) impossible.",
           lexeme($1->numlex)
-          );
+        );
         erreur_semantique++;
       }
     }
@@ -1141,8 +1141,14 @@ liste_variables : variable VIRGULE liste_variables {
 int yyerror(){
   int i;
   char c = '\0';
+
+  // Plus d'une erreur sur une ligne, on passe
+  if(ligne_act >= nb_ligne){
+    return -1;
+  }
+
   // On egraine jusqu'à la ligne
-  for(i = 0; i < nb_ligne-1; i++){
+  for(i = ligne_act; i < nb_ligne-1; i++){
     c = '\0';
     while(c != '\n'){
       c = fgetc(programme);
@@ -1162,7 +1168,7 @@ int yyerror(){
     c = fgetc(programme);
   }
   couleur(BLANCGRAS);
-  fprintf(stderr, "\n   |");
+  fprintf(stderr, "\n    |");
   for(i = 0; i < colonne+1; i++){
     fprintf(stderr, " ");
   }
@@ -1243,6 +1249,8 @@ int main(int argc, char *argv[]){
     afficher_tab_region();
     printf("\n");
   }
+
+
 
   // Génération du texte intermédiaire
   if(!erreur_semantique && syntaxe_correcte){

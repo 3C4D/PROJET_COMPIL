@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../inc/TabRepresentation.h"
+#include "../../inc/fct_aux_yacc.h"
 
 int TableRepresentation[MAX_TAB_RPZ];
 int premier_indice_var;
@@ -77,7 +78,10 @@ int inserer_tab_representation_type(int type, int num_lexico, int nature){
       }
       break;
     default:
-      printf("Problème de nature dans l'insertion dans la table des représentations des types \n");
+      fprintf(
+        stderr,
+        "Problème de nature dans l'insertion dans la table des représentations des types \n"
+      );
       exit(-1);
   }
 
@@ -152,7 +156,7 @@ int verif_surchage_struct(int premier_indice, int nb_ligne){
       /*Si on a deux numéros lexicographique identique pour deux champs différents*/
       if(i != j){
         if(TableRepresentation[premier_indice+i] == TableRepresentation[premier_indice+j]){
-          printf("Erreur sémantique l %d : des champs de la structure on le même nom\n", nb_ligne);
+          print_erreur_semantique("des champs de la structure on le même nom.");
           return -1;
         }
       }

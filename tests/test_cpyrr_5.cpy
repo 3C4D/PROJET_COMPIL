@@ -2,6 +2,26 @@ cpyrr
 /*
   Programme de test numéro 5 : fonction , booleens, tableaux, structures
 */
+
+// Quelques déclarations utiles de tous types
+type monTab56 : array [5_6,2_7] of int;
+type maStruct88 : struct
+  ch1:int;
+fstruct
+type maStruct89 : struct
+  ch1:int;
+  ch2:char;
+  ch4:int;
+fstruct
+
+// Quelques déclarations de variables
+var x42b : int;
+var y12 : bool;
+var variableInutile : float;
+var variableInutile2 : char;
+var bonjour: maStruct89;
+var tab: monTab56;
+
 // On cherche à calculer un terme de la suite de fibonnacci en itératif
 func fibo(numeroTerme:int) return int
 var terme1 : int;
@@ -46,23 +66,7 @@ var nbTerme : int;
       }
     }
 }
-// Quelques déclarations utiles de tous types
-var x42b : int;
-var y12 : bool;
-var variableInutile : float;
-var variableInutile2 : char;
-type monTab56 : array [5_6,2_7] of int;
-type maStruct88 : struct
-  ch1:int
-fstruct
-type maStruct89 : struct
-  ch1:int;
-  ch2:char;
-  ch4:int
-fstruct
 
-var bonjour: maStruct89;
-var tab: monTab56;
 {
   // affectation arithmérique
   x42b := (12 + (4 - 8 % 12) * 6);

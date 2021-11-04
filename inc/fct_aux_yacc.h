@@ -73,4 +73,7 @@ int nis();
 // Analyse les options passées au compilateur et lève les flags adéquats,
 // renvoie eventuellement l'index du fichier output dans argv, sinon -1
 int analyse_options(char *argv[], int *flags);
+
+// Affiche une erreur sémantique dans le terminal
+void print_erreur_semantique(char *erreur);
 #endif

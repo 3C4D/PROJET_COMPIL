@@ -4,8 +4,9 @@
 #include "../obj/cpyrr.tab.h"
 #include "../inc/fct_aux_lex.h"
 #include "../TabLexico/inc/TabLexico.h"
+#include "../inc/couleur.h"
 
-int nb_ligne = 1;
+extern int nb_ligne;
 int colonne = 0;
 
 %}
@@ -19,10 +20,9 @@ C3 [^"*/]
 \{  {return(DEBUT);}
 \}  {return(FIN);}
 
-\/\/.*$ {nb_ligne++;}
+\/\/.*$ ;
 \/\*({C2}|\"{C1}*\"|\*\**{C3}|\*\**\"{C1}*\")*\*\**\/ {
   calcul_nb_ligne_comm(yytext);
-  nb_ligne--;
 }
 
 "_" {colonne += 1; return(SOULIGNE);}
@@ -100,6 +100,14 @@ C3 [^"*/]
 " " {colonne ++;}
 \t  {colonne += 2;}
 
+. {
+  couleur(VERTGRAS);
+  fprintf(stderr, "\nErreur lexicographique\n");
+  couleur(BLANCGRAS);
+  fprintf(stderr, " %d |  %s", nb_ligne, yytext);
+  couleur(RESET);
+  fprintf(stderr, "\n\n");
+}
 %%
 
 int yywrap(){

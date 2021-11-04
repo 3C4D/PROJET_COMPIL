@@ -88,27 +88,37 @@ int inserer_tab_declaration(int num_lexico, int nature,
       if((TableDeclaration[num_lexico].num_region == num_region) && (TableDeclaration[num_lexico].nature == nature)){
         switch (nature) {
           case TYPE_STRUCT:
-            printf("Problème de sémantique ligne %d : structure de même nom déjà défini dans cette région\n", nb_ligne);
+            printf("structure de même nom déjà défini dans cette région.");
             return -1;
             break;
           case TYPE_TAB:
-            printf("Problème de sémantique ligne %d : tableau de même nom déjà défini dans cette région\n", nb_ligne);
+            print_erreur_semantique(
+              "tableau de même nom déjà défini dans cette région."
+            );
             return -1;
             break;
           case VAR:
-            printf("Problème de sémantique ligne %d : variable de même nom déjà défini dans cette région\n", nb_ligne);
+            print_erreur_semantique(
+              "variable de même nom déjà défini dans cette région."
+            );
             return -1;
             break;
           case PARAMETRE:
-            printf("Problème de sémantique ligne %d : paramatère de la fonction de même nom déjà défini dans cette région\n", nb_ligne);
+            print_erreur_semantique(
+              "paramatère de la fonction de même nom déjà défini dans cette région."
+            );
             return -1;
             break;
           case PROC:
-            printf("Problème de sémantique ligne %d : procédure de même nom déjà défini dans cette région\n", nb_ligne);
+            print_erreur_semantique(
+              "procédure de même nom déjà défini dans cette région."
+            );
             return -1;
             break;
           case FCT:
-            printf("Problème de sémantique ligne %d : fonction de même nom déjà défini dans cette région\n", nb_ligne);
+            print_erreur_semantique(
+              "fonction de même nom déjà défini dans cette région."
+            );
             return -1;
             break;
           default:
@@ -124,32 +134,47 @@ int inserer_tab_declaration(int num_lexico, int nature,
         /*Gestion de la surcharge possible*/
         /*On vérifie que l'élément i, qui est le même lexème, n'est pas déclaré
         dans la même région ET à la même nature*/
-
         if(num_decla(num_lexico, nature, num_region) != -1){
           switch (nature) {
             case TYPE_STRUCT:
-              printf("Problème de sémantique ligne %d : structure de même nom déjà défini dans cette région\n", nb_ligne);
+              printf("structure de même nom déjà défini dans cette région.");
+              return -1;
               break;
             case TYPE_TAB:
-              printf("Problème de sémantique ligne %d : tableau de même nom déjà défini dans cette région\n", nb_ligne);
+              print_erreur_semantique(
+                "tableau de même nom déjà défini dans cette région."
+              );
+              return -1;
               break;
             case VAR:
-              printf("Problème de sémantique ligne %d : variable de même nom déjà défini dans cette région\n", nb_ligne);
+              print_erreur_semantique(
+                "variable de même nom déjà défini dans cette région."
+              );
+              return -1;
               break;
             case PARAMETRE:
-              printf("Problème de sémantique ligne %d : paramatère de la fonction de même nom déjà défini dans cette région\n", nb_ligne);
+              print_erreur_semantique(
+                "paramatère de la fonction de même nom déjà défini dans cette région."
+              );
+              return -1;
               break;
             case PROC:
-              printf("Problème de sémantique ligne %d : procédure de même nom déjà défini dans cette région\n", nb_ligne);
+              print_erreur_semantique(
+                "procédure de même nom déjà défini dans cette région."
+              );
+              return -1;
               break;
             case FCT:
-              printf("Problème de sémantique ligne %d : fonction de même nom déjà défini dans cette région\n", nb_ligne);
+              print_erreur_semantique(
+                "fonction de même nom déjà défini dans cette région."
+              );
+              return -1;
               break;
             default:
               exit(-1);
               break;
             }
-        }
+          }
         i++;
       }
       num_declaration = i; /*Première case libre trouvé dans la zone de débordement*/
@@ -211,7 +236,10 @@ int inserer_tab_declaration(int num_lexico, int nature,
         TableDeclaration[num_declaration].nature = 6;
         break;
       default:
-        printf("Problème de nature du lexeme dans la table des déclarations\n");
+        fprintf(
+          stderr,
+          "Problème dans la nature du lexeme dans la table des déclarations."
+        );
         exit(-1);
         break;
       }
@@ -234,7 +262,10 @@ int inserer_tab_declaration(int num_lexico, int nature,
       TableDeclaration[num_declaration].exec = -1;  /*laisse vide pour le moment*/
 
     }else{
-      printf("Problème dans la nature du lexeme dans la table des déclarations\n");
+      fprintf(
+        stderr,
+        "Problème dans la nature du lexeme dans la table des déclarations."
+      );
       exit(-1);
     }
     return num_declaration;

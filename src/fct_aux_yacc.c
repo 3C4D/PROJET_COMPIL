@@ -7,12 +7,49 @@
 #include "../TabDecla/inc/TabDecla.h"
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabRegion/inc/TabRegion.h"
+#include "../inc/couleur.h"
 
 int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];
 int deplacement_var[MAX_REGION];
 int deplacement_structure;
 int nis_region;
+int nb_ligne = 1;
+FILE *programme;
+int ligne_act = 0;
+
+// Affiche une erreur sémantique dans le terminal
+void print_erreur_semantique(char *erreur){
+  int i;
+  char c = '\0';
+  // Plus d'une erreur sur une ligne, on passe
+  if(ligne_act >= nb_ligne){
+    return;
+  }
+
+  // On egraine jusqu'à la ligne
+  for(i = ligne_act; i < nb_ligne-1; i++){
+    c = '\0';
+    while(c != '\n'){
+      c = fgetc(programme);
+    }
+  }
+  ligne_act = nb_ligne;
+
+  couleur(MAGENTAGRAS);
+  // On imprime la ligne précédée du numéro de ligne
+  fprintf(stderr, "\nErreur sémantique : %s\n", erreur);
+  couleur(BLANCGRAS);
+  fprintf(stderr, " %d |  ", nb_ligne);
+  couleur(RESET);
+  c = '\0';
+  c = fgetc(programme);
+  while(c != '\n'){
+    fprintf(stderr, "%c", c);
+    c = fgetc(programme);
+  }
+  fprintf(stderr, "\n\n");
+}
 
 // Fonction d'usage du compilateur
 void usage(char *s){
@@ -31,52 +68,6 @@ void usage(char *s){
   exit(-1);
 }
 
-// Fonction permettant de déterminer combien et quels formats simples se
-// trouvent dans une chaine de caractère
-void format(char *str){
-  char *ptr = str;
-
-  tab_format[0] = 0;
-
-  while(*ptr != '\0'){
-    if(*ptr == '%'){
-      if(*(ptr+1) == 'd'
-      || *(ptr+1) == 'f'
-      || *(ptr+1) == 'b'
-      || *(ptr+1) == 'c'
-      || *(ptr+1) == 's'
-      ){
-        if(tab_format[0] == MAX_FORMAT){  // Vérification du max de formats
-          fprintf(stderr, "Erreur, trop de formats.\n");
-          exit(-1);
-        }
-        tab_format[0]++;
-        switch(*(ptr+1)){   // On rempli le tableau de format avec les formats
-          case 'd':
-            tab_format[tab_format[0]] = 0;
-            break;
-          case 'f':
-            tab_format[tab_format[0]] = 1;
-            break;
-          case 'b':
-            tab_format[tab_format[0]] = 2;
-            break;
-          case 'c':
-            tab_format[tab_format[0]] = 3;
-            break;
-          case 's':
-            tab_format[tab_format[0]] = 4;
-            break;
-          default :
-            fprintf(stderr, "Erreur format...");
-            exit(-1);
-        }
-      }
-    }
-    ptr++;
-  }
-}
-
 // Initialise la pile de région
 void init_pile_region(){
   pile_region[0] = 1; // Une région dans la pile pour le moment
@@ -86,7 +77,7 @@ void init_pile_region(){
 // Empile une region
 void empiler_pile_region(int region){
   if(pile_region[0] == MAX_REGION){ // Vérification du nombre de régions
-    fprintf(stderr, "Erreur, trop de formats.\n");
+    fprintf(stderr, "Erreur, trop d'éléments dans la pile des régions.\n");
     exit(-1);
   }
   pile_region[0]++;
@@ -122,10 +113,8 @@ int est_dans_pile_region(int region){
 int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
   // L'une des composantes est booleenne
   if(type_g == TYPE_BOOL || type_d == TYPE_BOOL){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> Opérateur arithmétique impossible sur un booleen.\n",
-      nb_ligne
+    print_erreur_semantique(
+      "opérateur arithmétique impossible sur un booleen."
     );
     return -1;
   }
@@ -140,11 +129,7 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
    return TYPE_CHAR;
   }
   else{
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> Opérandes de l'expression de types différents.\n",
-      nb_ligne
-    );
+    print_erreur_semantique("opérandes de l'expression de types différents.");
     return -1;
   }
 }
@@ -154,11 +139,7 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
 int verif_type_expr_bool(int type_g, int type_d, int nb_ligne){
   // L'une des composantes est réelle
   if(type_g == TYPE_FLOAT || type_d == TYPE_FLOAT){
-    fprintf(
-      stderr,
-      "\nErreur l:%d -> Opérateur booleen impossible sur un reel.\n",
-      nb_ligne
-    );
+
     return -1;
   }
   return 2;
@@ -183,13 +164,13 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
     for(i=1; i<nb_arg+1; i++){
       /*On vérifie que le type de chaque argument correspond au type du parametre*/
       if(tab_arg_appel[i] != valeur_tab_representation(indice)){
-        printf("Erreur sémantique ligne %d : paramètre de mauvais type dans l'appel\n",nb_ligne);
+        print_erreur_semantique("paramètre de mauvais type dans l'appel.");
         return -1;
       }
       indice += 2;
     }
   }else{
-    printf("Erreur sémantique ligne %d : nombre de paramètre de l'appel incorrect\n",nb_ligne);
+    print_erreur_semantique("nombre de paramètre de l'appel incorrect.");
     return -1;
   }
   return 0;
@@ -277,4 +258,51 @@ int analyse_options(char *argv[], int *flags){
   }
 
   return fic;
+}
+
+// Fonction permettant de déterminer combien et quels formats simples se
+// trouvent dans une chaine de caractère
+void format(char *str){
+  char *ptr = str;
+
+  tab_format[0] = 0;
+
+  while(*ptr != '\0'){
+    if(*ptr == '%'){
+      if(*(ptr+1) == 'd'
+      || *(ptr+1) == 'f'
+      || *(ptr+1) == 'b'
+      || *(ptr+1) == 'c'
+      || *(ptr+1) == 's'
+      ){
+        if(tab_format[0] == MAX_FORMAT){  // Vérification du max de formats
+          //err_sem
+          fprintf(stderr, "Erreur, trop de formats.\n");
+          exit(-1);
+        }
+        tab_format[0]++;
+        switch(*(ptr+1)){   // On rempli le tableau de format avec les formats
+          case 'd':
+            tab_format[tab_format[0]] = 0;
+            break;
+          case 'f':
+            tab_format[tab_format[0]] = 1;
+            break;
+          case 'b':
+            tab_format[tab_format[0]] = 2;
+            break;
+          case 'c':
+            tab_format[tab_format[0]] = 3;
+            break;
+          case 's':
+            tab_format[tab_format[0]] = 4;
+            break;
+          default :
+            fprintf(stderr, "Erreur format...");
+            exit(-1);
+        }
+      }
+    }
+    ptr++;
+  }
 }
