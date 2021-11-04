@@ -32,6 +32,7 @@ int flags[] = {0, 0, 0, 0, 0};
 
 int tab_var_format[40];
 int tab_arg_appel[40];
+int num_champ = -1;
 
 // Tableaux servant à la vérification sémantiques des retours de fct/proc
 int inst_retour[40];
@@ -579,7 +580,7 @@ variable : IDF {
           || nature(num_decla_idf) == PARAMETRE){
         type = valeur_description_tab_decla(num_decla_idf);
 
-        if(type > 4){     // La variable est une srtucture
+        if(type > 3){     // La variable est une srtucture
           if(nature(type) == TYPE_STRUCT){
             numero_var = STRUCTURE;
           }
@@ -637,48 +638,24 @@ variable : IDF {
   }
   else{
     int num_decla_idf = num_decla_variable($1);
+    if(num_decla_idf == -1){  // CHAMP
+      $$ = creer_noeud(-1, -1, A_CHAMP, -1, -1.0);
+    }
 
-    // Champs car aucune erreur sémantique et pas une variable
-    if(num_decla_idf == -1){
+    if(numero_var == VAR_SIMPLE){
       $$ = concat_pere_fils(
             creer_noeud(
               $1,
-              -1,
-              A_CHAMP,
+              num_decla_idf,
+              A_VAR,
               -1,
               -1
             ),
             $3
           );
     }
-    else{
-      if(nature(num_decla_idf) == VAR
-           || nature(num_decla_idf) == PARAMETRE){
-        $$ = concat_pere_fils(
-              creer_noeud(
-                $1,
-                num_decla_idf,
-                A_VAR,
-                -1,
-                -1
-              ),
-              $3
-            );
-      }
-      // Cet IDF correspond à un tableau, le corps sera probablement une
-      // dimension, sinon, c'est une erreur
-      else{
-        $$ = concat_pere_fils(
-              creer_noeud(
-                $1,
-                num_decla_idf,
-                A_TAB,
-                -1,
-                -1
-              ),
-              $3
-            );
-      }
+    if(numero_var == STRUCTURE){
+
     }
   }
   numero_var = INIT;
@@ -710,7 +687,9 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
       );
   }
   else{
-    $$ = concat_pere_fils($2, $4);
+    $$ = concat_pere_fils(
+      creer_noeud(-1, -1, A_TAB, -1, -1),
+      concat_pere_frere($2, $4));
     }
 }
                | POINT {

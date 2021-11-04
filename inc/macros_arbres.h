@@ -49,5 +49,7 @@
 #define A_CHAMP 37
 #define A_TAB 38
 #define A_VAR 39
+#define A_STRUCT 40
+#define A_DIMENSION 41
 
 #endif
