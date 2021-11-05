@@ -101,12 +101,11 @@ void aff_nature_noeud(int nature){
 void aff_noeud(arbre a, int prof){
   int i;
 
+  for (i = 0; i < prof; i++){
+    // On affiche le nombre d'espace necessaire
+    printf("  ");
+  }
   if(!est_vide(a)){   // Si le noeud n'est pas vide :
-    for (i = 0; i < prof; i++){
-      // On affiche le nombre d'espace necessaire
-      printf("  ");
-    }
-
     if(a->numlex > 0){
       printf(
         "|+| (%s), %d, ",
@@ -136,10 +135,6 @@ void aff_noeud(arbre a, int prof){
     aff_noeud(a->fils_gauche, prof+1);  // On affiche le fils gauche
   }
   else{
-    for (i = 0; i < prof; i++){
-      // On affiche le nombre d'espace necessaire
-      printf("   ");
-    }
     printf("null\n");
   }
 }
