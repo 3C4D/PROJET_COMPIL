@@ -691,7 +691,16 @@ variable : IDF {
          ;
 
 
-corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
+corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT {
+  // Vérification du type de l'expression
+  if(type != TYPE_INT){
+    print_erreur_semantique(
+      "impossible d'indicer un tableau avec une expression non entière."
+    );
+    erreur_semantique++;
+  }
+}
+corps_variable {
 
   if(tete_pile_variable() == VAR_SIMPLE){
     print_erreur_semantique("impossible d'indicer une variable.");
@@ -718,7 +727,7 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
   else{
     $$ = concat_pere_fils(
       creer_noeud(-1, -1, A_DIMENSION, -1, -1),
-      concat_pere_frere($2, $4));
+      concat_pere_frere($2, $5));
     }
 }
                | POINT {
@@ -1175,7 +1184,7 @@ int yyerror(){
   // On egraine jusqu'à la ligne
   for(i = ligne_act; i < nb_ligne-1; i++){
     c = '\0';
-    while(c != '\n'){
+    while(c != '\n' && c != EOF){
       c = fgetc(programme);
     }
   }
@@ -1188,7 +1197,7 @@ int yyerror(){
   couleur(RESET);
   c = '\0';
   c = fgetc(programme);
-  while(c != '\n'){
+  while(c != '\n' && c != EOF){
     fprintf(stderr, "%c", c);
     c = fgetc(programme);
   }

@@ -86,4 +86,3 @@ var nbTerme : int;
   afficher("%d\n", fibo(2));
   afficher("%d\n", fibo(x42b + 5 - (6%(3/5))));
   afficher("%d\n", fibo(bonjour.ch1));
-}
