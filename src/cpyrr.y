@@ -565,56 +565,47 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
             ;
 
 variable : IDF {
+  if(est_vide_pile_variable() || tete_pile_variable().nature != CHAMP){
+    int num_decla_idf = num_decla_variable($1);
 
-    // L'IDF ne correpond pas à un champ, on cherche ce qu'il peut être
-    if(est_vide_pile_variable() || tete_pile_variable() != STRUCTURE){
-      int num_decla_idf = num_decla_variable($1);
+    // Elément non déclaré
+    if(num_decla_idf == -1){
+      char erreur[400];
+      sprintf(erreur, "%s non déclaré.", lexeme($1));
+      print_erreur_semantique(erreur);
+      erreur_semantique++;
+    }
+    // Cet IDF correspond à une variable (ou à un paramètre)
+    else {
+      type = valeur_description_tab_decla(num_decla_idf);
 
-      // Elément non déclaré
-      if(num_decla_idf == -1){
-        char erreur[400];
-        sprintf(erreur, "%s non déclaré.", lexeme($1));
-        print_erreur_semantique(erreur);
-        erreur_semantique++;
+      if(nature(type) == TYPE_STRUCT){      // TYPE_STRUCT
+        empiler_pile_variable(STRUCTURE, type);
       }
-      // Cet IDF correspond à une variable (ou à un paramètre)
-      else if(nature(num_decla_idf) == VAR
-          || nature(num_decla_idf) == PARAMETRE){
-        type = valeur_description_tab_decla(num_decla_idf);
-
-        if(type > 3){     // La variable est une srtucture
-          if(nature(type) == TYPE_STRUCT){
-            empiler_pile_variable(STRUCTURE);
-          }
-          else if(nature(type) == TYPE_TAB){
-            empiler_pile_variable(DIMENSION);
-          }
-          else{
-            print_erreur_semantique(
-              "type inconnu."
-            );
-            erreur_semantique++;
-          }
-        }
-        else{             // La variable est de type simple
-          empiler_pile_variable(VAR_SIMPLE);
+      else if(nature(type) == TYPE_TAB){    // TYPE_TAB
+        int i;
+        int dimensions = valeur_tab_types(valeur_description_tab_decla(type)+1);
+        empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
+        for(i = 0; i < dimensions; i++){
+          empiler_pile_variable(
+            DIMENSION,
+            valeur_tab_types(valeur_description_tab_decla(type))
+          );
         }
       }
-      // Cas non traité ?
-      else{
-        print_erreur_semantique(
-          "type inconnu."
-        );
-        erreur_semantique++;
+      else{                                 // TYPE_BASE
+        empiler_pile_variable(VAR_SIMPLE, type);
       }
     }
-    // L'IDF correspond à un champ de la structure
-    else if(tete_pile_variable() == STRUCTURE){
+  }
+  else {
+    if(tete_pile_variable().nature == CHAMP){
       int i = 0;
       // Premier indice de la struct dans la table des types
       int indice_struct = valeur_description_tab_decla(type);
       int indice_lexeme_champ = indice_struct + 2;
-      empiler_pile_variable(STRUCTURE);
+
+      depiler_pile_variable();
 
       type = -1;
       while(i != valeur_tab_types(indice_struct) && type == -1){
@@ -627,122 +618,152 @@ variable : IDF {
         i++;
       }
 
-      if(type == -1){
+      if(type == -1){   // ERREUR
         char erreur[400];
         sprintf(erreur, "%s : aucun champ correspondant.", lexeme($1));
         print_erreur_semantique(erreur);
         erreur_semantique++;
+        empiler_pile_variable(VAR_SIMPLE, 0);
+      }
+      else{             // PAS ERREUR, ON EMPILE
+        if(nature(type) == TYPE_STRUCT){      // TYPE_STRUCT
+          empiler_pile_variable(STRUCTURE, type);
+        }
+        else if(nature(type) == TYPE_TAB){    // TYPE_TAB
+          int i;
+          int dim = valeur_tab_types(valeur_description_tab_decla(type)+1);
+          empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
+          for(i = 0; i < dim; i++){
+            empiler_pile_variable(
+              DIMENSION,
+              valeur_tab_types(valeur_description_tab_decla(type))
+            );
+          }
+        }
+        else{                                 // TYPE_BASE
+          empiler_pile_variable(VAR_SIMPLE, type);
+        }
       }
     }
-    else{ // PROBLEME RENCONTRE
+    else{ // Cas n'arrivant normalement jamais
+      print_erreur_semantique("pas un champ");
       erreur_semantique++;
     }
-
-}
-  corps_variable {
-  if(erreur_semantique){
-    $$ = creer_noeud(
-            -1,
-            -1,
-            -1,
-            -1,
-            -1
-        );
   }
-  else{
-    int num_decla_idf = num_decla_variable($1);
-    if(num_decla_idf == -1){  // CHAMP
-      $$ = concat_pere_fils(
-        creer_noeud($1, -1, A_CHAMP, -1, -1.0),
-        $3
-      );
-      depiler_pile_variable();
-    }
-    else if(tete_pile_variable() == VAR_SIMPLE){
+}
+
+
+  corps_variable {
+    if(erreur_semantique){
       $$ = creer_noeud(
-            $1,
-            num_decla_idf,
-            A_VAR_SIMPLE,
-            -1,
-            -1
-          );
-          depiler_pile_variable();
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+        );
     }
-    else if(tete_pile_variable() == DIMENSION){
-      $$ = concat_pere_fils(
-          creer_noeud($1, num_decla_idf, A_TAB, -1, -1.0),
+    else{
+      int num_decla_idf = num_decla_variable($1);
+
+      if(tete_pile_variable().nature == CHAMP){  // CHAMP
+        $$ = concat_pere_fils(
+          creer_noeud($1, -1, A_CHAMP, -1, -1.0),
           $3
         );
         depiler_pile_variable();
-    }
-    else if(tete_pile_variable() == STRUCTURE){
-      $$ = concat_pere_fils(
-        creer_noeud($1, num_decla_idf, A_STRUCT, -1, -1.0),
-        $3
-      );
-      depiler_pile_variable();
-    }
-    else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
-      print_erreur_semantique("erreur corps variable.");
-      erreur_semantique++;
+      }
+      else if(tete_pile_variable().nature == VAR_SIMPLE){
+        $$ = creer_noeud(
+              $1,
+              num_decla_idf,
+              A_VAR_SIMPLE,
+              -1,
+              -1
+            );
+        depiler_pile_variable();
+      }
+      else if(tete_pile_variable().nature == TAB){
+        $$ = concat_pere_fils(
+            creer_noeud($1, num_decla_idf, A_TAB, -1, -1.0),
+            $3
+          );
+        depiler_pile_variable();
+      }
+      else if(tete_pile_variable().nature == STRUCTURE){
+        $$ = concat_pere_fils(
+          creer_noeud($1, num_decla_idf, A_STRUCT, -1, -1.0),
+          $3
+        );
+        depiler_pile_variable();
+      }
+      else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
+        print_erreur_semantique("erreur corps variable.");
+        erreur_semantique++;
+      }
     }
   }
-}
          ;
 
+ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT {
+   // Vérification du type de l'expression
+   if(type != TYPE_INT){
+     print_erreur_semantique(
+       "impossible d'indicer un tableau avec une expression non entière."
+     );
+     erreur_semantique++;
+   }
+   if(est_vide_pile_variable() || tete_pile_variable().nature != DIMENSION){
+     print_erreur_semantique(
+       "Trop d'indices."
+     );
+     erreur_semantique++;
 
-corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT {
-  // Vérification du type de l'expression
-  if(type != TYPE_INT){
-    print_erreur_semantique(
-      "impossible d'indicer un tableau avec une expression non entière."
-    );
-    erreur_semantique++;
-  }
-}
-corps_variable {
+   }
+   else{
+     type = tete_pile_variable().type;
+     depiler_pile_variable();
+   }
+ }
+ corps_variable {
+   if(!est_vide_pile_variable() && tete_pile_variable().nature == DIMENSION){
+     print_erreur_semantique(
+       "Pas assez d'indice."
+     );
+     erreur_semantique++;
+     while(tete_pile_variable().nature != TABLEAU){
+       depiler_pile_variable();
+     }
+   }
+   if(erreur_semantique){
+     $$ = creer_noeud(
+         -1,
+         -1,
+         -1,
+         -1,
+         -1
+       );
+   }else{
+     $$ = concat_pere_fils(
+       creer_noeud(-1, -1, A_DIMENSION, -1, -1),
+       concat_pere_frere($2, $5)
+     );
+   }
+ }
 
-  if(tete_pile_variable() == VAR_SIMPLE){
-    print_erreur_semantique("impossible d'indicer une variable.");
-    erreur_semantique++;
-    $$ = creer_noeud(
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      );
-  }
-  else if(tete_pile_variable() == STRUCTURE){
-    print_erreur_semantique("impossible d'indicer une structure.");
-    erreur_semantique++;
-    $$ = creer_noeud(
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      );
-  }
-  else{
-    $$ = concat_pere_fils(
-      creer_noeud(-1, -1, A_DIMENSION, -1, -1),
-      concat_pere_frere($2, $5));
-    }
-}
                | POINT {
-
-   if(tete_pile_variable() == VAR_SIMPLE){
-     print_erreur_semantique("une variable simple ne possède pas de champs.");
-     erreur_semantique++;
-   }
-   else if(tete_pile_variable() == DIMENSION && type < 4){
-     print_erreur_semantique("un tableau de types simple n'a pas de champ.");
-     erreur_semantique++;
-
-   }
-               }
-    variable {
+     if(nature(tete_pile_variable().type) != TYPE_STRUCT){
+       print_erreur_semantique(
+         "Cet objet ne possède pas de champ."
+       );
+       erreur_semantique++;
+     }
+     else{
+       empiler_pile_variable(CHAMP, -1);
+     }
+}
+                variable {
+      afficher_arbre($3);
       if(!erreur_semantique){
         $$ = $3;
       }else{
@@ -754,7 +775,7 @@ corps_variable {
             -1
           );
       }
-    }
+}
                | {$$ = creer_arbre_vide();}
                ;
 
@@ -768,7 +789,7 @@ expression : concatenation {
            ;
 
 concatenation : CSTE_CHAINE {
-  $$ = creer_noeud($1, -1, CSTE_CHAINE, -1, -1.0);
+  $$ = creer_noeud($1, -1, A_CSTE_CHAINE, -1, -1.0);
 }
               | CSTE_CHAINE PLUS concatenation {
   $$ = concat_pere_fils(
@@ -1222,6 +1243,7 @@ int main(int argc, char *argv[]){
   init_tab_decla();
   init_tab_representation_type();
   init_tab_region();
+  init_pile_variable();
 
   if(argc < 2){
     usage(argv[0]);

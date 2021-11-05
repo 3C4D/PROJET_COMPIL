@@ -18,6 +18,13 @@
 #define STRUCTURE 1
 #define DIMENSION 2
 #define VAR_SIMPLE 3
+#define CHAMP 4
+#define TAB 5
+
+typedef struct nature_type_var{
+  int nature;
+  int type;
+} nature_type_var;
 
 // Fonction d'usage du compilateur
 void usage(char *s);
@@ -48,13 +55,13 @@ void init_pile_variable();
 int est_vide_pile_variable();
 
 // Empile une variable
-void empiler_pile_variable(int variable);
+void empiler_pile_variable(int nature, int type);
 
 // Dépile une région
-int depiler_pile_variable();
+nature_type_var depiler_pile_variable();
 
 // Retourne la tête de la pile des variables
-int tete_pile_variable();
+nature_type_var tete_pile_variable();
 
 // Vérification de la cohérence des types pour une expression renvoyant un
 // résultat numérique (ou caractère), renvoie le type final, -1 si erreur
