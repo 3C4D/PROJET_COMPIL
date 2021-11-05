@@ -9,8 +9,11 @@
 #include "../TabRegion/inc/TabRegion.h"
 #include "../inc/couleur.h"
 
+#define MAX_IMBR_VAR 30
+
 int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];
+int pile_variable[MAX_IMBR_VAR+1];
 int deplacement_var[MAX_REGION];
 int deplacement_structure;
 int nis_region;
@@ -66,6 +69,37 @@ void usage(char *s){
   fprintf(stderr,"         * a : afficher arbres\n");
   fprintf(stderr, "     * <prog_cpyrr> : programme cpyrr\n\n");
   exit(-1);
+}
+
+// Initialise la pile de région
+void init_pile_variable(){
+  pile_variable[0] = 0;
+}
+
+// Indique si la pile des variables est vide
+int est_vide_pile_variable(){
+  return (pile_variable[0] == 0);
+}
+
+// Empile une variable
+void empiler_pile_variable(int variable){
+  if(pile_variable[0] == MAX_IMBR_VAR){ // Vérification du nombre de variables
+    fprintf(stderr, "Erreur, trop d'éléments dans la pile des régions.\n");
+    exit(-1);
+  }
+  pile_variable[0]++;
+  pile_variable[pile_variable[0]] = variable;
+}
+
+// Dépile une région
+int depiler_pile_variable(){
+  pile_variable[0]--;
+  return pile_variable[pile_variable[0]+1];
+}
+
+// Retourne la tête de la pile des variables
+int tete_pile_variable(){
+  return pile_variable[pile_variable[0]];
 }
 
 // Initialise la pile de région

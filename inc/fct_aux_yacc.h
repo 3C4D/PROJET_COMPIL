@@ -41,6 +41,21 @@ int tete_pile_region();
 // Renvoie 1 si la région est dans la pile des régions, 0 sinon
 int est_dans_pile_region(int region);
 
+// Initialise la pile de région
+void init_pile_variable();
+
+// Indique si la pile des variables est vide
+int est_vide_pile_variable();
+
+// Empile une variable
+void empiler_pile_variable(int variable);
+
+// Dépile une région
+int depiler_pile_variable();
+
+// Retourne la tête de la pile des variables
+int tete_pile_variable();
+
 // Vérification de la cohérence des types pour une expression renvoyant un
 // résultat numérique (ou caractère), renvoie le type final, -1 si erreur
 int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne);

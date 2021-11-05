@@ -94,9 +94,9 @@ $(EXE_COMPIL): obj bin $(SRC_COMPIL) $(OBJ_COMPIL_EXT)
 	mv cpyrr.tab.* cpyrr.output $(OBJ_DIR_COMPIL)
 	flex $(SRC_DIR_COMPIL)/cpyrr.l
 	mv lex.yy.c $(OBJ_DIR_COMPIL)
-	gcc -o $(OBJ_DIR_COMPIL)/lex.yy.o -c $(OBJ_DIR_COMPIL)/lex.yy.c
-	gcc -o $(OBJ_DIR_COMPIL)/cpyrr.tab.o -c $(OBJ_DIR_COMPIL)/cpyrr.tab.c
-	gcc -o $(EXE_COMPIL) $(OBJ_COMPIL) $(OBJ_COMPIL_EXT)
+	gcc -g -o $(OBJ_DIR_COMPIL)/lex.yy.o -c $(OBJ_DIR_COMPIL)/lex.yy.c
+	gcc -g -o $(OBJ_DIR_COMPIL)/cpyrr.tab.o -c $(OBJ_DIR_COMPIL)/cpyrr.tab.c
+	gcc -g -o $(EXE_COMPIL) $(OBJ_COMPIL) $(OBJ_COMPIL_EXT)
 
 $(EXE_VM): $(OBJ_DIR_VM) $(BIN_DIR_VM) $(OBJ_VM) $(OBJ_COMPIL_EXT)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $(EXE_VM) $(OBJ_VM) $(OBJ_COMPIL_EXT)

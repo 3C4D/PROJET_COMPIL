@@ -57,7 +57,6 @@ int type_var_affectation = 0;
 int type_g = 0;
 int type_d = 0;
 int type = 0;
-int numero_var = INIT;
 
 %}
 
@@ -555,7 +554,10 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
   }
   else{
     $$ = concat_pere_frere(
-          $1,
+          concat_pere_fils(
+              creer_noeud(-1, -1, A_VAR, -1, -1.0),
+              $1
+            ),
           $4
         );
     }
@@ -565,7 +567,7 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
 variable : IDF {
 
     // L'IDF ne correpond pas à un champ, on cherche ce qu'il peut être
-    if(numero_var != STRUCTURE){
+    if(est_vide_pile_variable() || tete_pile_variable() != STRUCTURE){
       int num_decla_idf = num_decla_variable($1);
 
       // Elément non déclaré
@@ -582,14 +584,20 @@ variable : IDF {
 
         if(type > 3){     // La variable est une srtucture
           if(nature(type) == TYPE_STRUCT){
-            numero_var = STRUCTURE;
+            empiler_pile_variable(STRUCTURE);
+          }
+          else if(nature(type) == TYPE_TAB){
+            empiler_pile_variable(DIMENSION);
           }
           else{
-            numero_var = DIMENSION;
+            print_erreur_semantique(
+              "type inconnu."
+            );
+            erreur_semantique++;
           }
         }
         else{             // La variable est de type simple
-          numero_var = VAR_SIMPLE;
+          empiler_pile_variable(VAR_SIMPLE);
         }
       }
       // Cas non traité ?
@@ -597,14 +605,16 @@ variable : IDF {
         print_erreur_semantique(
           "type inconnu."
         );
+        erreur_semantique++;
       }
     }
     // L'IDF correspond à un champ de la structure
-    else {
+    else if(tete_pile_variable() == STRUCTURE){
       int i = 0;
       // Premier indice de la struct dans la table des types
       int indice_struct = valeur_description_tab_decla(type);
       int indice_lexeme_champ = indice_struct + 2;
+      empiler_pile_variable(STRUCTURE);
 
       type = -1;
       while(i != valeur_tab_types(indice_struct) && type == -1){
@@ -623,6 +633,9 @@ variable : IDF {
         print_erreur_semantique(erreur);
         erreur_semantique++;
       }
+    }
+    else{ // PROBLEME RENCONTRE
+      erreur_semantique++;
     }
 
 }
@@ -643,40 +656,44 @@ variable : IDF {
         creer_noeud($1, -1, A_CHAMP, -1, -1.0),
         $3
       );
+      depiler_pile_variable();
     }
-
-    if(numero_var == VAR_SIMPLE){
-      $$ = concat_pere_fils(
-            creer_noeud(
-              $1,
-              num_decla_idf,
-              A_VAR,
-              -1,
-              -1
-            ),
-            $3
+    else if(tete_pile_variable() == VAR_SIMPLE){
+      $$ = creer_noeud(
+            $1,
+            num_decla_idf,
+            A_VAR_SIMPLE,
+            -1,
+            -1
           );
+          depiler_pile_variable();
     }
-    if(numer_var == DIMENSION){
+    else if(tete_pile_variable() == DIMENSION){
       $$ = concat_pere_fils(
-          creer_noeud(-$1, num_decla_idf, A_TAB, -1, -1),
+          creer_noeud($1, num_decla_idf, A_TAB, -1, -1.0),
           $3
         );
+        depiler_pile_variable();
     }
-    if(numero_var == STRUCTURE){
+    else if(tete_pile_variable() == STRUCTURE){
       $$ = concat_pere_fils(
         creer_noeud($1, num_decla_idf, A_STRUCT, -1, -1.0),
         $3
       );
+      depiler_pile_variable();
+    }
+    else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
+      print_erreur_semantique("erreur corps variable.");
+      erreur_semantique++;
     }
   }
-  numero_var = INIT;
 }
          ;
 
+
 corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
 
-  if(numero_var == VAR_SIMPLE){
+  if(tete_pile_variable() == VAR_SIMPLE){
     print_erreur_semantique("impossible d'indicer une variable.");
     erreur_semantique++;
     $$ = creer_noeud(
@@ -687,7 +704,7 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
         -1
       );
   }
-  else if(numero_var == STRUCTURE){
+  else if(tete_pile_variable() == STRUCTURE){
     print_erreur_semantique("impossible d'indicer une structure.");
     erreur_semantique++;
     $$ = creer_noeud(
@@ -706,11 +723,11 @@ corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT corps_variable {
 }
                | POINT {
 
-   if(numero_var == VAR_SIMPLE){
+   if(tete_pile_variable() == VAR_SIMPLE){
      print_erreur_semantique("une variable simple ne possède pas de champs.");
      erreur_semantique++;
    }
-   else if(numero_var == DIMENSION && type < 4){
+   else if(tete_pile_variable() == DIMENSION && type < 4){
      print_erreur_semantique("un tableau de types simple n'a pas de champ.");
      erreur_semantique++;
 
@@ -922,7 +939,10 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
      type = TYPE_BOOL;
    }
    | variable {
-     $$ = $1;
+     $$ = concat_pere_fils(
+          creer_noeud(-1, -1, A_VAR, -1, -1.0),
+          $1
+       );
    }
    | appel  {
      // On cherche à savoir si l'on est en face d'une procedure ou bien
@@ -1040,7 +1060,10 @@ suite_afficher : VIRGULE {
 composante_afficher : variable       {
                       // On récupère le type de la variable appellée
                       tab_var_format[tab_var_format[0]] = type;
-                      $$ = $1;
+                      $$ = concat_pere_fils(
+                          creer_noeud(-1, -1, A_VAR, -1, -1.0),
+                          $1
+                        );
                     }
                     | appel       {
     // On cherche à savoir si l'on est en face d'une procedure ou bien
@@ -1118,11 +1141,22 @@ lire : LIRE PARENTHESE_OUVRANTE liste_variables PARENTHESE_FERMANTE {
 liste_variables : variable VIRGULE liste_variables {
   $$ = concat_pere_fils(
     creer_noeud(-1, -1, A_LISTE_VAR, -1, -1),
-    concat_pere_frere($1, $3)
+    concat_pere_frere(
+      concat_pere_fils(
+        creer_noeud(-1, -1, A_VAR, -1, -1.0),
+        $1
+      ),
+    $3)
   );
 }
                 | variable {
-  $$ = concat_pere_fils(creer_noeud(-1, -1, A_LISTE_VAR, -1, -1), $1);
+  $$ = concat_pere_fils(
+      creer_noeud(-1, -1, A_LISTE_VAR, -1, -1),
+      concat_pere_fils(
+        creer_noeud(-1, -1, A_VAR, -1, -1.0),
+        $1
+      )
+    );
 }
                 ;
 

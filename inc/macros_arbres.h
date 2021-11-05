@@ -51,5 +51,6 @@
 #define A_VAR 39
 #define A_STRUCT 40
 #define A_DIMENSION 41
+#define A_VAR_SIMPLE 42
 
 #endif

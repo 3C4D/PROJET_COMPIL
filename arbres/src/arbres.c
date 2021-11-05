@@ -92,6 +92,7 @@ void aff_nature_noeud(int nature){
     case A_VAR : printf("A_VAR"); break;
     case A_STRUCT : printf("A_STRUCT"); break;
     case A_DIMENSION : printf("A_DIMENSION"); break;
+    case A_VAR_SIMPLE : printf("A_VAR_SIMPLE"); break;
     default : printf("INCONNU"); break;
   }
 }
