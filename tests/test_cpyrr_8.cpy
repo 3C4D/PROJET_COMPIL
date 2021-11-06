@@ -82,7 +82,7 @@ var nbTerme : int;
 }
 
 {
-  // On pousse le vice
+  // modifications avancées
   cdur.simple := 20;
   cdur.quoi[6][3] := 9;
   hardcore[6][6][6].jpp.ch4 := 999;
