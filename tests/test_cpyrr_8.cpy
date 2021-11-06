@@ -88,5 +88,21 @@ var nbTerme : int;
   hardcore[6][6][6].jpp.ch4 := 999;
   // affectation arithmérique
   x42b := (12 + (4 - 8 % 12) * 6);
-
+  // booleen
+  y12 := (true and ((false or 1) and 2));
+  // float
+  variableInutile := 3.75*(8+(6.789/1.6));
+  // caractère
+  variableInutile2 := 's';
+  // struct
+  bonjour.ch1 := x42b+3*(6%2);
+  bonjour.ch2 := variableInutile2;
+  // tableau
+  tab[5][2] := 1337;
+  tab[x42b+2*(4+6%28)][2] := 2;
+  tab[fibo(x42b)][2] := x42b-85;
+  // On appelle notre fonction
+  afficher("%d\n", fibo(2));
+  afficher("%d\n", fibo(x42b + 5 - (6%(3/5))));
+  afficher("%d\n", fibo(bonjour.ch1));
 }

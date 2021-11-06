@@ -763,7 +763,6 @@ variable : IDF {
      }
 }
                 variable {
-      afficher_arbre($3);
       if(!erreur_semantique){
         $$ = $3;
       }else{
