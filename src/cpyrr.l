@@ -87,7 +87,7 @@ C3 [^"*/]
 
 (0|[1-9][0-9]*) {yylval.typ2 = atoi(yytext); return(CSTE_ENTIERE);}
 (0|[1-9][0-9]*)\.([0-9]*)  {yylval.typ3 = atof(yytext); return(CSTE_REELLE);}
-\'.\'  {yylval.typ2 = *yytext; return(CSTE_CARACTERE);}
+\'.\'  {yylval.typ2 = yytext[1]; return(CSTE_CARACTERE);}
 \"[^"]*\" {yylval.typ2 = inserer_tab_lex(yytext); return(CSTE_CHAINE);}
 
 [a-zA-Z][a-zA-Z0-9]*  {
