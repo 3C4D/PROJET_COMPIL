@@ -69,6 +69,11 @@ void afficher_tab_declaration();
   ----------------------------------------------------------------------------*/
 int num_decla(int num_lexico, int nature, int region_particuliere);
 
+// Donne le numéro de déclaration d'une variable
+// En fonction de sont numéro lexicographique, sa nature et sa région
+// Renvoie le susdit numero ou -1 si cette variable n'existe pas
+int lex2decl(int numlex, int nature, int region);
+
 /*----------------------------------------------------------------------------
  Utilité : Retourne le champs décription à l'indice donnée dans la table des
           déclarations.

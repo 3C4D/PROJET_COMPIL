@@ -39,6 +39,16 @@ void inserer_arbre_tab_region(arbre a){
   TableRegion[region].arbre_region = a;
 }
 
+// Donne le NIS d'une région
+int nis_reg(int reg_num){
+  return TableRegion[reg_num].NIS;
+}
+
+// Donne la taille d'une région
+int taille_reg(int reg_num){
+  return TableRegion[reg_num].taille;
+}
+
 /*Affiche la table des régions*/
 void afficher_tab_region(){
   int i;

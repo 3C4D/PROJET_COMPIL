@@ -33,6 +33,12 @@ void inserer_arbre_tab_region(arbre a);
 /*Affiche la table des régions*/
 void afficher_tab_region();
 
+// Donne le NIS d'une région
+int nis_reg(int reg_num);
+
+// Donne la taille d'une région
+int taille_reg(int reg_num);
+
 // Charge la table lexico à partir du texte intermédiaire
 void charger_table_region(FILE *fic);
 

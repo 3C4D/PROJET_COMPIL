@@ -298,7 +298,7 @@ int inserer_tab_declaration(int num_lexico, int nature,
    printf("/--------------------------+------------+-------------+------------+-----------+-----------------+-------------\\\n");
    printf("|          Lexeme          |   Indice   |   Nature    |  Suivant   |  Région   |   Description   |  Exécution  |\n" );
    printf("+--------------------------+------------+-------------+------------+-----------+-----------------+-------------+\n" );
-   while(i<30){
+   while(i<50){
      switch (TableDeclaration[i].nature) {
        case TYPE_BASE :
          printf("|    %-21s |     %-6d |  TYPE_BASE  |     %-6d |     %-5d |        %-8d |      %-6d |\n", lexeme(i),i, TableDeclaration[i].suivant,TableDeclaration[i].num_region, TableDeclaration[i].description, TableDeclaration[i].exec);
@@ -409,8 +409,22 @@ int num_decla(int num_lexico, int nature, int region_particuliere){
   return num_decla;
 }
 
+// Donne le numéro de déclaration d'une variable
+// En fonction de sont numéro lexicographique, sa nature et sa région
+// Renvoie le susdit numero ou -1 si cette variable n'existe pas
+int lex2decl(int numlex, int nature, int region){
+  int chaine = numlex;
 
+  while (
+    chaine != -1 && 
+    !(TableDeclaration[chaine].nature == nature &&
+    TableDeclaration[chaine].num_region == region)
+  ) {
+    chaine = TableDeclaration[chaine].suivant;
+  }
 
+  return chaine;
+}
 
 /*----------------------------------------------------------------------------
  Utilité : Renvoie le numéro de région d'une certaine déclaration
