@@ -173,6 +173,7 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
       premier_indice(),
       nb_ligne
     ) == -1){
+      print_erreur_semantique("erreur insertion table decla");
       erreur_semantique++;
     };
 }
@@ -193,6 +194,7 @@ suite_declaration_type : STRUCT {
     stocker_table_representation(premier_indice(), nb_champs);
     $$= TYPE_STRUCT;
     if(verif_surchage_struct(premier_indice(),nb_ligne) == -1){
+      print_erreur_semantique("erreur insertion table representation");
       erreur_semantique++;
     }
 }
@@ -276,6 +278,7 @@ declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
    }
    num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), num_decla_type($4), nb_ligne);
    if(num_declaration == -1){
+     print_erreur_semantique("erreur insertion table declaration");
      erreur_semantique++;
    }
    inserer_exec_tab_decla(num_declaration, deplacement());
@@ -296,6 +299,7 @@ declaration_procedure : PROCEDURE IDF {
       premier_indice(),
       nb_ligne
     ) == -1){
+      print_erreur_semantique("erreur insertion table declaration");
       erreur_semantique++;
     }
 
@@ -334,6 +338,7 @@ declaration_fonction  : FONCTION IDF {
       premier_indice(),
       nb_ligne
     ) == -1 ){
+      print_erreur_semantique("erreur insertion table declaration");
       erreur_semantique++;
     }
 
@@ -382,6 +387,7 @@ un_param : IDF DEUX_POINTS type_simple {
   inserer_tab_representation_type($3, $1, FCT);
   num_declaration = inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
   if(num_declaration == -1){
+    print_erreur_semantique("erreur insertion table declaration");
     erreur_semantique++;
   }
   inserer_exec_tab_decla(num_declaration, deplacement());
@@ -1111,6 +1117,7 @@ composante_afficher : variable       {
           "%s non déclaré.",
           lexeme($1->numlex)
         );
+        print_erreur_semantique(erreur);
         erreur_semantique++;
       }
       else{
@@ -1120,6 +1127,7 @@ composante_afficher : variable       {
           "affichage d'une procedure (%s) impossible.",
           lexeme($1->numlex)
         );
+        print_erreur_semantique(erreur);
         erreur_semantique++;
       }
     }
@@ -1267,8 +1275,11 @@ int main(int argc, char *argv[]){
   yyparse();
 
   // Pas de fichier output précisé
-  if(index_fic == -1){
-    if((fic = fopen("a.out", "w")) == NULL){
+  if(index_fic == -1 ){
+    if(
+      !erreur_semantique
+      && syntaxe_correcte
+      && (fic = fopen("a.out", "w")) == NULL){
       fprintf(stderr, "\nImpossible d'ouvrir le fichier a.out\n");
       usage(argv[0]);
     }
