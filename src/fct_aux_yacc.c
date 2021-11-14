@@ -8,6 +8,7 @@
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabRegion/inc/TabRegion.h"
 #include "../inc/couleur.h"
+#include "../inc/macros_arbres.h"
 
 #define MAX_IMBR_VAR 30
 
@@ -346,4 +347,19 @@ void format(char *str){
     }
     ptr++;
   }
+}
+
+// Fonction permettant de fermer une liste d'instruction de procedure pour
+// faciliter l'execution
+void fermeture_arbre_proc(arbre liste_instr_proc){
+  arbre iter = liste_instr_proc->fils_gauche;
+  arbre noeud = creer_noeud(-1, -1, A_FIN_PROC, -1, -1.0);
+  arbre new_noeud;
+
+  while(iter->frere_droit != NULL){
+    printf("encore\n");
+    iter = iter->frere_droit->fils_gauche;
+  }
+
+  iter = concat_pere_frere(iter, noeud);
 }

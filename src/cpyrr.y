@@ -317,6 +317,8 @@ declaration_procedure : PROCEDURE IDF {
 
 }
                       corps {
+   printf("ARBRE PROC\n");
+   fermeture_arbre_proc($6);
    change_NIS(-1); //Car on sort d'une région
    inserer_tab_region(deplacement(), nis());
 

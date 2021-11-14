@@ -53,4 +53,6 @@
 #define A_DIMENSION 41
 #define A_VAR_SIMPLE 42
 
+#define A_FIN_PROC 43
+
 #endif

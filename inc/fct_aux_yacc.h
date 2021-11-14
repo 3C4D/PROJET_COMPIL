@@ -98,4 +98,9 @@ int analyse_options(char *argv[], int *flags);
 
 // Affiche une erreur sémantique dans le terminal
 void print_erreur_semantique(char *erreur);
+
+// Fonction permettant de fermer une liste d'instruction de pr-ocedure pour
+// faciliter l'execution
+void fermeture_arbre_proc(arbre liste_instr_proc);
+
 #endif
