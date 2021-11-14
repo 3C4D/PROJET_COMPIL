@@ -33,7 +33,7 @@ void execution(FILE *fic){
   // Création de la pile d'execution
   pile_exec_g = pilex_init(100 * MAX_TAB_LEX);
   // Initialisation del al pile
-  pilex_empn(taille_reg(0) + 1, pile_exec_g);
+  pilex_empn(taille_reg(0), pile_exec_g);
   // Initialisation de la région actuelle
   reg_actu_g = 0;
   // Éxection de l'arbre
@@ -57,10 +57,17 @@ bool exec_arbre(arbre a){
   switch (a->nature){
   case A_LISTE_INSTR:    
     if (exec_arbre(a->fils_gauche)){ return true;  }
+    if (est_vide(a->fils_gauche->frere_droit)){
+
+    }
     return exec_arbre(a->fils_gauche->frere_droit);
 
   case A_RETOURNE : 
     retval_g = eval_arbre(a->fils_gauche);
+    retour();
+    return true;
+
+  case A_FIN_PROC :
     retour();
     return true;
 
@@ -137,7 +144,7 @@ void charger_reg(int num_reg){
   int base_region_appl = pilex_posbase(pile_exec_g);
   chainage_dynamique(base_region_appl);
   chainage_statique(base_region_appl, nis_reg(num_reg));
-  pilex_empn(taille_reg(num_reg) - nis_reg(num_reg), pile_exec_g);
+  pilex_empn(taille_reg(num_reg) - nis_reg(num_reg) - 1, pile_exec_g);
 }
 
 // Crée un chainage dynamique <=> adresse de la région appelante
@@ -226,7 +233,7 @@ void retour(){
   // Déplacement de la base à la région appelante
   pilex_deplbase(base, pile_exec_g);
   // Dépilement de la région appelée
-  pilex_depn(taille_reg(reg_actu_g) + 1, pile_exec_g);
+  pilex_depn(taille_reg(reg_actu_g), pile_exec_g);
   reg_actu_g = reg;
 }
 
@@ -275,8 +282,13 @@ var_info info_var(arbre a){
   type_numdecl = valeur_description_tab_decla(numdecl);
   val = info_artefact(type_numdecl, a->fils_gauche);
 
-  info.dec += valeur_exec_tab_decla(numdecl);
-  info.dec += nis_reg(region(numdecl)) + 1;
+  // Décalage par rapport à la Base Courante...
+  info.dec += valeur_exec_tab_decla(numdecl); 
+  // ...suite (Chainage statique) ...
+  info.dec += nis_reg(region(numdecl));
+  //...suite (Chainage dynamique)
+  info.dec += (region(numdecl) == 0) ? 0 : 1;
+  // Décalage dans la variable (i.e. struct & tab)
   info.dec += val.dec;
   info.nat = val.nat;
 
