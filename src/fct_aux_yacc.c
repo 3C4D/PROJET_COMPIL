@@ -63,7 +63,7 @@ void usage(char *s){
     stderr,
     "         * o <output> : précision du fichier d'ouput (défaut : a.out)\n"
   );
-  fprintf(stderr,"         * l : afficher table decla\n");
+  fprintf(stderr,"         * l : afficher table lexico\n");
   fprintf(stderr,"         * d : afficher table decla\n");
   fprintf(stderr,"         * t : afficher table types\n");
   fprintf(stderr,"         * r : afficher table regions\n");
