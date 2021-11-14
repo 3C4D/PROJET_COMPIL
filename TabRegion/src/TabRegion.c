@@ -8,8 +8,9 @@ tabRegion TableRegion[MAX_TAB_REGION];
 /*Initialise la table des régions*/
 void init_tab_region(){
   int i;
-  for(i=0; i<MAX_TAB_REGION; i++){
-    TableRegion[i].taille = -1;
+  TableRegion[0].taille = 0;
+  for(i=1; i<MAX_TAB_REGION; i++){
+    TableRegion[i].taille = 1;
     TableRegion[i].NIS = -1;
     TableRegion[i].arbre_region = NULL;
   }
@@ -24,7 +25,7 @@ void init_tab_region(){
 void inserer_tab_region(int taille, int nis){
   int region  = tete_pile_region();
 
-  TableRegion[region].taille = taille + nis;
+  TableRegion[region].taille += taille + nis;
   TableRegion[region].NIS = nis;
 }
 
@@ -57,7 +58,7 @@ void afficher_tab_region(){
   printf("| Num région | Taille | NIS | Arbre |\n");
   printf("+------------+--------+-----+-------+\n" );
   i=0;
-  while(TableRegion[i].taille != -1){
+  while(TableRegion[i].NIS != -1){
     printf("|     %-6d |   %-4d |  %-2d |       |\n",i, TableRegion[i].taille, TableRegion[i].NIS);
     i++;
   }

@@ -12,7 +12,7 @@ permettra d'exécuter le programme compilé.
 ```
 ./bin/cpyrr [OPTIONS] <prog_cpyrr> <output>
      * [OPTIONS] :
-         * l : afficher table decla
+         * l : afficher table lexico
          * d : afficher table decla
          * t : afficher table types
          * r : afficher table regions
@@ -20,3 +20,6 @@ permettra d'exécuter le programme compilé.
      * <prog_cpyrr> : programme cpyrr
      * <output> : nom du programme généré
 ```
+Exemple d'utilisation : `./bin/cpyrr ldtra tests/test_cpyrr_5.cpy fichier_out_put`
+Cela affichera toutes les tables, ainsi que les arbres du programme test_cpyrr_5,
+et créera le texte intermédiaire, dans le fichier fichier_out_put, de ce même programme (si la compilation est possible).
