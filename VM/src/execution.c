@@ -16,7 +16,7 @@ int reg_actu_g;
 ninja retval_g;
 
 void appel_fctproc(int num_reg, arbre a);
-void ajout_arg(int numdecl, int arg_num, arbre a);
+void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a);
 void retour();
 void charger_reg(int num_reg);
 void chainage_dynamique(int base_region_appl);
@@ -129,12 +129,12 @@ void appel_fctproc(int num_reg, arbre a){
   int som = pilex_possom(pile_exec_g);
   charger_reg(num_reg);
 
+  // Ajout des arguements
+  ajout_arg(som + 1, num_reg, a->numdecl, 1, a->fils_gauche);
   // Changement de la région actuelle
   reg_actu_g = num_reg;
   // Déplacement de la base courante
   pilex_deplbase(som + 1, pile_exec_g);
-  // Ajout des arguements
-  ajout_arg(a->numdecl, 1, a->fils_gauche);
   // Execution de l'arbre d'execution de la fonction
   exec_arbre(arbre_reg(num_reg));
 }
@@ -176,7 +176,7 @@ void chainage_statique(int base_region_appl, int nis){
 }
 
 // Ajoute les arguments de la fonciton
-void ajout_arg(int numdecl, int arg_num, arbre a){
+void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
   // Défini si les arguments sont ceux d'une fonction ou d'une procedure
   int forp = (nature(numdecl) == FCT) ? 1 : 0;
   int nb_param = valeur_tab_representation(
@@ -203,7 +203,7 @@ void ajout_arg(int numdecl, int arg_num, arbre a){
       valeur_description_tab_decla(numdecl) + 2 * arg_num + forp
       );
   
-  numdecl_arg = lex2decl(numlex_arg, PARAMETRE, reg_actu_g);
+  numdecl_arg = lex2decl(numlex_arg, PARAMETRE, numreg);
   dec_arg = valeur_exec_tab_decla(numdecl_arg);
   
   // Nature de l'arguement
@@ -219,9 +219,9 @@ void ajout_arg(int numdecl, int arg_num, arbre a){
     exit(-1);
   }
 
-  arg = mem_init(val_arg.val, val_arg.nat, numlex_arg);
-  pilex_modbase(arg, dec_arg + nis_reg(reg_actu_g) + 1, pile_exec_g);
-  ajout_arg(numdecl, arg_num + 1, a->frere_droit);
+  arg = mem_init(val_arg.val, val_arg.nat, numdecl_arg);
+  pilex_modval(arg, base_reg + dec_arg + nis_reg(numreg) + 1, pile_exec_g);
+  ajout_arg(base_reg, numreg, numdecl, arg_num + 1, a->frere_droit);
 }
 
 // Gestion du retour de procedure/fonction
