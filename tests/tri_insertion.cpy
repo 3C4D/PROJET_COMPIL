@@ -66,7 +66,7 @@ var k:int;
 {
     i := 1;
     while(i < 8)do{
-        if estPlusGrand(i-1, i) = true then{
+        if estPlusGrand(i-1, i) then{
             afficherTab();
             k := dicho(0, i-1, i);
             rotation(k, i);
