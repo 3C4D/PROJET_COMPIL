@@ -160,10 +160,6 @@ ninja eval_arbre(arbre a){
 }
 
 ninja bool_op(ninja a, bool (* op)(bool, bool), ninja b){
-  /*if (a.nat != BOOL && b.nat != BOOL){
-    return init_ninja(0, VOID);
-  }*/
-
   return init_ninja(op(blob2bool(a.val), blob2bool(b.val)), BOOL);
 }
 
@@ -172,15 +168,10 @@ bool ou (bool a, bool b){ return a || b; }
 bool non (bool a, bool b){ return !a; }
 
 ninja cmp_op(ninja a, bool (* op)(blob, blob, types), ninja b){
-  // règle le problème ta race
-
-  /*
-
-            ICI LA PUTAIN DE TA MERE
-
-  */
-  if (!est_num(a) || !est_num(b)){
-    return init_ninja(0, VOID);
+  if (op != eq && op != diff){
+    if (!est_num(a) || !est_num(b)){
+      return init_ninja(0, VOID);
+    }
   }
 
   types t = uninumtype(&a, &b);
