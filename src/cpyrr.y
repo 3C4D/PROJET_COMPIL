@@ -929,7 +929,7 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
      // Comparaison entre booleen autres que == et !=
      if(type_g == TYPE_BOOL && type_d == TYPE_BOOL){
        type = TYPE_BOOL;
-       if($3->nature != EGAL && $3->nature != DIFFERENT){
+       if($3->nature != A_EGAL && $3->nature != A_DIFFERENT){
          print_erreur_semantique(
            "comparaison d'ordre entre booleens impossible."
          );
@@ -1013,14 +1013,14 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
        if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
          erreur_semantique++;
        }
+       type = valeur_tab_types(valeur_description_tab_decla(num_decl_appel));
      }
-
      $$ = $1;
    }
    ;
 
 un_booleen : TRUE {$$ = creer_noeud(-1, -1, A_TRUE, -1, -1.0);}
-           | FALSE {$$ = creer_noeud(-1, -1, A_TRUE, -1, -1.0);}
+           | FALSE {$$ = creer_noeud(-1, -1, A_FALSE, -1, -1.0);}
            ;
 
 operateur_comp : EGAL  {$$ = creer_noeud(-1, -1, A_EGAL, -1, -1.0);}

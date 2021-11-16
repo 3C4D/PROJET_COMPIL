@@ -41,7 +41,7 @@ void execution(FILE *fic){
 
   // Si tout c'est bien passé
   printf(
-    "\nExecution terminée normalement: valeur de retour: 0x%016lx\n", 
+    "\nExecution terminée normalement: valeur de retour: 0x%016lx\n",
     retval_g.val);
   // Libération de l'espace occupé par la pile d'execution
   pilex_liberer(pile_exec_g);
@@ -55,14 +55,14 @@ bool exec_arbre(arbre a){
   if (est_vide(a)){ return false; }
 
   switch (a->nature){
-  case A_LISTE_INSTR:    
+  case A_LISTE_INSTR:
     if (exec_arbre(a->fils_gauche)){ return true;  }
     if (est_vide(a->fils_gauche->frere_droit)){
 
     }
     return exec_arbre(a->fils_gauche->frere_droit);
 
-  case A_RETOURNE : 
+  case A_RETOURNE :
     retval_g = eval_arbre(a->fils_gauche);
     retour();
     return true;
@@ -71,20 +71,20 @@ bool exec_arbre(arbre a){
     retour();
     return true;
 
-  case A_AFFECTATION : 
+  case A_AFFECTATION :
     eval = eval_arbre(a->fils_gauche->frere_droit);
     dec = info_pile_var(a->fils_gauche).dec;
     val = mem_init(eval.val, eval.nat, pilex_recbaseval(dec, pile_exec_g).id);
     pilex_modval(val, dec, pile_exec_g);
     break;
 
-  case A_SI_ALORS : 
+  case A_SI_ALORS :
     if (eval_arbre(a->fils_gauche).val){
       return exec_arbre(a->fils_gauche->frere_droit);
     }
     break;
 
-  case A_SI_ALORS_SINON : 
+  case A_SI_ALORS_SINON :
     if (eval_arbre(a->fils_gauche).val){
       return exec_arbre(a->fils_gauche->frere_droit);
     } else {
@@ -92,30 +92,30 @@ bool exec_arbre(arbre a){
     }
     break;
 
-  case A_TANT_QUE : 
+  case A_TANT_QUE :
     while (eval_arbre(a->fils_gauche).val){
       if (exec_arbre(a->fils_gauche->frere_droit)){ return true; }
     }
     break;
 
-  case A_AFFICHER : 
-    io_affiche(eval_arbre(a->fils_gauche), a->fils_gauche->frere_droit); 
+  case A_AFFICHER :
+    io_affiche(eval_arbre(a->fils_gauche), a->fils_gauche->frere_droit);
     break;
 
-  case A_LIRE : 
-    printf("Lecture de l'entrée si si j'te jure\n"); 
+  case A_LIRE :
+    printf("Lecture de l'entrée si si j'te jure\n");
     break;
 
-  case A_APPEL_PROC : 
+  case A_APPEL_PROC :
     appel_fctproc(valeur_exec_tab_decla(a->numdecl), a);
     break;
 
-  case A_APPEL_FCT : 
+  case A_APPEL_FCT :
     appel_fctproc(valeur_exec_tab_decla(a->numdecl), a);
     break;
 
   case A_VIDE :  break;
-  
+
   default:
     fprintf(stderr, "Err: arbre exec: noeud non reconnu: %d\n", a->nature);
     exit(-1);
@@ -160,7 +160,7 @@ void chainage_statique(int base_region_appl, int nis){
 
   // lim = min(nis(region actuelle), nis(region appelée))
   lim = (nis <= nis_reg(reg_actu_g)) ? nis : nis_reg(reg_actu_g);
-  
+
   for (int i = 1; i <= lim; i++){
     // Copie du chainage statique de la région appelante
     pilex_emp(pilex_recbaseval(i, pile_exec_g), pile_exec_g);
@@ -202,10 +202,10 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
   numlex_arg = valeur_tab_representation(
       valeur_description_tab_decla(numdecl) + 2 * arg_num + forp
       );
-  
+
   numdecl_arg = lex2decl(numlex_arg, PARAMETRE, numreg);
   dec_arg = valeur_exec_tab_decla(numdecl_arg);
-  
+
   // Nature de l'arguement
   nat_arg = valeur_tab_representation(
       valeur_description_tab_decla(numdecl) + 2 * arg_num + forp - 1
@@ -221,7 +221,7 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
 
   arg = mem_init(val_arg.val, val_arg.nat, numdecl_arg);
   pilex_modval(arg, base_reg + dec_arg + nis_reg(numreg) + 1, pile_exec_g);
-  ajout_arg(base_reg, numreg, numdecl, arg_num + 1, a->frere_droit);
+  ajout_arg(base_reg, numreg, numdecl, arg_num + 1, a->fils_gauche->frere_droit);
 }
 
 // Gestion du retour de procedure/fonction
@@ -229,7 +229,7 @@ void retour(){
   mem addr_ret = pilex_recbaseval(0, pile_exec_g);
   int base = blob2int(addr_ret.data);
   int reg = addr_ret.id;
-  
+
   // Déplacement de la base à la région appelante
   pilex_deplbase(base, pile_exec_g);
   // Dépilement de la région appelée
@@ -283,7 +283,7 @@ var_info info_var(arbre a){
   val = info_artefact(type_numdecl, a->fils_gauche);
 
   // Décalage par rapport à la Base Courante...
-  info.dec += valeur_exec_tab_decla(numdecl); 
+  info.dec += valeur_exec_tab_decla(numdecl);
   // ...suite (Chainage statique) ...
   info.dec += nis_reg(region(numdecl));
   //...suite (Chainage dynamique)
@@ -304,12 +304,12 @@ var_info info_artefact(int numdecl, arbre a){
   // Arrive lorsque la variable est un tableau (à la fin)
   if (est_vide(a)){
     return info;
-  } else if (a->nature == A_VAR_SIMPLE){ 
+  } else if (a->nature == A_VAR_SIMPLE){
     // Si la variable n'est pas un champ de structure
     if (a->numdecl != -1){
       info.nat = type_conv(valeur_description_tab_decla(a->numdecl));
     }
-    return info; 
+    return info;
   }
 
   // Index de representation du type
@@ -363,12 +363,12 @@ var_info info_artefact(int numdecl, arbre a){
 int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
   int min, max, ind, dec, dist;
 
-  if (dim == 0) { 
+  if (dim == 0) {
     if (!est_vide(a)){
       a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
     }
     *suite = a;
-    return 0; 
+    return 0;
   }
 
   if (est_vide(a)){
@@ -388,7 +388,7 @@ int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
   dist = max - min + 1;
 
   dec = var_dec_tab(
-    dim - 1, ind_rep + 2, taille_case, 
+    dim - 1, ind_rep + 2, taille_case,
     a->fils_gauche->frere_droit, suite
     );
   dec += (ind - min) * (*taille_case);
