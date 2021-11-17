@@ -85,7 +85,7 @@ int type = 0;
 
 %token<typ3> CSTE_REELLE
 
-%type<typ2> declaration_type declaration_fonction declaration_variable
+%type<typ2> moins declaration_type declaration_fonction declaration_variable
 %type<typ2> liste_champs liste_param liste_dimensions liste_parametres
 %type<typ2> une_dimension un_champ un_param dimension
 %type<typ2> nom_type type_simple declaration_procedure
@@ -944,7 +944,7 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
 
 e4 : NON e5 {
   $$ = concat_pere_fils(creer_noeud(-1, -1, A_NON, -1, -1), $2);
-  if(type != TYPE_INT && type != TYPE_INT){
+  if(type != TYPE_INT && type != TYPE_BOOL){
     print_erreur_semantique(
       "opérateur NOT sur autre chose qu'un booleen ou un entier impossible."
     );
@@ -958,12 +958,12 @@ e4 : NON e5 {
    ;
 
 e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
-   | CSTE_ENTIERE {
-     $$ = creer_noeud(-1, -1, A_CSTE_ENT, $1, -1.0);
+   | moins CSTE_ENTIERE {
+     $$ = creer_noeud(-1, -1, A_CSTE_ENT, $2*$1, -1.0);
      type = TYPE_INT;
    }
-   | CSTE_REELLE  {
-     $$ = creer_noeud(-1, -1, A_CSTE_REEL, -1, $1);
+   | moins CSTE_REELLE {
+     $$ = creer_noeud(-1, -1, A_CSTE_REEL, -1, $2*$1);
      type = TYPE_FLOAT;
    }
    | CSTE_CARACTERE {
@@ -974,25 +974,39 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
      $$ = $1;
      type = TYPE_BOOL;
    }
-   | variable {
-     $$ = concat_pere_fils(
-          creer_noeud(-1, -1, A_VAR, -1, -1.0),
-          $1
-       );
+   | moins variable {
+     if($1 == -1){
+       $$ = concat_pere_fils(
+           creer_noeud(-1, -1, A_MOINS, -1, -1.0),
+           concat_pere_frere(
+             creer_noeud(-1, -1, A_CSTE_ENT, 0, -1.0),
+             concat_pere_fils(
+                creer_noeud(-1, -1, A_VAR, -1, -1.0),
+                $2
+             )
+           )
+         );
+     }
+     else{
+       $$ = concat_pere_fils(
+            creer_noeud(-1, -1, A_VAR, -1, -1.0),
+            $2
+         );
+      }
    }
-   | appel  {
+   | moins appel  {
      // On cherche à savoir si l'on est en face d'une procedure ou bien
      // d'une fonction
      // Ici un appel de procedure sera une erreur, une procedure ne renvoyant
      // rien
-     int num_decl_appel = num_decla($1->numlex, FCT, -1);
+     int num_decl_appel = num_decla($2->numlex, FCT, -1);
 
      if(num_decl_appel == -1){ // Fonction non trouvée
        // Une procedure est-elle appelée à la place ?
-       num_decl_appel = num_decla($1->numlex, PROC, -1);
+       num_decl_appel = num_decla($2->numlex, PROC, -1);
        if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
          char erreur[400];
-         sprintf(erreur, "%s non déclaré.", lexeme($1->numlex));
+         sprintf(erreur, "%s non déclaré.", lexeme($2->numlex));
          print_erreur_semantique(erreur);
          erreur_semantique++;
        }
@@ -1001,23 +1015,39 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
          sprintf(
            erreur,
            "appel d'une procedure (%s) dans une expression.",
-           lexeme($1->numlex)
+           lexeme($2->numlex)
          );
          print_erreur_semantique(erreur);
          erreur_semantique++;
        }
      }
      else{ // Réglages des élements restés en suspend durant l'appel
-       $1->numdecl = num_decl_appel;
-       $1->nature = A_APPEL_FCT;
+       $2->numdecl = num_decl_appel;
+       $2->nature = A_APPEL_FCT;
        if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
          erreur_semantique++;
        }
        type = valeur_tab_types(valeur_description_tab_decla(num_decl_appel));
      }
-     $$ = $1;
+
+     if($1 == -1){
+       $$ = concat_pere_fils(
+           creer_noeud(-1, -1, A_MOINS, -1, -1.0),
+           concat_pere_frere(
+             creer_noeud(-1, -1, A_CSTE_ENT, 0, -1.0),
+             $2
+           )
+        );
+     }
+     else{
+       $$ = $2;
+      }
    }
    ;
+
+moins : MOINS {$$ = -1;}
+      | {$$ = 1;}
+      ;
 
 un_booleen : TRUE {$$ = creer_noeud(-1, -1, A_TRUE, -1, -1.0);}
            | FALSE {$$ = creer_noeud(-1, -1, A_FALSE, -1, -1.0);}
