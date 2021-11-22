@@ -551,8 +551,24 @@ tant_que : TANT_QUE expression FAIRE liste_instructions {
 
 affectation : variable {type_var_affectation = type;} OPAFF expression {
 
+  // Mauvais type opérande gauche
+  if(type_var_affectation > 3){
+    print_erreur_semantique(
+      "l'opérande gauche n'est pas de type simple."
+    );
+    erreur_semantique++;
+    $$ = creer_noeud(-1, -1, -1, -1, -1.0);
+  }
+  // Mauvais type opérande droite
+  else if(type > 3){
+    print_erreur_semantique(
+      "l'opérande droite n'est pas de type simple."
+    );
+    erreur_semantique++;
+    $$ = creer_noeud(-1, -1, -1, -1, -1.0);
+  }
   // Affectation de deux choses de type différent
-  if(type_var_affectation != type){
+  else if(type_var_affectation != type){
     print_erreur_semantique(
       "affectation de deux choses de types différents."
     );
@@ -661,7 +677,53 @@ variable : IDF {
 
 
   corps_variable {
-    if(erreur_semantique){
+    int num_decla_idf = num_decla_variable($1);
+
+    if(tete_pile_variable().nature == CHAMP){  // CHAMP
+      $$ = concat_pere_fils(
+        creer_noeud($1, -1, A_CHAMP, -1, -1.0),
+        $3
+      );
+      depiler_pile_variable();
+    }
+    else if(tete_pile_variable().nature == VAR_SIMPLE){
+      $$ = creer_noeud(
+            $1,
+            num_decla_idf,
+            A_VAR_SIMPLE,
+            -1,
+            -1
+          );
+      depiler_pile_variable();
+    }
+    else if(tete_pile_variable().nature == TAB){
+      $$ = concat_pere_fils(
+          creer_noeud($1, num_decla_idf, A_TAB, -1, -1.0),
+          $3
+        );
+      depiler_pile_variable();
+    }
+    else if(tete_pile_variable().nature == STRUCTURE){
+      $$ = concat_pere_fils(
+        creer_noeud($1, num_decla_idf, A_STRUCT, -1, -1.0),
+        $3
+      );
+      depiler_pile_variable();
+    }
+    else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
+      if(tete_pile_variable().nature == DIMENSION){
+        print_erreur_semantique(
+          "Pas assez d'indice."
+        );
+        erreur_semantique++;
+        while(tete_pile_variable().nature != TAB){
+          depiler_pile_variable();
+        }
+        depiler_pile_variable();
+      }
+      erreur_semantique++;
+    }
+    else{
       $$ = creer_noeud(
               -1,
               -1,
@@ -669,45 +731,6 @@ variable : IDF {
               -1,
               -1
         );
-    }
-    else{
-      int num_decla_idf = num_decla_variable($1);
-
-      if(tete_pile_variable().nature == CHAMP){  // CHAMP
-        $$ = concat_pere_fils(
-          creer_noeud($1, -1, A_CHAMP, -1, -1.0),
-          $3
-        );
-        depiler_pile_variable();
-      }
-      else if(tete_pile_variable().nature == VAR_SIMPLE){
-        $$ = creer_noeud(
-              $1,
-              num_decla_idf,
-              A_VAR_SIMPLE,
-              -1,
-              -1
-            );
-        depiler_pile_variable();
-      }
-      else if(tete_pile_variable().nature == TAB){
-        $$ = concat_pere_fils(
-            creer_noeud($1, num_decla_idf, A_TAB, -1, -1.0),
-            $3
-          );
-        depiler_pile_variable();
-      }
-      else if(tete_pile_variable().nature == STRUCTURE){
-        $$ = concat_pere_fils(
-          creer_noeud($1, num_decla_idf, A_STRUCT, -1, -1.0),
-          $3
-        );
-        depiler_pile_variable();
-      }
-      else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
-        print_erreur_semantique("erreur corps variable.");
-        erreur_semantique++;
-      }
     }
   }
          ;
@@ -738,7 +761,7 @@ variable : IDF {
        "Pas assez d'indice."
      );
      erreur_semantique++;
-     while(tete_pile_variable().nature != TABLEAU){
+     while(tete_pile_variable().nature != TAB){
        depiler_pile_variable();
      }
    }
@@ -1125,7 +1148,14 @@ suite_afficher : VIRGULE {
 
 composante_afficher : variable       {
                       // On récupère le type de la variable appellée
+                      if(type > 3){
+                        print_erreur_semantique(
+                          "variable de type non simple."
+                        );
+                        erreur_semantique++;
+                      }
                       tab_var_format[tab_var_format[0]] = type;
+
                       $$ = concat_pere_fils(
                           creer_noeud(-1, -1, A_VAR, -1, -1.0),
                           $1
