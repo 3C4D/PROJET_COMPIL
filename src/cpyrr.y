@@ -31,7 +31,7 @@ extern int nis_region;
 int flags[] = {0, 0, 0, 0, 0};
 
 int tab_var_format[40];
-int tab_arg_appel[40];
+int tab_arg_appel[40][40];
 int num_champ = -1;
 
 // Tableaux servant à la vérification sémantiques des retours de fct/proc
@@ -425,10 +425,17 @@ instruction : affectation POINT_VIRGULE {
           else{
             $1->numdecl = num_decl_appel;
             $1->nature = A_APPEL_PROC;
-            if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+            if(verif_arg_appel(
+              num_decl_appel,
+              tab_arg_appel[tab_arg_appel[0][0]],
+              nb_ligne
+            ) == -1){
               erreur_semantique++;
             }
           }
+
+          /* Un appel de moins dans le tableau d'appel */
+          tab_arg_appel[0][0]--;
 
           $$ = $1;
         }
@@ -475,7 +482,14 @@ resultat_retourne : un_arg {
 }
                   ;
 
-appel : IDF {tab_arg_appel[0] = 0;} liste_arguments {
+appel : IDF {
+  /* Un appel de plus */
+  tab_arg_appel[0][0]++;
+
+  /* On initialise le tableau d'argument de l'appel */
+  tab_arg_appel[tab_arg_appel[0][0]][0] = 0;
+
+} liste_arguments {
   $$ = concat_pere_fils(
     creer_noeud(
       $1,
@@ -486,12 +500,11 @@ appel : IDF {tab_arg_appel[0] = 0;} liste_arguments {
     ),
     $3
   );
-
 }
       ;
 
 liste_arguments : PARENTHESE_OUVRANTE liste_args PARENTHESE_FERMANTE {
-  $$ = $2;;
+  $$ = $2;
 }
                 ;
 
@@ -508,9 +521,12 @@ liste_args : un_arg {
            ;
 
 un_arg : expression {$$ = $1;
-                     tab_arg_appel[0]++;
+                     tab_arg_appel[tab_arg_appel[0][0]][0]++;
 
-                     tab_arg_appel[tab_arg_appel[0]]=type;}
+                     tab_arg_appel
+                      [tab_arg_appel[0][0]]
+                      [tab_arg_appel[tab_arg_appel[0][0]][0]] =type;
+}
        ;
 
  condition : {imbrique++;} SI expression
@@ -1047,9 +1063,17 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
      else{ // Réglages des élements restés en suspend durant l'appel
        $2->numdecl = num_decl_appel;
        $2->nature = A_APPEL_FCT;
-       if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+       if(verif_arg_appel(
+           num_decl_appel,
+           tab_arg_appel[tab_arg_appel[0][0]],
+           nb_ligne
+         ) == -1){
          erreur_semantique++;
        }
+
+       /* Un appel de moins dans le tableau d'appel */
+       tab_arg_appel[0][0]--;
+
        type = valeur_tab_types(valeur_description_tab_decla(num_decl_appel));
      }
 
@@ -1195,10 +1219,17 @@ composante_afficher : variable       {
     else{ // Réglages des élements restés en suspend durant l'appel
       $1->numdecl = num_decl_appel;
       $1->nature = A_APPEL_FCT;
-      if(verif_arg_appel(num_decl_appel, tab_arg_appel, nb_ligne) == -1){
+      if(verif_arg_appel(
+        num_decl_appel,
+        tab_arg_appel[tab_arg_appel[0][0]],
+        nb_ligne
+      ) == -1){
         erreur_semantique++;
       }
     }
+
+    /* Un appel de moins dans le tableau d'appel */
+    tab_arg_appel[0][0]--;
 
     $$ = $1;
                     }
@@ -1332,6 +1363,8 @@ int main(int argc, char *argv[]){
   }
 
   index_fic = analyse_options(argv, flags);
+
+  tab_arg_appel[0][0] = 0;
 
   yyparse();
 
