@@ -77,7 +77,7 @@ C3 [^"*/]
 "not" {colonne += 3; return(NON);}
 
 "true"  {colonne += 4; yylval.typ2 = 1; return(TRUE);}
-"false" {colonne += 5; yylval.typ2 = 1; return(FALSE);}
+"false" {colonne += 5; yylval.typ2 = 0; return(FALSE);}
 
 "+" {colonne++;return(PLUS);}
 "-" {colonne++;return(MOINS);}
