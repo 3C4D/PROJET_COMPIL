@@ -847,106 +847,7 @@ concatenation : CSTE_CHAINE {
 }
               ;
 
-e1 : e1 {type_g = type;} PLUS e2 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_PLUS, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-     type_d = type;
-     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
-       erreur_semantique++;
-       type = 0;
-     }
-     else{
-       type = type_g;
-     }
-   }
-   | e1 {type_g = type;} MOINS e2 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_MOINS, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-     type_d = type;
-     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
-       erreur_semantique++;
-       type = 0;
-     }
-     else{
-       type = type_g;
-     }
-   }
-   | e1 {type_g = type;} OU e2 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_OU, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-     type_d = type;
-     if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
-       erreur_semantique++;
-     }
-     type = TYPE_BOOL;
-   }
-   | e2 {$$ = $1;}
-   ;
-
-e2 : e2 {type_g = type;} MULT e3 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_MULT, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-
-    type_d = type;
-    if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
-      erreur_semantique++;
-      type = 0;
-    }
-    else{
-      type = type_g;
-    }
-   }
-   | e2 {type_g = type;} DIV e3 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_DIV, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-     type_d = type;
-     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
-       erreur_semantique++;
-       type = 0;
-     }
-     else{
-       type = type_g;
-     }
-   }
-   | e2 {type_g = type;} MODULO e3 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_MODULO, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-     type_d = type;
-     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
-       erreur_semantique++;
-       type = 0;
-     }
-     else{
-       type = type_g;
-     }
-   }
-   | e2 {type_g = type;} ET e3 {
-     $$ = concat_pere_fils(
-         creer_noeud(-1, -1, A_ET, -1, -1.0),
-         concat_pere_frere($1, $4)
-       );
-     type_d = type;
-     if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
-       erreur_semantique++;
-     }
-     type = TYPE_BOOL;
-   }
-   | e3 {$$ = $1;}
-   ;
-
-e3 : e3 {type_g = type;} operateur_comp e4 {
+e1 : e1 {type_g = type;} operateur_comp e2 {
      $$ = concat_pere_fils(
          $3,
          concat_pere_frere($1, $4)
@@ -977,6 +878,105 @@ e3 : e3 {type_g = type;} operateur_comp e4 {
     }
 
     type = TYPE_BOOL;
+   }
+   | e2 {$$ = $1;}
+   ;
+
+e2 : e2 {type_g = type;} PLUS e3 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_PLUS, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
+     else{
+       type = type_g;
+     }
+   }
+   | e2 {type_g = type;} MOINS e3 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_MOINS, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
+     else{
+       type = type_g;
+     }
+   }
+   | e2 {type_g = type;} OU e3 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_OU, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+     type_d = type;
+     if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+     }
+     type = TYPE_BOOL;
+   }
+   | e3 {$$ = $1;}
+   ;
+
+e3 : e3 {type_g = type;} MULT e4 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_MULT, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+
+    type_d = type;
+    if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+      erreur_semantique++;
+      type = 0;
+    }
+    else{
+      type = type_g;
+    }
+   }
+   | e3 {type_g = type;} DIV e4 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_DIV, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
+     else{
+       type = type_g;
+     }
+   }
+   | e3 {type_g = type;} MODULO e4 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_MODULO, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+     type_d = type;
+     if(verif_type_expr_arithm(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+       type = 0;
+     }
+     else{
+       type = type_g;
+     }
+   }
+   | e3 {type_g = type;} ET e4 {
+     $$ = concat_pere_fils(
+         creer_noeud(-1, -1, A_ET, -1, -1.0),
+         concat_pere_frere($1, $4)
+       );
+     type_d = type;
+     if(verif_type_expr_bool(type_g, type_d, nb_ligne) == -1){
+       erreur_semantique++;
+     }
+     type = TYPE_BOOL;
    }
    | e4 {$$ = $1;}
    ;
