@@ -426,6 +426,20 @@ int lex2decl(int numlex, int nature, int region){
   return chaine;
 }
 
+// Donne le numéro lexicagraphique d'une variable
+// En fonction de sont numéro de déclaration
+// Renvoie le susdit numero ou -1 si cette variable n'existe pas
+int decl2lex(int num_decla){
+  int i, ret = -1;
+
+  for (i = 0; i < MAX_TAB_LEX; i++){
+    ret = lex2decl(i, nature(num_decla), region(num_decla));
+    if (ret != -1) { return ret; }
+  }
+  
+  return ret;
+}
+
 /*----------------------------------------------------------------------------
  Utilité : Renvoie le numéro de région d'une certaine déclaration
   Paramètre : - num_decla : numéro de déclaration en question
@@ -560,7 +574,7 @@ void charger_table_decla(FILE *fic){
 // donnée, -1 sinon
 int num_decl_reg(int num_region){
  int i = 0, num_decl = -1;
- while(i < 4999){
+ while(i < MAX_TAB_DECLA && num_decl == -1){
    if(valeur_exec_tab_decla(i) == num_region
    && (nature(i) == PROC || nature(i) == FCT)){
      num_decl = i;

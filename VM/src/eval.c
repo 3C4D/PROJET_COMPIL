@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "../inc/io.h"
 #include "../inc/blob.h"
 #include "../inc/eval.h"
 #include "../inc/execution.h"
@@ -151,9 +152,7 @@ ninja eval_arbre(arbre a){
     return init_ninja(pilex_recval(var.dec, pile_exec_g).data, var.nat);
 
   default:
-    fprintf(stderr, "Err: arbre eval: noeud non reconnu: %d\n", a->nature);
-    exit(-1);
-    break;
+    err_exec("Eval: Noeud non reconnu");
   }
 
   return n;
@@ -300,10 +299,13 @@ blob mult(blob a, blob b, types t){
 blob divi(blob a, blob b, types t){
   switch(t){
     case CHAR:
+      if (blob2char(b) == 0){ err_exec("Division par 0"); }
       return char2blob(blob2char(a) / blob2char(b));
     case INT:
+      if (blob2int(b) == 0){ err_exec("Division par 0"); }
       return int2blob(blob2int(a) / blob2int(b));
     case DOUBLE:
+      if (blob2double(b) == 0){ err_exec("Division par 0"); }
       return double2blob(blob2double(a) / blob2double(b));
     default:
       return 0;

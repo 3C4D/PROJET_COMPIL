@@ -57,9 +57,6 @@ bool exec_arbre(arbre a){
   switch (a->nature){
   case A_LISTE_INSTR:
     if (exec_arbre(a->fils_gauche)){ return true;  }
-    if (est_vide(a->fils_gauche->frere_droit)){
-
-    }
     return exec_arbre(a->fils_gauche->frere_droit);
 
   case A_RETOURNE :
@@ -74,7 +71,7 @@ bool exec_arbre(arbre a){
   case A_AFFECTATION :
     eval = eval_arbre(a->fils_gauche->frere_droit);
     dec = info_pile_var(a->fils_gauche).dec;
-    val = mem_init(eval.val, eval.nat, pilex_recbaseval(dec, pile_exec_g).id);
+    val = mem_init(eval.val, eval.nat, pilex_recval(dec, pile_exec_g).id);
     pilex_modval(val, dec, pile_exec_g);
     break;
 
@@ -103,7 +100,7 @@ bool exec_arbre(arbre a){
     break;
 
   case A_LIRE :
-    printf("Lecture de l'entrée si si j'te jure\n");
+    io_lire(a->fils_gauche);
     break;
 
   case A_APPEL_PROC :
@@ -117,8 +114,7 @@ bool exec_arbre(arbre a){
   case A_VIDE :  break;
 
   default:
-    fprintf(stderr, "Err: arbre exec: noeud non reconnu: %d\n", a->nature);
-    exit(-1);
+    err_exec("Exec: Noeud non reconnu");
   }
 
   return false;
@@ -188,14 +184,12 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
 
   if (arg_num > nb_param){
     if (!est_vide(a)){
-      fprintf(stderr, "Erreur appel fonction/procedure: trop d'arguments\n");
-      exit(-1);
+      err_exec("Erreur appel fonction/procedure: trop d'arguments");
     } else { return; }
   }
 
   if (est_vide(a)){
-    fprintf(stderr, "Erreur appel fonction/procedure: manque d'arguements\n");
-    exit(-1);
+    err_exec("Erreur appel fonction/procedure: manque d'arguements");
   }
 
   // Numero lexico -> num decla -> decalage de l'argument
@@ -215,8 +209,7 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
   val_arg = eval_arbre(a->fils_gauche);
 
   if (val_arg.nat != type_conv(nat_arg)){
-    fprintf(stderr, "Err: arg fonction/procedure: type différents\n");
-    exit(-1);
+    err_exec("Err: arg fonction/procedure: type différents");
   }
 
   arg = mem_init(val_arg.val, val_arg.nat, numdecl_arg);
@@ -241,7 +234,7 @@ void retour(){
 // <=>   Nature de la varible
 //     + Decalage par rapport à la pile d'une variable
 var_info info_pile_var(arbre a){
-  int reg_engl, dec = 0;
+  int dec = 0;
   int numdecl = a->fils_gauche->numdecl;
   int reg_val = region(numdecl);
   var_info info;
@@ -251,13 +244,8 @@ var_info info_pile_var(arbre a){
   if (reg_val == reg_actu_g){
     dec = pilex_posbase(pile_exec_g);
   } else {
-    for (int i = 1; i <= nis_reg(reg_actu_g); i++){
-      reg_engl = pilex_recbaseval(i, pile_exec_g).id;
-      if (reg_engl == reg_val){
-        dec = blob2int(pilex_recbaseval(i, pile_exec_g).data);
-        break;
-      }
-    }
+    // Sinon on récupère la base de la région contenant la variable
+    dec = blob2int(pilex_recbaseval(nis_reg(reg_val) + 1, pile_exec_g).data);
   }
 
   // Recupération des informations sur la variable
@@ -372,8 +360,7 @@ int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
   }
 
   if (est_vide(a)){
-    fprintf(stderr, "Erreur sur tableau: manque de dimension\n");
-    exit(-1);
+    err_exec("Erreur sur tableau: manque de dimension");
   }
 
   ind = blob2int(eval_arbre(a->fils_gauche).val);
@@ -381,8 +368,7 @@ int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
   max = valeur_tab_representation(ind_rep + 1);
 
   if (ind < min || ind > max){
-    fprintf(stderr, "Erreur sur tableau: indice en dehors du tableau\n");
-    exit(-1);
+    err_exec("Erreur sur tableau: indice en dehors du tableau");
   }
 
   dist = max - min + 1;
