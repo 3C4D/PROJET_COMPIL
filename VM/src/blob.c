@@ -3,6 +3,7 @@
 
 #include "../inc/blob.h"
 
+// Conversion entre les constantes types de l'arbre d'execution et de la pile
 types type_conv(int i){
   switch (i){
     case 0: return INT;
@@ -14,71 +15,91 @@ types type_conv(int i){
   }
 }
 
+
+/* Conversions de type primitif vers blob */
+
+// Conversion de bool vers blob
 blob bool2blob(bool b){
   blob bl = 0;
   memcpy(&bl, &b, sizeof(bool));
   return b;
 }
 
+// Conversion de char vers blob
 blob char2blob(char c){
   blob b = 0;
   memcpy(&b, &c, sizeof(char));
   return b;
 }
 
+// Conversion de int vers blob
 blob int2blob(int i){
   blob b = 0;
   memcpy(&b, &i, sizeof(int));
   return b;
 }
 
+// Conversion de double vers blob
 blob double2blob(double d){
   blob b = 0;
   memcpy(&b, &d, sizeof(double));
   return b;
 }
 
+// Conversion de pointeur vers blob
 blob ptr2blob(void *p){
   blob b = 0;
   memcpy(&b, &p, sizeof(double));
   return b;
 }
 
+/* Conversions de blob vers type primitif */
+
+// Conversion de blob vers bool
 bool blob2bool(blob bl){
   bool b = 0;
   memcpy(&b, &bl, sizeof(bool));
   return b != false;
 }
 
+// Conversion de blob vers char
 char blob2char(blob b){
   char c = 0;
   memcpy(&c, &b, sizeof(char));
   return c;
 }
 
+// Conversion de blob vers int
 int blob2int(blob b){
   int i = 0;
   memcpy(&i, &b, sizeof(int));
   return i;
 }
 
+// Conversion de blob vers double
 double blob2double(blob b){
   double d = 0;
   memcpy(&d, &b, sizeof(double));
   return d;
 }
 
+// Conversion de blob vers pointeur
 void *blob2ptr(blob b){
   void *p = NULL;
   memcpy(&p, &b, sizeof(double));
   return p;
 }
 
+
+/* Fonction sur les variables versatiles */
+
+// Initialise une variable versatile
 ninja init_ninja(blob b, types t){
   ninja n = {b, t};
   return n;
 }
 
+// Affiche une variable versatile
 void aff_ninja(ninja n){
   switch (n.nat){
   case BOOL:
@@ -107,6 +128,7 @@ void aff_ninja(ninja n){
   }
 }
 
+// Retourne true si une variable versatile est numérique, false sinon
 bool est_num(ninja n){
   if (n.nat == CHAR || n.nat == INT || n.nat == DOUBLE){
     return true;
@@ -115,6 +137,7 @@ bool est_num(ninja n){
   }
 }
 
+// Conversion d'une variable versatile vers char 
 void conv_char(ninja *n){
   if (!est_num(*n)){ return; }
 
@@ -133,6 +156,7 @@ void conv_char(ninja *n){
   n->nat = CHAR;
 }
 
+// Conversion d'une variable versatile vers int
 void conv_int(ninja *n){
   if (!est_num(*n)){ return; }
 
@@ -151,6 +175,7 @@ void conv_int(ninja *n){
   n->nat = INT;
 }
 
+// Conversion d'une variable versatile vers double
 void conv_double(ninja *n){
   if (!est_num(*n)){ return; }
 

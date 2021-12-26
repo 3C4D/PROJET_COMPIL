@@ -10,8 +10,10 @@
 #include "../../TabLexico/inc/TabLexico.h"
 #include "../../inc/couleur.h"
 
+// Affiche une chaine de caratères
 void aff_str(char *s);
 
+// Affiche sur la sortie standard les variables données par args selon le format 
 void io_affiche(ninja format, arbre args){
   ninja res;
 
@@ -76,12 +78,16 @@ void io_affiche(ninja format, arbre args){
   }
 }
 
+
+// Affiche une chaine de caractères
 void aff_str(char *s){
   while(*(++s) != '\"'){
     putc(*s, stdout);
   }
 }
 
+
+// Lit sur l'entrée standard les variables données par vars
 void io_lire(arbre vars){
   var_info info;
   mem val;
@@ -95,7 +101,7 @@ void io_lire(arbre vars){
   
   switch (info.nat){
     case BOOL:
-      scanf("%5s", buf);
+      if (scanf("%5s", buf) == EOF){ err_exec("io_lire: Pb. de lecture"); }
       if (strcmp("true", buf) == 0 || strcmp("1", buf) == 0){
         ent.val = bool2blob(true);
       } else {
@@ -104,17 +110,17 @@ void io_lire(arbre vars){
       break;
 
     case CHAR:
-      scanf(" %c", &c);
+      if(scanf(" %c", &c) == EOF){ err_exec("io_lire: Pb. de lecture"); }
       ent.val = char2blob(c);
       break;
 
     case INT:
-      scanf("%d", &i);
+      if(scanf("%d", &i) == EOF){ err_exec("io_lire: Pb. de lecture"); }
       ent.val = int2blob(i);
       break;
 
     case DOUBLE:
-      scanf("%lf", &d);
+      if(scanf("%lf", &d) == EOF){ err_exec("io_lire: Pb. de lecture"); }
       ent.val = double2blob(d);
       break;
     
@@ -129,10 +135,14 @@ void io_lire(arbre vars){
   io_lire(vars->fils_gauche->frere_droit);
 }
 
+
+// Affiche une erreur d'exécution
 void err_exec(char *msg){
   int numdecl_reg;
 
-  fprintf(stderr, "%s\nErr. exec.: %s%s%s\n\tDans: ", JAUNEGRAS, msg, RESET, JAUNE);
+  fprintf(
+    stderr, "%s\nErr. exec.: %s%s%s\n\tDans: ", JAUNEGRAS, msg, RESET, JAUNE
+  );
 
   if (reg_actu_g == 0){
     fprintf(stderr, "Région initiale\n");

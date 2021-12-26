@@ -12,11 +12,13 @@
 #include "../../TabRegion/inc/TabRegion.h"
 #include "../../TabRepresentation/inc/TabRepresentation.h"
 
+/* Opérations booléennes */
 ninja bool_op(ninja a, bool (* op)(bool, bool), ninja b);
 bool et (bool a, bool b);
 bool ou (bool a, bool b);
 bool non (bool a, bool b);
 
+/* Opérations de comparaisons */
 ninja cmp_op(ninja a, bool (* op)(blob, blob, types), ninja b);
 bool inf(blob a, blob b, types t);
 bool infeq(blob a, blob b, types t);
@@ -25,6 +27,7 @@ bool supeq(blob a, blob b, types t);
 bool eq(blob a, blob b, types t);
 bool diff(blob a, blob b, types t);
 
+/* Opérations arithmétiques */
 ninja artihm_op(ninja a, blob (* op)(blob, blob, types), ninja b);
 blob plus(blob a, blob b, types t);
 blob moins(blob a, blob b, types t);
@@ -32,18 +35,17 @@ blob mult(blob a, blob b, types t);
 blob divi(blob a, blob b, types t);
 blob mod(blob a, blob b, types t);
 
+// Unifie les types des 2 variables numériques
 types uninumtype(ninja *a, ninja *b);
 
+
+// Évalue la valeur de l'arbre a de manière récursive
 ninja eval_arbre(arbre a){
   var_info var;
   ninja n = init_ninja(0, VOID);
   if (est_vide(a)){ return n; }
 
   switch (a->nature){
-  case A_LIRE :
-    printf("BING JI LIN");
-    break;
-
   case A_EXPRESSION : return eval_arbre(a->fils_gauche);
 
   case A_PLUS :
@@ -158,14 +160,21 @@ ninja eval_arbre(arbre a){
   return n;
 }
 
+
+/* Opérations booléennes */
 ninja bool_op(ninja a, bool (* op)(bool, bool), ninja b){
   return init_ninja(op(blob2bool(a.val), blob2bool(b.val)), BOOL);
 }
 
+// Opération: ⋀
 bool et (bool a, bool b){ return a && b; }
+// Opération: ⋁
 bool ou (bool a, bool b){ return a || b; }
+// Opération: ¬
 bool non (bool a, bool b){ return !a; }
 
+
+/* Opérations de comparaisons */
 ninja cmp_op(ninja a, bool (* op)(blob, blob, types), ninja b){
   if (op != eq && op != diff){
     if (!est_num(a) || !est_num(b)){
@@ -178,6 +187,7 @@ ninja cmp_op(ninja a, bool (* op)(blob, blob, types), ninja b){
   return init_ninja(op(a.val, b.val, t), BOOL);
 }
 
+// Opération: <
 bool inf(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -190,6 +200,7 @@ bool inf(blob a, blob b, types t){
   }
 }
 
+// Opération: ⩽
 bool infeq(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -202,6 +213,7 @@ bool infeq(blob a, blob b, types t){
   }
 }
 
+// Opération: >
 bool sup(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -214,6 +226,7 @@ bool sup(blob a, blob b, types t){
   }
 }
 
+// Opération: ⩾
 bool supeq(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -226,6 +239,7 @@ bool supeq(blob a, blob b, types t){
   }
 }
 
+// Opération: =
 bool eq(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -238,6 +252,7 @@ bool eq(blob a, blob b, types t){
   }
 }
 
+// Opération: ≠
 bool diff(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -250,6 +265,8 @@ bool diff(blob a, blob b, types t){
   }
 }
 
+
+/* Opérations arithmétiques */
 ninja artihm_op(ninja a, blob (* op)(blob, blob, types), ninja b){
   if (!est_num(a) || !est_num(b)){
     return init_ninja(0, VOID);
@@ -260,6 +277,7 @@ ninja artihm_op(ninja a, blob (* op)(blob, blob, types), ninja b){
   return init_ninja(op(a.val, b.val, t), t);
 }
 
+// Opération: +
 blob plus(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -272,6 +290,7 @@ blob plus(blob a, blob b, types t){
   }
 }
 
+// Opération: -
 blob moins(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -284,6 +303,7 @@ blob moins(blob a, blob b, types t){
   }
 }
 
+// Opération: ×
 blob mult(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -296,6 +316,7 @@ blob mult(blob a, blob b, types t){
   }
 }
 
+// Opération: ÷
 blob divi(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -312,6 +333,7 @@ blob divi(blob a, blob b, types t){
   }
 }
 
+// Opération: % (modulo)
 blob mod(blob a, blob b, types t){
   switch(t){
     case CHAR:
@@ -324,6 +346,8 @@ blob mod(blob a, blob b, types t){
   }
 }
 
+
+// Unifie les types des 2 variables numériques
 types uninumtype(ninja *a, ninja *b){
   types t;
   if(a->nat == DOUBLE || b->nat == DOUBLE){

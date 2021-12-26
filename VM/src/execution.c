@@ -11,17 +11,26 @@
 #include "../../TabRegion/inc/TabRegion.h"
 #include "../../TabRepresentation/inc/TabRepresentation.h"
 
+/* Variables globales */
 pilex pile_exec_g;
 int reg_actu_g;
 ninja retval_g;
 
+/* Fonctions pour les fonctions et procédures */
+// Gestion de l'appel d'une fonction
 void appel_fctproc(int num_reg, arbre a);
+// Ajoute les arguments de la fonciton
 void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a);
+// Gestion du retour de procedure/fonction
 void retour();
+// Charge la région d'une fonction
 void charger_reg(int num_reg);
+// Crée un chainage dynamique <=> adresse de la région appelante
 void chainage_dynamique(int base_region_appl);
+// Crée un chainage statique <=> adresse des régions englobantes
 void chainage_statique(int base_region_appl, int nis);
 
+/* Fonctions pour le variables */
 var_info info_var(arbre a);
 var_info info_artefact(int numdecl, arbre a);
 int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite);
@@ -46,6 +55,7 @@ void execution(FILE *fic){
   // Libération de l'espace occupé par la pile d'execution
   pilex_liberer(pile_exec_g);
 }
+
 
 // Exectue un arbre d'execution
 bool exec_arbre(arbre a){
@@ -119,6 +129,7 @@ bool exec_arbre(arbre a){
 
   return false;
 }
+
 
 // Gestion de l'appel d'une fonction
 void appel_fctproc(int num_reg, arbre a){
@@ -213,7 +224,12 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
   }
 
   arg = mem_init(val_arg.val, val_arg.nat, numdecl_arg);
+
+  /* /!\ À supprimer post modif */
   pilex_modval(arg, base_reg + dec_arg + nis_reg(numreg) + 1, pile_exec_g);
+  /* /!\ Remplacement post modif */
+  // pilex_modval(arg, base_reg + dec_arg, pile_exec_g);
+
   ajout_arg(base_reg, numreg, numdecl, arg_num + 1, a->fils_gauche->frere_droit);
 }
 
@@ -272,10 +288,14 @@ var_info info_var(arbre a){
 
   // Décalage par rapport à la Base Courante...
   info.dec += valeur_exec_tab_decla(numdecl);
+
+  /* /!\ À supprimer post modif (début)*/
   // ...suite (Chainage statique) ...
   info.dec += nis_reg(region(numdecl));
   //...suite (Chainage dynamique)
   info.dec += (region(numdecl) == 0) ? 0 : 1;
+  /* (fin) /!\ À supprimer post modif */
+
   // Décalage dans la variable (i.e. struct & tab)
   info.dec += val.dec;
   info.nat = val.nat;
