@@ -44,6 +44,8 @@ int num_region_engendree;
 int num_declaration;
 int diff = 0;
 
+int num_ligne_decla;
+
 // Variable servant à déterminer si l'on est dans une imbrication
 // (ex : dans un if)
 int imbrique = 0;
@@ -165,10 +167,10 @@ suite_liste_inst : instruction {
                  }
                  ;
 
-declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
+declaration_type : TYPE IDF {num_ligne_decla = nb_ligne;} DEUX_POINTS suite_declaration_type {
   if(inserer_tab_declaration(
       $2,
-      $4,
+      $5,
       tete_pile_region(),
       premier_indice(),
       nb_ligne
@@ -176,6 +178,9 @@ declaration_type : TYPE IDF DEUX_POINTS suite_declaration_type {
       print_erreur_semantique("erreur insertion table decla");
       erreur_semantique++;
     };
+
+    ajouter_table_represention(num_ligne_decla);
+
 }
                  ;
 
@@ -186,6 +191,7 @@ suite_declaration_type : STRUCT {
 
     /*On remet à 0 pour dire qu'on est dans une nouvelle structure*/
     change_deplacement_struct(0);
+
 }
                         liste_champs FSTRUCT {
     /*Mise à jour de la première case, on retrouve l'indice de la première
@@ -289,6 +295,8 @@ declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
 declaration_procedure : PROCEDURE IDF {
   int num_avant;
   nb_parametres = 0;
+
+
   /*On reserve une case pour le nombre de parametres*/
   change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
 
@@ -307,6 +315,8 @@ declaration_procedure : PROCEDURE IDF {
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
+  change_ligne_decla(nb_ligne); //On mémorise le numéro de la ligne de déclaration
+  inserer_nom_region_tab_region(lexeme($2)); //On mémorise le nom de la région
   change_deplacement(nis() + 1); //On réserve la place pour les chainages statiques/dynamique
   change_NIS(1); //Car on rentre dans une région
 
@@ -315,12 +325,14 @@ declaration_procedure : PROCEDURE IDF {
                       liste_parametres {
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), nb_parametres);
+  ajouter_table_represention(ligne_decla(tete_pile_region()));
 
 }
                       corps {
    fermeture_arbre_proc($6);
    change_NIS(-1); //Car on sort d'une région
    inserer_tab_region(deplacement(), nis());
+
 
    depiler_pile_region();
 }
@@ -348,8 +360,11 @@ declaration_fonction  : FONCTION IDF {
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
+  change_ligne_decla(nb_ligne); //On mémorise le numéro de la ligne de déclaration
+  inserer_nom_region_tab_region(lexeme($2)); //On mémorise le nom de la région
   change_deplacement(nis() + 1); //On réserve la place pour les chainages statiques/dynamique
   change_NIS(1); //On ajoute un niveau d'imbrication car on rentre dans une nouvelle région
+
 
   inserer_exec_tab_decla(num_decla($2, FCT, num_avant),tete_pile_region());
 }
@@ -357,6 +372,7 @@ declaration_fonction  : FONCTION IDF {
   /*Mise à jour de la première case*/
   stocker_table_representation(premier_indice(), $6);
   stocker_table_representation(premier_indice()+1, nb_parametres);
+  ajouter_table_represention(ligne_decla(tete_pile_region()));
 }
                     corps {
   if(inst_retour[tete_pile_region()] == 0){

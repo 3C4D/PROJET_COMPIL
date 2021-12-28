@@ -53,6 +53,12 @@ int premier_indice();
   ----------------------------------------------------------------------------- */
 void change_premier_indice(int valeur);
 
+/*----------------------------------------------------------------------------
+  Utilité : Ajoute la valeur donnée dans la table.
+  Paramètre : - valeur : la valeur en question.
+----------------------------------------------------------------------------- */
+void ajouter_table_represention(int valeur);
+
 
 /*----------------------------------------------------------------------------
   Utilité : Renvoie la donnée contenue à l'index indice.

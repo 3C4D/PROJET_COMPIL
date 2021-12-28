@@ -5,10 +5,12 @@
 
 int TableRepresentation[MAX_TAB_RPZ];
 int premier_indice_var;
+int indice_libre;
 
 /*Initialiser la table des représentation*/
 void init_tab_representation_type(){
   int i;
+  indice_libre = 0;
   for(i=0; i<MAX_TAB_RPZ; i++){
     TableRepresentation[i] = -1 ; /*Case vide*/
   }
@@ -24,57 +26,52 @@ void init_tab_representation_type(){
               - nature : précise la nature.
  ----------------------------------------------------------------------------- */
 int inserer_tab_representation_type(int type, int num_lexico, int nature){
-  int premier_indice; /*Indice dans la table des représentation de la première
-                       case vide*/
-  premier_indice =0;
-
-  /*On cherche la première case vide dans TableRepresentation*/
-  while(TableRepresentation[premier_indice] != -1){ /*Tant que la case est prise*/
-    premier_indice++; /*On incrémente l'indice*/
-  }
 
   switch (nature) {
     case TYPE_STRUCT:
       if(num_lexico == -1){ /*Signifie qu'on veut remplir la toute premiere case
                             c-a-d le nombre de champs de la structure*/
-        TableRepresentation[premier_indice] = type;
+        TableRepresentation[indice_libre] = type;
+        indice_libre +=1;
 
-        return premier_indice;
+        return indice_libre-1;
 
       }else{ /*C'est qu'on est face à un champs de la structure */
-        TableRepresentation[premier_indice] = type;
-        TableRepresentation[premier_indice + 1] = num_lexico;
-        TableRepresentation[premier_indice + 2] = -11; /*Deplacement à l'execution*/
-        return (premier_indice);
+        TableRepresentation[indice_libre] = type;
+        TableRepresentation[indice_libre + 1] = num_lexico;
+        TableRepresentation[indice_libre+ 2] = -11; /*Deplacement à l'execution*/
+        indice_libre += 3;
+        return (indice_libre - 3);
       }
       break;
     case TYPE_TAB:
       /*Soit le type des éléments du tableau, soit la borne inf d'une des dimensions*/
-      TableRepresentation[premier_indice] = type;
+      TableRepresentation[indice_libre] = type;
       /*Soit le nombre de dimension, soit la borne sup d'une des dimensions*/
-      TableRepresentation[premier_indice + 1] = num_lexico;
-
-      return (premier_indice);
+      TableRepresentation[indice_libre+ 1] = num_lexico;
+      indice_libre += 2;
+      return (indice_libre-2);
       break;
     case FCT:
       /*Soit le type de retour de la fonction, soit le type d'un des paramètres*/
-      TableRepresentation[premier_indice] = type;
+      TableRepresentation[indice_libre] = type;
       /*Soit le nombre de paramètre, soit le numéro lexico d'un des paramètres*/
-      TableRepresentation[premier_indice+1] = num_lexico;
-
-      return premier_indice;
+      TableRepresentation[indice_libre+1] = num_lexico;
+      indice_libre +=2;
+      return (indice_libre-2);
       break;
     case PROC:
       if(num_lexico == -1){ /*On veut rentrer le nombre de paramètre*/
-        TableRepresentation[premier_indice] = type;
-        return premier_indice;
+        TableRepresentation[indice_libre] = type;
+        indice_libre+=1;
+        return indice_libre-1;
       }else{/*Sinon c'est qu'on est face à un parametre de la procédure*/
         /*Le type de ce paramètre*/
-        TableRepresentation[premier_indice] = type;
+        TableRepresentation[indice_libre] = type;
         /*Son numéro lexicographique*/
-        TableRepresentation[premier_indice + 1] = num_lexico;
-
-        return premier_indice;
+        TableRepresentation[indice_libre + 1] = num_lexico;
+        indice_libre +=2;
+        return indice_libre-2;
       }
       break;
     default:
@@ -132,6 +129,15 @@ int premier_indice(){
 ----------------------------------------------------------------------------- */
 void change_premier_indice(int valeur){
   premier_indice_var = valeur;
+}
+
+/*----------------------------------------------------------------------------
+  Utilité : Ajoute la valeur donnée dans la table.
+  Paramètre : - valeur : la valeur en question.
+----------------------------------------------------------------------------- */
+void ajouter_table_represention(int valeur){
+  TableRepresentation[indice_libre] = valeur;
+  indice_libre++;
 }
 
 /*----------------------------------------------------------------------------

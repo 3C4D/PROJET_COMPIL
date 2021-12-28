@@ -16,6 +16,7 @@ int tab_format[MAX_FORMAT+1];
 int pile_region[MAX_REGION+1];
 nature_type_var pile_variable[MAX_IMBR_VAR+1];
 int deplacement_var[MAX_REGION];
+int pile_ligne_decla[MAX_REGION];
 int deplacement_structure;
 int nis_region;
 int nb_ligne = 1;
@@ -236,6 +237,16 @@ int deplacement_struct(){
 //Modifie la valeur du champs deplacement_struct
 void change_deplacement_struct(int valeur){
   deplacement_structure = valeur;
+}
+
+//Modifie la valeur de la region courante
+void change_ligne_decla(int valeur){
+  pile_ligne_decla[tete_pile_region()]=valeur;
+}
+
+//Renvoie le numéro de la ligne de la région r
+int ligne_decla(int r){
+  return pile_ligne_decla[r];
 }
 
 //Modifie la valeur de nis_region

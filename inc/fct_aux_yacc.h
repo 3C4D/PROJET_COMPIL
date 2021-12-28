@@ -86,6 +86,13 @@ int deplacement_struct();
 // Modifie la valeur du champs deplacement_struct
 void change_deplacement_struct(int valeur);
 
+//Modifie la valeur de la region courante
+void change_ligne_decla(int valeur);
+
+//Renvoie le numéro de la ligne de la région r
+int ligne_decla(int r);
+
+
 // Modifie la valeur de nis_region
 void change_NIS(int valeur);
 
