@@ -307,6 +307,7 @@ declaration_procedure : PROCEDURE IDF {
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
+  change_deplacement(nis() + 1); //On réserve la place pour les chainages statiques/dynamique
   change_NIS(1); //Car on rentre dans une région
 
   inserer_exec_tab_decla(num_decla($2, PROC, num_avant),tete_pile_region());
@@ -347,6 +348,7 @@ declaration_fonction  : FONCTION IDF {
   /*Mise à jour des num de région*/
   num_region++;
   empiler_pile_region(num_region);
+  change_deplacement(nis() + 1); //On réserve la place pour les chainages statiques/dynamique
   change_NIS(1); //On ajoute un niveau d'imbrication car on rentre dans une nouvelle région
 
   inserer_exec_tab_decla(num_decla($2, FCT, num_avant),tete_pile_region());

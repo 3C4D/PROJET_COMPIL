@@ -225,10 +225,8 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
 
   arg = mem_init(val_arg.val, val_arg.nat, numdecl_arg);
 
-  /* /!\ À supprimer post modif */
-  pilex_modval(arg, base_reg + dec_arg + nis_reg(numreg) + 1, pile_exec_g);
-  /* /!\ Remplacement post modif */
-  // pilex_modval(arg, base_reg + dec_arg, pile_exec_g);
+
+  pilex_modval(arg, base_reg + dec_arg, pile_exec_g);
 
   ajout_arg(base_reg, numreg, numdecl, arg_num + 1, a->fils_gauche->frere_droit);
 }
@@ -288,13 +286,6 @@ var_info info_var(arbre a){
 
   // Décalage par rapport à la Base Courante...
   info.dec += valeur_exec_tab_decla(numdecl);
-
-  /* /!\ À supprimer post modif (début)*/
-  // ...suite (Chainage statique) ...
-  info.dec += nis_reg(region(numdecl));
-  //...suite (Chainage dynamique)
-  info.dec += (region(numdecl) == 0) ? 0 : 1;
-  /* (fin) /!\ À supprimer post modif */
 
   // Décalage dans la variable (i.e. struct & tab)
   info.dec += val.dec;
