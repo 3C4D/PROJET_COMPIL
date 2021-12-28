@@ -337,10 +337,13 @@ blob divi(blob a, blob b, types t){
 blob mod(blob a, blob b, types t){
   switch(t){
     case CHAR:
+      if (blob2char(b) == 0) { err_exec("Modulo 0"); }
       return char2blob(blob2char(a) % blob2char(b));
     case INT:
+      if (blob2int(b) == 0) { err_exec("Modulo 0"); }
       return int2blob(blob2int(a) % blob2int(b));
     case DOUBLE:
+      if ((int)blob2double(b) == 0) { err_exec("Modulo 0"); }
       return double2blob((double)((int)blob2double(a) % (int)blob2double(b)));
     default: return 0;
   }
