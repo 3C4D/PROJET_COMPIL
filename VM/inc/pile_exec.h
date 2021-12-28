@@ -5,6 +5,8 @@
 
 #include "blob.h"
 
+#define LIMITE_DEBUG 100
+
 typedef struct mem_s {
   types nat;
   int id;

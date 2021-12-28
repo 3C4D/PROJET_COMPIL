@@ -74,6 +74,11 @@ int num_decla(int num_lexico, int nature, int region_particuliere);
 // Renvoie le susdit numero ou -1 si cette variable n'existe pas
 int lex2decl(int numlex, int nature, int region);
 
+// Donne le numéro lexicagraphique d'une variable
+// En fonction de sont numéro de déclaration
+// Renvoie le susdit numero ou -1 si cette variable n'existe pas
+int decl2lex(int num_decla);
+
 /*----------------------------------------------------------------------------
  Utilité : Retourne le champs décription à l'indice donnée dans la table des
           déclarations.
