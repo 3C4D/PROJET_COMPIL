@@ -1,6 +1,7 @@
 %{
 #include<stdlib.h>
 #include<stdio.h>
+#include <string.h>
 #include "../arbres/inc/arbres.h"
 #include "../inc/fct_aux_yacc.h"
 #include "../TabLexico/inc/TabLexico.h"
@@ -519,11 +520,12 @@ declaration_fonction  : FONCTION IDF {
     char erreur[400];
     sprintf(
       erreur,
-      "Aucune instruction de retour pour la fonction %s déclarée ligne %d dans la région %s numéro %d",
+      "Aucune instruction de retour pour la fonction %s déclarée ligne %d dans la région %s numéro %d. La fonction devrait renvoyer un element de type %s",
       lexeme($2),
       ligne_decla(tete_pile_region()),
       nom_reg(num_avant),
-      num_avant
+      num_avant,
+      lexeme(decl2lex(valeur_tab_representation(valeur_description_tab_decla($2))))
     );
 
     print_erreur_semantique(erreur);
@@ -600,17 +602,28 @@ instruction : affectation POINT_VIRGULE {
           // procedure, sinon erreur
           int num_decl_appel = num_decla($1->numlex, PROC, -1);
 
+
           if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
             char erreur[400];
-            sprintf(
+            if(tete_pile_region() == 0){
+              sprintf(
+               erreur,
+               "Il n'existe pas de procédure %s déclarée dans la région %s",
+               lexeme($1->numlex),
+               nom_reg(tete_pile_region())
+              );
+            }else{
+             sprintf(
               erreur,
-              "procedure %s non déclarée.",
-              lexeme($1->numlex)
-            );
-            print_erreur_semantique(erreur);
-            erreur_semantique++;
-          }
-          else{
+              "Il n'existe pas de procédure %s déclarée dans la région %s numéro %d ni dans ses regions englobantes.",
+              lexeme($1->numlex),
+              nom_reg(tete_pile_region()),
+              tete_pile_region()
+             );
+           }
+           print_erreur_semantique(erreur);
+           erreur_semantique++;
+        }else{
             $1->numdecl = num_decl_appel;
             $1->nature = A_APPEL_PROC;
             if(verif_arg_appel(
@@ -618,7 +631,7 @@ instruction : affectation POINT_VIRGULE {
               tab_arg_appel[tab_arg_appel[0][0]],
               nb_ligne
             ) == -1){
-              erreur_semantique++;
+              erreur_semantique++; //On signale l'erreur
             }
           }
 
@@ -638,10 +651,27 @@ instruction : affectation POINT_VIRGULE {
 
 resultat_retourne : un_arg {
   $$ = $1;
+  char erreur[1000];
   if(nature(num_decl_reg(tete_pile_region())) != FCT){
-    print_erreur_semantique(
-      "instruction de retour non vide pour une procedure."
-    );
+    if(region(num_decl_reg(tete_pile_region())) == 0){
+      sprintf(
+      erreur,
+      "Il existe une instruction de retour pour la procédure %s déclarée ligne %d dans la région %s, ce qui est non conforme à une procédure.",
+      lexeme(decl2lex(num_decl_reg(tete_pile_region()))),
+      valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region())) + valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region())))*2 +1 ),
+      nom_reg(region(num_decl_reg(tete_pile_region())))
+      );
+    }else{
+      sprintf(
+      erreur,
+      "Il existe une instruction de retour pour la procédure %s déclarée ligne %d dans la région %s numéro %d, ce qui est non conforme à une procédure.",
+      lexeme(decl2lex(num_decl_reg(tete_pile_region()))),
+      valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region())) + valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region())))*2 +1 ),
+      nom_reg(region(num_decl_reg(tete_pile_region()))),
+      region(num_decl_reg(tete_pile_region()))
+      );
+    }
+    print_erreur_semantique(erreur);
     erreur_semantique++;
   }
   else if(
@@ -650,9 +680,49 @@ resultat_retourne : un_arg {
     )
     != type
   ){
-    print_erreur_semantique(
-      "type de retour incorrect."
+    if(region(num_decl_reg(tete_pile_region())) == 0){
+      sprintf(
+      erreur,
+      "Le type de retour de la fonction %s déclarée ligne %d dans la région %s n'est pas le bon. Prototype : func %s(",
+      lexeme(decl2lex(num_decl_reg(tete_pile_region()))),
+      ligne_decla(tete_pile_region()),
+      nom_reg(region(num_decl_reg(tete_pile_region()))),
+      lexeme(decl2lex(num_decl_reg(tete_pile_region())))
+      );
+    }else{
+      sprintf(
+      erreur,
+      "Le type de retour de la fonction %s déclarée ligne %d dans la région %s numero %d n'est pas le bon. Prototype : func %s(",
+      lexeme(decl2lex(num_decl_reg(tete_pile_region()))),
+      ligne_decla(tete_pile_region()),
+      nom_reg(region(num_decl_reg(tete_pile_region()))),
+      region(num_decl_reg(tete_pile_region())),
+      lexeme(decl2lex(num_decl_reg(tete_pile_region())))
+      );
+    }
+    /*Prototype de la fonction à afficher */
+    char erreur_bis[500];
+    int nb_arg = valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region())) + 1);
+    int indice = valeur_description_tab_decla(num_decl_reg(tete_pile_region()))+2;
+    for(int i =1; i<nb_arg;i++){
+      sprintf(
+      erreur_bis,
+      "%s;",
+      lexeme(valeur_tab_representation(indice))
+      );
+      strcat(erreur, erreur_bis);
+      indice += 2;
+    }
+    sprintf(
+      erreur_bis,
+       "%s) return %s",
+      lexeme(valeur_tab_representation(indice)),
+      lexeme(valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region()))))
     );
+
+    strcat(erreur, erreur_bis);
+
+    print_erreur_semantique(erreur);
     erreur_semantique++;
   }
   else if(!imbrique){
@@ -660,11 +730,20 @@ resultat_retourne : un_arg {
   }
 }
                   | {
+
     $$ = creer_arbre_vide();
     if(nature(num_decl_reg(tete_pile_region())) == FCT){
-      print_erreur_semantique(
-        "instruction de retour vide dans une fonction."
-      );
+      char erreur[400];
+      sprintf(
+        erreur,
+        "L'instruction de retour de la fonction %s déclarée ligne %d dans la région %s numéro %d est vide. La fonction devrait renvoyer un élément de type %s",
+        lexeme(decl2lex(num_decl_reg(tete_pile_region()))),
+        ligne_decla(tete_pile_region()),
+        nom_reg(region(num_decl_reg(tete_pile_region()))),
+        region(num_decl_reg(tete_pile_region())),
+        lexeme(decl2lex(valeur_tab_representation(valeur_description_tab_decla(num_decl_reg(tete_pile_region())))))
+        );
+      print_erreur_semantique(erreur);
       erreur_semantique++;
     }
 }
@@ -757,25 +836,41 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
 
   // Mauvais type opérande gauche
   if(type_var_affectation > 3){
-    print_erreur_semantique(
-      "l'opérande gauche n'est pas de type simple."
-    );
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérande de gauche est de type %s (declaré ligne %d), ce qui n'est pas un type simple. Pour rappel, les types simples sont int, float, bool, et char.",
+      lexeme(decl2lex(type_var_affectation)),
+      valeur_tab_representation(valeur_description_tab_decla(type_var_affectation)+ 1 + 3*valeur_tab_representation(valeur_description_tab_decla(type_var_affectation)))
+      );
+    print_erreur_semantique(erreur);
     erreur_semantique++;
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
   }
   // Mauvais type opérande droite
   else if(type > 3){
-    print_erreur_semantique(
-      "l'opérande droite n'est pas de type simple."
-    );
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérande de droite est de type %s (declaré ligne %d), ce qui n'est pas un type simple. Pour rappel, les types simples sont int, float, bool, et char.",
+      lexeme(decl2lex(type)),
+      valeur_tab_representation(valeur_description_tab_decla(type)+ 1 + 3*valeur_tab_representation(valeur_description_tab_decla(type)))
+      );
+    print_erreur_semantique(erreur);
     erreur_semantique++;
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
   }
   // Affectation de deux choses de type différent
   else if(type_var_affectation != type){
-    print_erreur_semantique(
-      "affectation de deux choses de types différents."
-    );
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérande de gauche est de type %s, et l'opérande de droite est de type %s. Les types étant différents, l'affectation ligne %d n'est donc pas possible",
+      lexeme(type_var_affectation),
+      lexeme(type),
+      nb_ligne
+      );
+    print_erreur_semantique(erreur);
     erreur_semantique++;
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
   }
@@ -798,7 +893,22 @@ variable : IDF {
     // Elément non déclaré
     if(num_decla_idf == -1){
       char erreur[400];
-      sprintf(erreur, "%s non déclaré.", lexeme($1));
+      if(tete_pile_region() == 0){
+        sprintf(
+          erreur,
+          "Il n'existe pas de variable %s dans la région %s.",
+          lexeme($1),
+          nom_reg(tete_pile_region())
+          );
+      }else{
+      sprintf(
+        erreur,
+        "Il n'existe pas de variable %s dans la région %s numéro %d ni dans ses régions englobantes.",
+        lexeme($1),
+        nom_reg(tete_pile_region()),
+        tete_pile_region()
+        );
+      }
       print_erreur_semantique(erreur);
       erreur_semantique++;
     }
@@ -847,7 +957,11 @@ variable : IDF {
 
       if(type == -1){   // ERREUR
         char erreur[400];
-        sprintf(erreur, "%s : aucun champ correspondant.", lexeme($1));
+        sprintf(
+          erreur,
+          "%s : aucun champ correspondant.",
+          lexeme($1)
+          );
         print_erreur_semantique(erreur);
         erreur_semantique++;
         empiler_pile_variable(VAR_SIMPLE, 0);
@@ -1233,17 +1347,51 @@ e5 : PARENTHESE_OUVRANTE e1 PARENTHESE_FERMANTE {$$ = $2;}
        num_decl_appel = num_decla($2->numlex, PROC, -1);
        if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
          char erreur[400];
-         sprintf(erreur, "%s non déclaré.", lexeme($2->numlex));
+         if(tete_pile_region() == 0){
+           sprintf(
+             erreur,
+             "Il n'existe pas de fonction %s dans la région %s numéro %d. Ce qui rend impossible son appel ligne %d.",
+             lexeme($2->numlex),
+             nom_reg(tete_pile_region()),
+             tete_pile_region(),
+             nb_ligne
+           );
+         }else{
+           sprintf(
+           erreur,
+           "Il n'existe pas de fonction %s dans la région %s numéro %d ni dans ses régions englobantes. Ce qui rend impossible son appel ligne %d.",
+           lexeme($2->numlex),
+           nom_reg(tete_pile_region()),
+           tete_pile_region(),
+           nb_ligne
+           );
+         }
          print_erreur_semantique(erreur);
+
          erreur_semantique++;
        }
        else{
          char erreur[400];
-         sprintf(
-           erreur,
-           "appel d'une procedure (%s) dans une expression.",
-           lexeme($2->numlex)
-         );
+         if(region(num_decl_appel) == 0){
+           sprintf(
+             erreur,
+             "%s est une procédure déclaré ligne %d dans la région %s. Ce n'est pas une fonction, elle ne renvoie donc rien, et ne peut donc pas être présente dans l'expression ligne %d.",
+             lexeme($2->numlex),
+             ligne_decla(valeur_exec_tab_decla(num_decl_appel)),
+             nom_reg(region(num_decl_appel)),
+             nb_ligne
+           );
+         }else{
+           sprintf(
+             erreur,
+             "%s est une procédure déclaré ligne %d dans la région %s numero %d. Ce n'est pas une fonction, elle ne renvoie donc rien, et ne peut donc pas être présente dans l'expression ligne %d.",
+             lexeme($2->numlex),
+             ligne_decla(valeur_exec_tab_decla(num_decl_appel)),
+             nom_reg(region(num_decl_appel)),
+             region(num_decl_appel),
+             nb_ligne
+           );
+         }
          print_erreur_semantique(erreur);
          erreur_semantique++;
        }
@@ -1298,7 +1446,7 @@ operateur_comp : EGAL  {$$ = creer_noeud(-1, -1, A_EGAL, -1, -1.0);}
 
 afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
     // On analyse le format donné
-    format(yytext);
+    format(yytext, nb_ligne, "afficher");
     tab_var_format[0] = 0;
   }
   suite_afficher {
@@ -1307,16 +1455,28 @@ afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
     int i;
     // Trop de formats
     if(tab_format[0] > tab_var_format[0]){
-      print_erreur_semantique(
-        "trop de formats dans la fonction afficher."
-      );
+      char erreur[500];
+      sprintf(
+        erreur,
+        "Le nombre de format (%d) est supérieur au nombre d'argument donné (%d) dans la fonction afficher ligne %d",
+        tab_format[0],
+        tab_var_format[0],
+        nb_ligne
+        );
+      print_erreur_semantique(erreur);
       erreur_semantique++;
     }
     // Trop d'arguments suivants le format
     else if(tab_var_format[0] > tab_format[0]){
-      print_erreur_semantique(
-        "trop d'arguments dans la fonction afficher."
-      );
+      char erreur[500];
+      sprintf(
+        erreur,
+        "Le nombre d'argument (%d) de la fonction afficher est supérieur au nombre de format (%d) donné ligne %d",
+        tab_var_format[0],
+        tab_format[0],
+        nb_ligne
+        );
+      print_erreur_semantique(erreur);
       erreur_semantique++;
     }
     // Les cardinaux sont cohérents, on regarde si les éléments sont cohérents
@@ -1324,7 +1484,14 @@ afficher : AFFICHER PARENTHESE_OUVRANTE CSTE_CHAINE {
       for(i = 1; i < tab_format[0]+1; i++){
         if(tab_format[i] != tab_var_format[i] && tab_var_format[i] != -1){
           char erreur[250];
-          sprintf(erreur, "le format numéro %d ne corespond pas.", i);
+          sprintf(
+            erreur,
+            "Le format numéro %d (%s) de la fonction afficher ligne %d ne corespond pas avec le type (%s) de l'argument associé.",
+             i,
+             lexeme(tab_format[i]),
+             nb_ligne,
+             lexeme(decl2lex(tab_var_format[i]))
+             );
           print_erreur_semantique(erreur);
           erreur_semantique++;
         }
@@ -1361,9 +1528,14 @@ suite_afficher : VIRGULE {
 composante_afficher : variable       {
                       // On récupère le type de la variable appellée
                       if(type > 3){
-                        print_erreur_semantique(
-                          "variable de type non simple."
-                        );
+                        char erreur[500];
+                        sprintf(
+                          erreur,
+                          "La variable %s est de type %s ce qui n'est pas un type simple. Pour rappel, les types simples sont : int, float, bool et char.",
+                          lexeme($1->numlex),
+                          lexeme(decl2lex(type))
+                          );
+                        print_erreur_semantique(erreur);
                         erreur_semantique++;
                       }
                       tab_var_format[tab_var_format[0]] = type;
@@ -1385,11 +1557,25 @@ composante_afficher : variable       {
       num_decl_appel = num_decla($1->numlex, PROC, -1);
       if(num_decl_appel == -1){ // Rien de déclaré pour ce lexème
         char erreur[400];
-        sprintf(
+        if(tete_pile_region() == 0){
+          sprintf(
+            erreur,
+            "Il n'existe pas de procédure %s dans la région %s numéro %d. Ce qui rend impossible son appel ligne %d.",
+            lexeme($1->numlex),
+            nom_reg(tete_pile_region()),
+            tete_pile_region(),
+            nb_ligne
+          );
+        }else{
+          sprintf(
           erreur,
-          "%s non déclaré.",
-          lexeme($1->numlex)
-        );
+          "Il n'existe pas de procédure %s dans la région %s numéro %d ni dans ses régions englobantes. Ce qui rend impossible son appel ligne %d.",
+          lexeme($1->numlex),
+          nom_reg(tete_pile_region()),
+          tete_pile_region(),
+          nb_ligne
+          );
+        }
         print_erreur_semantique(erreur);
         erreur_semantique++;
       }

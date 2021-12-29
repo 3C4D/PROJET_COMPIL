@@ -321,6 +321,7 @@ int num_decla(int num_lexico, int nature, int region_particuliere){
         /*On sauvage ce numéro de déclaration si derniere_region est plus petit
         que*/
         if(TableDeclaration[chainage].num_region >= derniere_region){
+          derniere_region = TableDeclaration[chainage].num_region;
           num_decla = chainage;
         }
       }
@@ -356,7 +357,7 @@ int decl2lex(int num_decla){
 
   for (i = 0; i < MAX_TAB_LEX; i++){
     ret = lex2decl(i, nature(num_decla), region(num_decla));
-    if (ret != -1) { return ret; }
+    if (ret != -1) { return i; }
   }
 
   return ret;
@@ -416,7 +417,7 @@ int num_decla_type(int numlex){
   int num_decla_type_s = num_decla(numlex,TYPE_STRUCT,-1);
   int num_decla_type_t = num_decla(numlex,TYPE_TAB,-1);
 
-  if(numlex < 5 && numlex !=-1){
+  if(numlex < 4 && numlex !=-1){
     return numlex; // Type de base
   }else{
     if(num_decla_type_s == -1 && num_decla_type_t == -1){
@@ -444,7 +445,7 @@ return -1;
   Paramètre : - numlex : numéro léxicographique du rype
  ----------------------------------------------------------------------------- */
 int type_base(int num_lexico){
-  if(num_lexico < 5 && num_lexico != -1){
+  if(num_lexico < 4 && num_lexico != -1){
     return 1;
   }else{
     return 0;

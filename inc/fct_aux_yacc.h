@@ -31,7 +31,7 @@ void usage(char *s);
 
 // fonction permettant de déterminer combien et quels formats simples se
 // trouvent dans une chaine de caractère
-void format(char *str);
+void format(char *str, int nb_ligne, char * nom_fct);
 
 // Initialise la pile de région
 void init_pile_region();
@@ -92,7 +92,6 @@ void change_ligne_decla(int valeur);
 //Renvoie le numéro de la ligne de la région r
 int ligne_decla(int r);
 
-
 // Modifie la valeur de nis_region
 void change_NIS(int valeur);
 
@@ -109,5 +108,8 @@ void print_erreur_semantique(char *erreur);
 // Fonction permettant de fermer une liste d'instruction de pr-ocedure pour
 // faciliter l'execution
 void fermeture_arbre_proc(arbre liste_instr_proc);
+
+// Affiche la pile des régions
+void afficher_pile_region();
 
 #endif

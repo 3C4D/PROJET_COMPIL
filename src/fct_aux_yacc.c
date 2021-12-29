@@ -5,6 +5,7 @@
 #include <string.h>
 #include "../inc/fct_aux_yacc.h"
 #include "../TabDecla/inc/TabDecla.h"
+#include "../TabLexico/inc/TabLexico.h"
 #include "../TabRepresentation/inc/TabRepresentation.h"
 #include "../TabRegion/inc/TabRegion.h"
 #include "../inc/couleur.h"
@@ -155,10 +156,23 @@ int est_dans_pile_region(int region){
 // résultat numérique (ou caractère), renvoie le type final, -1 si erreur
 int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
   // L'une des composantes est booleenne
-  if(type_g == TYPE_BOOL || type_d == TYPE_BOOL){
-    print_erreur_semantique(
-      "opérateur arithmétique impossible sur un booleen."
+  if(type_g == TYPE_BOOL){
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérateur de gauche est de type booléen, ce qui rend impossible la réalisation de l'opération arithmétique ligne %d",
+      nb_ligne
     );
+    print_erreur_semantique(erreur);
+    return -1;
+  }else if(type_d == TYPE_BOOL){
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérateur de droite est de type booléen, ce qui rend impossible la réalisation de l'opération arithmétique ligne %d",
+      nb_ligne
+    );
+    print_erreur_semantique(erreur);
     return -1;
   }
 
@@ -172,7 +186,15 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
    return TYPE_CHAR;
   }
   else{
-    print_erreur_semantique("opérandes de l'expression de types différents.");
+    char erreur[500];
+    sprintf(
+    erreur,
+    "L'opérateur de gauche est de type %s, et l'opérateur de droite est de type %s, les types sont différents, ce qui rend impossible la réalisation de l'opération arithmétique ligne %d",
+    lexeme(type_g),
+    lexeme(type_d),
+    nb_ligne
+    );
+    print_erreur_semantique(erreur);
     return -1;
   }
 }
@@ -181,8 +203,25 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
 // booleen
 int verif_type_expr_bool(int type_g, int type_d, int nb_ligne){
   // L'une des composantes est réelle
-  if(type_g == TYPE_FLOAT || type_d == TYPE_FLOAT){
-
+  if(type_g == TYPE_FLOAT){
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérande de gauche est de type %s ce qui rend impossible l'opération booléenne ligne %d.",
+      lexeme(type_g),
+      nb_ligne
+    );
+    print_erreur_semantique(erreur);
+    return -1;
+  }else if(type_d == TYPE_FLOAT){
+    char erreur[500];
+    sprintf(
+      erreur,
+      "L'opérande de droite est de type %s ce qui rend impossible l'opération booléenne ligne %d.",
+      lexeme(type_g),
+      nb_ligne
+    );
+    print_erreur_semantique(erreur);
     return -1;
   }
   return 2;
@@ -190,9 +229,11 @@ int verif_type_expr_bool(int type_g, int type_d, int nb_ligne){
 
 //Vérifie si un appel de fonction ou procédure, est correctement fait
 int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
-  int indice;
+  int indice, indice_bis;
   int nb_arg;
   int i;
+  char erreur[1000];
+  char erreur_bis[500];
 
   if(nature(num_decla) ==  PROC){
       nb_arg = valeur_tab_representation(valeur_description_tab_decla(num_decla));
@@ -201,13 +242,60 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
     nb_arg = valeur_tab_representation(valeur_description_tab_decla(num_decla)+1);
     indice = valeur_description_tab_decla(num_decla)+2;
   }
-
+  indice_bis = indice;
   /*On vérifie que le nombre d'argument est le même que le nombre de parametre*/
   if(nb_arg == tab_arg_appel[0]){
     for(i=1; i<nb_arg+1; i++){
       /*On vérifie que le type de chaque argument correspond au type du parametre*/
       if(tab_arg_appel[i] != valeur_tab_representation(indice)){
-        print_erreur_semantique("paramètre de mauvais type dans l'appel.");
+        if(nature(num_decla) == FCT){
+          sprintf(
+          erreur,
+          "Le paramètre numéro %d de l'appel ligne %d de la fonction %s déclarée ligne %d n'est pas le bon. Prototype : func %s(",
+          i,
+          nb_ligne,
+          nom_reg(valeur_exec_tab_decla(num_decla)),
+          indice+ 2*nb_arg,
+          lexeme(decl2lex(num_decla))
+          );
+        }else{
+          sprintf(
+          erreur,
+          "Le paramètre numéro %d de l'appel ligne %d de la procédure %s déclarée ligne %d n'est pas le bon. Prototype : proc %s(",
+          i,
+          nb_ligne,
+          nom_reg(valeur_exec_tab_decla(num_decla)),
+          indice+ 2*nb_arg,
+          lexeme(decl2lex(num_decla))
+          );
+        }
+
+        for(i=1; i<nb_arg;i++){
+          sprintf(
+          erreur_bis,
+          "%s;",
+          lexeme(valeur_tab_representation(indice_bis))
+          );
+          strcat(erreur, erreur_bis);
+          indice_bis += 2;
+        }
+        sprintf(
+          erreur_bis,
+           "%s)",
+          lexeme(valeur_tab_representation(indice_bis))
+        );
+        strcat(erreur, erreur_bis);
+
+        if(nature(num_decla) == FCT){
+          sprintf(
+            erreur_bis,
+            " return %s ",
+            lexeme(valeur_tab_representation(valeur_description_tab_decla(num_decla)))
+          );
+          strcat(erreur, erreur_bis);
+        }
+
+        print_erreur_semantique(erreur);
         return -1;
       }
       indice += 2;
@@ -315,8 +403,9 @@ int analyse_options(char *argv[], int *flags){
 
 // Fonction permettant de déterminer combien et quels formats simples se
 // trouvent dans une chaine de caractère
-void format(char *str){
+void format(char *str, int nb_ligne, char * nom_fct){
   char *ptr = str;
+  char erreur[500];
 
   tab_format[0] = 0;
 
@@ -351,9 +440,26 @@ void format(char *str){
             tab_format[tab_format[0]] = 4;
             break;
           default :
-            fprintf(stderr, "Erreur format...");
+            sprintf(
+              erreur,
+              "Le format %c n'existe pas ce qui rend impossible l'application de la fonction %s ligne %d.",
+              *(ptr+1),
+              nom_fct,
+              nb_ligne
+            );
+            print_erreur_semantique(erreur);
             exit(-1);
         }
+      }
+      else{
+        sprintf(
+          erreur,
+          "Le format %c n'existe pas ce qui rend impossible l'application de la fonction %s ligne %d.",
+          *(ptr+1),
+          nom_fct,
+          nb_ligne
+        );
+        print_erreur_semantique(erreur);
       }
     }
     ptr++;
@@ -371,4 +477,13 @@ void fermeture_arbre_proc(arbre liste_instr_proc){
   }
 
   iter = concat_pere_frere(iter, noeud);
+}
+
+// Affiche la pile des régions
+void afficher_pile_region(){
+  int i;
+  for(i = 1; i < pile_region[0]+1; i++){
+    printf("%d ", pile_region[i]);
+  }
+  printf("\n");
 }
