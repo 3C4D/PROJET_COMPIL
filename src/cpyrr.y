@@ -34,6 +34,8 @@ int tab_var_format[40];
 int tab_arg_appel[40][40];
 int num_champ = -1;
 
+int num_avant; //Num région déclaration d'une fonction
+
 // Tableaux servant à la vérification sémantiques des retours de fct/proc
 int inst_retour[40];
 
@@ -45,6 +47,8 @@ int num_declaration;
 int diff = 0;
 
 int num_ligne_decla;
+
+int nom_type;
 
 // Variable servant à déterminer si l'on est dans une imbrication
 // (ex : dans un if)
@@ -167,7 +171,7 @@ suite_liste_inst : instruction {
                  }
                  ;
 
-declaration_type : TYPE IDF {num_ligne_decla = nb_ligne;} DEUX_POINTS suite_declaration_type {
+declaration_type : TYPE IDF {num_ligne_decla = nb_ligne; nom_type = $2;} DEUX_POINTS suite_declaration_type {
   if(inserer_tab_declaration(
       $2,
       $5,
@@ -175,12 +179,42 @@ declaration_type : TYPE IDF {num_ligne_decla = nb_ligne;} DEUX_POINTS suite_decl
       premier_indice(),
       nb_ligne
     ) == -1){
-      print_erreur_semantique("erreur insertion table decla");
-      erreur_semantique++;
+      char erreur[400];
+      int num_decla_type;
+
+      if(num_decla($2, TYPE_STRUCT, tete_pile_region()) != -1){
+        num_decla_type = num_decla($2, TYPE_STRUCT, tete_pile_region());
+      }else{
+        num_decla_type = num_decla($2, TYPE_TAB, tete_pile_region());
+      }
+
+      if(nature(num_decla_type) == TYPE_STRUCT){
+        int ligne_decla_type  = valeur_tab_representation(
+          valeur_description_tab_decla(num_decla_type)+ 1 + 3*valeur_tab_representation(valeur_description_tab_decla(num_decla_type))
+          );
+        sprintf(erreur,
+          "Il existe déjà une structure de nom %s dans la région %s ligne %d",
+          lexeme($2),
+          nom_reg(tete_pile_region()),
+          ligne_decla_type
+          );
+
+      }else if(nature(num_decla_type) == TYPE_TAB){
+        int ligne_decla_type  = valeur_tab_representation(
+          valeur_description_tab_decla(num_decla_type) + 2 + 2*valeur_tab_representation(valeur_description_tab_decla(num_decla_type)+1)
+          );
+
+        sprintf(erreur,
+          "Il existe déjà un tableau de nom %s dans la région %s ligne %d",
+          lexeme($2),
+          nom_reg(tete_pile_region()),
+          ligne_decla_type
+          );
+      }
+      print_erreur_semantique(erreur);
+      erreur_semantique++; //On signale quand même l'erreur
     };
-
-    ajouter_table_represention(num_ligne_decla);
-
+    ajouter_table_represention(num_ligne_decla); //Ligne de la déclaration du type
 }
                  ;
 
@@ -199,9 +233,9 @@ suite_declaration_type : STRUCT {
 
     stocker_table_representation(premier_indice(), nb_champs);
     $$= TYPE_STRUCT;
-    if(verif_surchage_struct(premier_indice(),nb_ligne) == -1){
-      print_erreur_semantique("erreur insertion table representation");
-      erreur_semantique++;
+    if(verif_surcharge_struct(premier_indice(),num_ligne_decla, nom_type) == -1){
+      fprintf(stderr, "Erreur d'insertion dans la table des representations");
+      erreur_semantique++; //On signale l'erreur
     }
 }
                        | TABLEAU {
@@ -215,7 +249,26 @@ suite_declaration_type : STRUCT {
       /*Vérification de l'existance du type*/
 
       if(num_decla_type($5) == -1){
-        print_erreur_semantique("type nom déclaré.");
+        char erreur[400];
+        if(tete_pile_region() == 0){
+          sprintf(erreur,
+            "Type des éléments du tableau %s déclaré ligne %d non déclaré, le type '%s' n'existe pas la région %s",
+            lexeme(nom_type),
+            num_ligne_decla,
+            lexeme($5),
+            nom_reg(tete_pile_region())
+           );
+
+        }else{
+          sprintf(erreur,
+            "Type des éléments du tableau %s déclaré ligne %d non déclaré, le type '%s' n'existe pas la région %s ni dans ses régions englobantes",
+            lexeme(nom_type),
+            num_ligne_decla,
+            lexeme($5),
+            nom_reg(tete_pile_region())
+           );
+        }
+        print_erreur_semantique(erreur);
         erreur_semantique++;
       }
       /*Mise à jour des 2 premières cases*/
@@ -236,7 +289,17 @@ une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {
   nb_dim += 1;
   /*Vérification de l'ordre des bornes*/
   if($1 > $3){
-    print_erreur_semantique("problème de dimension dans le tableau, bornes inversées.");
+    char erreur[400];
+    sprintf(
+      erreur,
+      "Problème de dimensions dans le tableau %s déclarée ligne %d, la borne inférieure et la borne supérieure de la dimension numéro %d sont inversées -> (borne inf) %d > %d (borne sup)",
+      lexeme(nom_type),
+      num_ligne_decla,
+      nb_dim,
+      $1,
+      $3
+    );
+    print_erreur_semantique(erreur);
     erreur_semantique++;
   }
   $$=inserer_tab_representation_type($1, $3, TYPE_TAB);
@@ -251,11 +314,27 @@ un_champ : IDF DEUX_POINTS nom_type {
   nb_champs += 1;
   if(num_decla_type($3) == -1){
     char erreur[400];
-    sprintf(
+    if(tete_pile_region() == 0){
+      sprintf(
       erreur,
-      "type du champs %d de la structure non déclaré.",
-      nb_champs
-    );
+      "Le type du champs numéro %d de la structure %s declarée ligne %d est non déclaré, le type '%s' n'existe pas dans la region %s.",
+      nb_champs,
+      lexeme(nom_type),
+      num_ligne_decla,
+      lexeme($3),
+      nom_reg(tete_pile_region())
+      );
+    }else{
+      sprintf(
+      erreur,
+      "Le type du champs numéro %d de la structure %s declarée ligne %d est non déclaré, le type '%s' n'existe pas dans la region %s ni dans ses régions englobantes.",
+      nb_champs,
+      lexeme(nom_type),
+      num_ligne_decla,
+      lexeme($3),
+      nom_reg(tete_pile_region())
+      );
+    }
     print_erreur_semantique(erreur);
     erreur_semantique++;
   }
@@ -277,15 +356,60 @@ type_simple : ENTIER {$$= 0;}
             | CHAINE CROCHET_OUVRANT CSTE_ENTIERE CROCHET_FERMANT {$$ = 4;}
             ;
 
-declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
-   if(num_decla_type($4) == -1){
-     print_erreur_semantique("variable de type non déclaré.");
+declaration_variable  : VARIABLE {num_ligne_decla= nb_ligne;} IDF DEUX_POINTS nom_type {
+   if(num_decla_type($5) == -1){
+     char erreur[400];
+     if(tete_pile_region() == 0){
+       sprintf(erreur,
+       "La variable %s est de type non déclaré, le type '%s' n'existe pas dans la région %s",
+       lexeme($3),
+       lexeme($5),
+       nom_reg(tete_pile_region())
+       );
+     }else{
+       sprintf(erreur,
+       "La variable %s est de type non déclaré, le type '%s' n'existe pas dans la région %s ni dans ses régions englobantes",
+       lexeme($3),
+       lexeme($5),
+       nom_reg(tete_pile_region())
+       );
+     }
+
+     print_erreur_semantique(erreur);
      erreur_semantique++;
    }
-   num_declaration = inserer_tab_declaration($2, VAR, tete_pile_region(), num_decla_type($4), nb_ligne);
+   num_declaration = inserer_tab_declaration($3, VAR, tete_pile_region(), num_decla_type($5), nb_ligne);
+   /*Vérification de la surcharge*/
+
    if(num_declaration == -1){
-     print_erreur_semantique("erreur insertion table declaration");
-     erreur_semantique++;
+     char erreur[400];
+     int num_decla_type;
+     if(num_decla($3, PARAMETRE, tete_pile_region()) != -1){
+       num_decla_type = num_decla($3, PARAMETRE, tete_pile_region());
+     }else{
+       num_decla_type = num_decla($3, VAR, tete_pile_region());
+     }
+
+     if(nature(num_decla_type) == PARAMETRE){
+       sprintf(erreur,
+         "Il existe déjà un parametre de nom %s dans la région %s, il est donc impossible de définir la variable %s ligne %d",
+         lexeme($3),
+         nom_reg(tete_pile_region()),
+         lexeme($3),
+         num_ligne_decla
+         );
+
+     }else if(nature(num_decla_type) == VAR){
+       sprintf(erreur,
+         "Il existe déjà une variable de nom %s dans la région %s, il est donc impossible de redéfinir la variable %s ligne %d",
+         lexeme($3),
+         nom_reg(tete_pile_region()),
+         lexeme($3),
+         num_ligne_decla
+         );
+     }
+     print_erreur_semantique(erreur);
+     erreur_semantique++; //On signale quand même l'erreur
    }
    inserer_exec_tab_decla(num_declaration, deplacement());
    change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
@@ -295,7 +419,6 @@ declaration_variable  : VARIABLE IDF DEUX_POINTS nom_type {
 declaration_procedure : PROCEDURE IDF {
   int num_avant;
   nb_parametres = 0;
-
 
   /*On reserve une case pour le nombre de parametres*/
   change_premier_indice(inserer_tab_representation_type(-99,-1, PROC));
@@ -307,8 +430,18 @@ declaration_procedure : PROCEDURE IDF {
       premier_indice(),
       nb_ligne
     ) == -1){
-      print_erreur_semantique("erreur insertion table declaration");
-      erreur_semantique++;
+      char erreur[500];
+      int region_induite = valeur_exec_tab_decla(num_decla($2, PROC, tete_pile_region()));
+      int region_dec = region(num_decla($2, PROC, tete_pile_region()));
+      sprintf(erreur,
+        "Il existe déjà une procédure %s définie ligne %d dans la région %s numéro %d, il est donc impossible de la redéfinir dans cette région",
+        lexeme($2),
+        ligne_decla(region_induite),
+        nom_reg(region_dec),
+        region_dec
+        );
+      print_erreur_semantique(erreur);
+      erreur_semantique++; //On signale l'erreur
     }
 
   num_avant = tete_pile_region();
@@ -332,14 +465,11 @@ declaration_procedure : PROCEDURE IDF {
    fermeture_arbre_proc($6);
    change_NIS(-1); //Car on sort d'une région
    inserer_tab_region(deplacement(), nis());
-
-
    depiler_pile_region();
 }
                       ;
 
 declaration_fonction  : FONCTION IDF {
-  int num_avant;
   nb_parametres = 0;
   /*On reserve 2 cases pour le nombre de parametres
   et la nature du renvoie*/
@@ -352,8 +482,18 @@ declaration_fonction  : FONCTION IDF {
       premier_indice(),
       nb_ligne
     ) == -1 ){
-      print_erreur_semantique("erreur insertion table declaration");
-      erreur_semantique++;
+      char erreur[500];
+      int region_induite = valeur_exec_tab_decla(num_decla($2, FCT, tete_pile_region()));
+      int region_dec = region(num_decla($2, FCT, tete_pile_region()));
+      sprintf(erreur,
+        "Il existe déjà une fonction %s définie ligne %d dans la région %s numéro %d , il est donc impossible de la redéfinir dans cette région",
+        lexeme($2),
+        ligne_decla(region_induite),
+        nom_reg(region_dec),
+        region_dec
+        );
+      print_erreur_semantique(erreur);
+      erreur_semantique++; //On signale l'erreur
     }
 
   num_avant = tete_pile_region();
@@ -379,8 +519,11 @@ declaration_fonction  : FONCTION IDF {
     char erreur[400];
     sprintf(
       erreur,
-      "aucune instruction de retour pour la fonction %s.",
-      lexeme($2)
+      "Aucune instruction de retour pour la fonction %s déclarée ligne %d dans la région %s numéro %d",
+      lexeme($2),
+      ligne_decla(tete_pile_region()),
+      nom_reg(num_avant),
+      num_avant
     );
 
     print_erreur_semantique(erreur);
@@ -405,10 +548,37 @@ un_param : IDF DEUX_POINTS type_simple {
 
   inserer_tab_representation_type($3, $1, FCT);
   num_declaration = inserer_tab_declaration($1, PARAMETRE, tete_pile_region(), $3, nb_ligne);
+  /*Vérification de la surcharge*/
   if(num_declaration == -1){
-    print_erreur_semantique("erreur insertion table declaration");
-    erreur_semantique++;
+    char erreur[400];
+    int num_decla_type;
+
+    if(num_decla($1, PARAMETRE, tete_pile_region()) != -1){
+      num_decla_type = num_decla($1, PARAMETRE, tete_pile_region());
+    }else{
+      num_decla_type = num_decla($1, VAR, tete_pile_region());
+    }
+
+    if(nature(num_decla_type) == PARAMETRE){
+      sprintf(erreur,
+        "Il existe déjà un parametre de nom %s dans la région %s déclarée ligne %d, il est donc impossible de rédéfinir un paramètre de nom même nom dans cette région",
+        lexeme($1),
+        nom_reg(tete_pile_region()),
+        ligne_decla(tete_pile_region())
+        );
+
+    }else if(nature(num_decla_type) == VAR){
+      sprintf(erreur,
+        "Il existe déjà une variable de nom %s dans la région %s déclarée ligne %d, il est donc impossible de définir un paramètre de même nom dans cette région",
+        lexeme($1),
+        nom_reg(tete_pile_region()),
+        ligne_decla(tete_pile_region())
+        );
+    }
+    print_erreur_semantique(erreur);
+    erreur_semantique++; //On signale quand même l'erreur
   }
+
   inserer_exec_tab_decla(num_declaration, deplacement());
   change_deplacement(valeur_exec_tab_decla(valeur_description_tab_decla(num_declaration)));
 }

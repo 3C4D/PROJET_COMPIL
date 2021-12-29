@@ -71,7 +71,7 @@ int valeur_tab_types(int indice);
   champs de même lexème.
   Paramètre : - indice : indice que de la table dont on veut connaitre la donnée
 ----------------------------------------------------------------------------- */
-int verif_surchage_struct(int premier_indice, int nb_ligne);
+int verif_surcharge_struct(int premier_indice, int nb_ligne, int nom_struct);
 
 // Charge la table des représentations à partir du texte intermédiaire
 void charger_table_representation(FILE *fic);

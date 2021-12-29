@@ -6,6 +6,7 @@
 #include "../../inc/fct_aux_yacc.h"
 
 tabDecla TableDeclaration[MAX_TAB_DECLA];
+int indice_tab_debordement = MAX_TAB_LEX;
 
 /*Initialise la table des déclarations*/
 void init_tab_decla(){
@@ -71,113 +72,34 @@ int inserer_tab_declaration(int num_lexico, int nature,
       On va déterminer si le lexème va dans la table primaire, ou dans la zone
       de débordement
     -------------------------------------------------------------------------*/
-
-
-
     if(TableDeclaration[num_lexico].nature == -1){ /*Si il n'y a jamais encore eu
                                                    de lexème identiques insérés
                                                    dans la table*/
       num_declaration = num_lexico; /*On va donc insérer les informations du lexème
                               à l'indice num_lexico*/
 
-    }else{ /*Sinon, on va cherche la premier case vide dans la zone de débordement*/
+    }else{ /*Sinon, on va dans la zone de débordement*/
 
       /*Attention surchage possible..*/
-      /*On vérifie que l'élément de la table primaire, qui est le même lexeme, n'est
-      pas déclaré sous la même nature, et dans la même région*/
-      if((TableDeclaration[num_lexico].num_region == num_region) && (TableDeclaration[num_lexico].nature == nature)){
-        switch (nature) {
-          case TYPE_STRUCT:
-            printf("structure de même nom déjà défini dans cette région.");
+      /*On vérifie qu'il n'y ai pas d'element portant le même lexème et étant
+      de même type dans la même région */
+        if(nature == TYPE_STRUCT || nature == TYPE_TAB){ //Pour les types
+          if(num_decla(num_lexico, TYPE_STRUCT, num_region) != -1 || num_decla(num_lexico, TYPE_TAB, num_region) != -1){
             return -1;
-            break;
-          case TYPE_TAB:
-            print_erreur_semantique(
-              "tableau de même nom déjà défini dans cette région."
-            );
-            return -1;
-            break;
-          case VAR:
-            print_erreur_semantique(
-              "variable de même nom déjà défini dans cette région."
-            );
-            return -1;
-            break;
-          case PARAMETRE:
-            print_erreur_semantique(
-              "paramatère de la fonction de même nom déjà défini dans cette région."
-            );
-            return -1;
-            break;
-          case PROC:
-            print_erreur_semantique(
-              "procédure de même nom déjà défini dans cette région."
-            );
-            return -1;
-            break;
-          case FCT:
-            print_erreur_semantique(
-              "fonction de même nom déjà défini dans cette région."
-            );
-            return -1;
-            break;
-          default:
-            exit(-1);
-            break;
           }
-      }
-
-
-      i = MAX_TAB_LEX;  /*Donne le premier indice de la zone de débordement*/
-      while(TableDeclaration[i].nature != -1){ /*Tant que la case i n'est pas libre*/
-
-        /*Gestion de la surcharge possible*/
-        /*On vérifie que l'élément i, qui est le même lexème, n'est pas déclaré
-        dans la même région ET à la même nature*/
-        if(num_decla(num_lexico, nature, num_region) != -1){
-          switch (nature) {
-            case TYPE_STRUCT:
-              printf("structure de même nom déjà défini dans cette région.");
-              return -1;
-              break;
-            case TYPE_TAB:
-              print_erreur_semantique(
-                "tableau de même nom déjà défini dans cette région."
-              );
-              return -1;
-              break;
-            case VAR:
-              print_erreur_semantique(
-                "variable de même nom déjà défini dans cette région."
-              );
-              return -1;
-              break;
-            case PARAMETRE:
-              print_erreur_semantique(
-                "paramatère de la fonction de même nom déjà défini dans cette région."
-              );
-              return -1;
-              break;
-            case PROC:
-              print_erreur_semantique(
-                "procédure de même nom déjà défini dans cette région."
-              );
-              return -1;
-              break;
-            case FCT:
-              print_erreur_semantique(
-                "fonction de même nom déjà défini dans cette région."
-              );
-              return -1;
-              break;
-            default:
-              exit(-1);
-              break;
-            }
+        }else if(nature == PARAMETRE || nature == VAR){ //Pour les variables et paramètres
+          if(num_decla(num_lexico, PARAMETRE, num_region) != -1 || num_decla(num_lexico, VAR, num_region) != -1){
+            return -1;
           }
-        i++;
-      }
-      num_declaration = i; /*Première case libre trouvé dans la zone de débordement*/
+        }else{ //Pour le reste
+          if(num_decla(num_lexico, nature, num_region) != -1){
+            return -1;
+          }
+        }
+
+        num_declaration = indice_tab_debordement;
+        indice_tab_debordement += 1;
+
 
       /*-----------------------------------------------------------------------
         On remet à jour le chainage
@@ -187,8 +109,8 @@ int inserer_tab_declaration(int num_lexico, int nature,
         i = TableDeclaration[i].suivant;
       }
       TableDeclaration[i].suivant = num_declaration;
-    }
 
+    }
     /*-------------------------------------------------------------------------
       On insère le numéro de la région où se trouve le lexème courant
     --------------------------------------------------------------------------*/
@@ -416,7 +338,7 @@ int lex2decl(int numlex, int nature, int region){
   int chaine = numlex;
 
   while (
-    chaine != -1 && 
+    chaine != -1 &&
     !(TableDeclaration[chaine].nature == nature &&
     TableDeclaration[chaine].num_region == region)
   ) {
@@ -436,7 +358,7 @@ int decl2lex(int num_decla){
     ret = lex2decl(i, nature(num_decla), region(num_decla));
     if (ret != -1) { return ret; }
   }
-  
+
   return ret;
 }
 

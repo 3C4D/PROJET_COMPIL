@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../inc/TabRepresentation.h"
+#include "../../TabLexico/inc/TabLexico.h"
 #include "../../inc/fct_aux_yacc.h"
 
 int TableRepresentation[MAX_TAB_RPZ];
@@ -153,16 +154,33 @@ int valeur_tab_types(int indice){
   champs de même lexème.
   Paramètre : - _premier_indice : indice que de la table dont on veut connaitre la donnée
 ----------------------------------------------------------------------------- */
-int verif_surchage_struct(int premier_indice, int nb_ligne){
+int verif_surcharge_struct(int premier_indice, int nb_ligne, int nom_struct){
   int i, j;
   int nb_champs;
+  int indice, indice_bis;
+
+  indice = 0;
+
   nb_champs = TableRepresentation[premier_indice];
   for(i = 2 ; i<3*nb_champs +1; i= i+3){
+    indice += 1;
+    indice_bis = 0;
     for(j=2 ; j<3*nb_champs+1; j = j+3){
+      indice_bis += 1;
       /*Si on a deux numéros lexicographique identique pour deux champs différents*/
       if(i != j){
         if(TableRepresentation[premier_indice+i] == TableRepresentation[premier_indice+j]){
-          print_erreur_semantique("des champs de la structure on le même nom.");
+          char erreur[400];
+          sprintf(erreur,
+          "Le champs numéro %d (%s) et le champs numéro %d (%s) de la structure %s déclarée ligne %d portent le même nom",
+          indice,
+          lexeme(TableRepresentation[premier_indice+i]),
+          indice_bis,
+          lexeme(TableRepresentation[premier_indice+j]),
+          lexeme(nom_struct),
+          nb_ligne);
+
+          print_erreur_semantique(erreur);
           return -1;
         }
       }

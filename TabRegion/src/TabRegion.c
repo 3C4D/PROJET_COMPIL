@@ -9,7 +9,7 @@ tabRegion TableRegion[MAX_TAB_REGION];
 void init_tab_region(){
   int i;
 
-  TableRegion[0].nom_region = "Programme principal";
+  TableRegion[0].nom_region = "programme principal";
   TableRegion[0].taille = 0;
   TableRegion[0].NIS= 0;
   TableRegion[0].arbre_region = NULL;
