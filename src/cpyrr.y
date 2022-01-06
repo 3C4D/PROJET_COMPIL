@@ -835,7 +835,7 @@ tant_que : TANT_QUE expression FAIRE liste_instructions {
 affectation : variable {type_var_affectation = type;} OPAFF expression {
 
   // Mauvais type opérande gauche
-  if(type_var_affectation > 3){
+  if(type_var_affectation > 3 && type != -1 && type_var_affectation != -1){
     char erreur[500];
     sprintf(
       erreur,
@@ -848,7 +848,7 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
   }
   // Mauvais type opérande droite
-  else if(type > 3){
+  else if(type > 3 && type != -1 && type_var_affectation != -1){
     char erreur[500];
     sprintf(
       erreur,
@@ -861,7 +861,7 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
     $$ = creer_noeud(-1, -1, -1, -1, -1.0);
   }
   // Affectation de deux choses de type différent
-  else if(type_var_affectation != type){
+  else if(type_var_affectation != type && type != -1 && type_var_affectation != -1){
     char erreur[500];
     sprintf(
       erreur,
@@ -938,9 +938,11 @@ variable : IDF {
   else {
     if(tete_pile_variable().nature == CHAMP){
       int i = 0;
+      int type_avant;
       // Premier indice de la struct dans la table des types
       int indice_struct = valeur_description_tab_decla(type);
       int indice_lexeme_champ = indice_struct + 2;
+      type_avant = type;
 
       depiler_pile_variable();
 
@@ -959,8 +961,12 @@ variable : IDF {
         char erreur[400];
         sprintf(
           erreur,
-          "%s : aucun champ correspondant.",
-          lexeme($1)
+          "Il n'existe pas de champs %s pour la structure %s déclarée ligne %d dans la région %s (numéro %d).",
+          lexeme($1),
+          lexeme(decl2lex(type_avant)),
+          valeur_tab_representation(valeur_description_tab_decla(type_avant) + (valeur_tab_representation(valeur_description_tab_decla(type_avant))*3) +1 ),
+          nom_reg(region(type_avant)),
+          region(type_avant)
           );
         print_erreur_semantique(erreur);
         erreur_semantique++;
@@ -1030,9 +1036,11 @@ variable : IDF {
     }
     else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
       if(tete_pile_variable().nature == DIMENSION){
-        print_erreur_semantique(
-          "Pas assez d'indice."
-        );
+        char erreur[500];
+        sprintf(erreur,
+          "Pas assez d'indice fufkhgh"
+          );
+          print_erreur_semantique(erreur);
         erreur_semantique++;
         while(tete_pile_variable().nature != TAB){
           depiler_pile_variable();
@@ -1074,14 +1082,19 @@ variable : IDF {
    }
  }
  corps_variable {
+   int indice_manquant = 0;
    if(!est_vide_pile_variable() && tete_pile_variable().nature == DIMENSION){
-     print_erreur_semantique(
-       "Pas assez d'indice."
-     );
-     erreur_semantique++;
      while(tete_pile_variable().nature != TAB){
        depiler_pile_variable();
+       indice_manquant++;
      }
+     char erreur[500];
+     sprintf(erreur,
+       "Pas assez d'indice pour une variable de type tableau, il en manque : %d",
+       indice_manquant
+     );
+     print_erreur_semantique(erreur);
+     erreur_semantique++;
    }
    if(erreur_semantique){
      $$ = creer_noeud(
@@ -1162,9 +1175,14 @@ e1 : e1 {type_g = type;} operateur_comp e2 {
      if((type_g == TYPE_BOOL && type_d != TYPE_BOOL)
        ||(type_g != TYPE_BOOL && type_d == TYPE_BOOL)
      ){
-       print_erreur_semantique(
-         "comparaison d'un booleen avec un non booleen."
+       char erreur[400];
+       sprintf(
+         erreur,
+         "Tentative de comparaison entre l'expression de gauche qui est un %s et l'expression de droite qui est un %s.",
+         lexeme(decl2lex(type_g)),
+         lexeme(decl2lex(type_d))
        );
+       print_erreur_semantique(erreur);
        erreur_semantique++;
      }
 
@@ -1172,9 +1190,12 @@ e1 : e1 {type_g = type;} operateur_comp e2 {
      if(type_g == TYPE_BOOL && type_d == TYPE_BOOL){
        type = TYPE_BOOL;
        if($3->nature != A_EGAL && $3->nature != A_DIFFERENT){
-         print_erreur_semantique(
-           "comparaison d'ordre entre booleens impossible."
+         char erreur[500];
+         sprintf(
+           erreur,
+           "Tentative de comparaison d'ordre entre booleens."
          );
+         print_erreur_semantique(erreur);
          erreur_semantique++;
       }
     }
@@ -1286,9 +1307,13 @@ e3 : e3 {type_g = type;} MULT e4 {
 e4 : NON e5 {
   $$ = concat_pere_fils(creer_noeud(-1, -1, A_NON, -1, -1), $2);
   if(type != TYPE_INT && type != TYPE_BOOL){
-    print_erreur_semantique(
-      "opérateur NOT sur autre chose qu'un booleen ou un entier impossible."
+    char erreur[500];
+    sprintf(
+      erreur,
+      "Tentative d'utilisation de l'opérateur NOT sur un %s. Pour rappel, cet opérateur ne s'utilise qu'avec une expression de type bool ou int.",
+      lexeme(decl2lex(type))
     );
+    print_erreur_semantique(erreur);
     erreur_semantique++;
   }
   type = TYPE_BOOL;
@@ -1581,11 +1606,25 @@ composante_afficher : variable       {
       }
       else{
         char erreur[400];
-        sprintf(
-          erreur,
-          "affichage d'une procedure (%s) impossible.",
-          lexeme($1->numlex)
-        );
+        if(region(num_decla($1->numlex, PROC, -1)) == 0){
+          sprintf(
+            erreur,
+            "%s est une procédure, déclarée ligne %d dans la région %s, ce qui rend son affichage impossible",
+            lexeme($1->numlex),
+            ligne_decla(valeur_exec_tab_decla(num_decla($1->numlex, PROC, -1))),
+            nom_reg(region(num_decla($1->numlex, PROC, -1)))
+            );
+        }else{
+          sprintf(
+            erreur,
+            "%s est une procédure, déclarée ligne %d dans la région %s (numéro %d), ce qui rend son affichage impossible",
+            lexeme($1->numlex),
+            ligne_decla(valeur_exec_tab_decla(num_decla($1->numlex, PROC, -1))),
+            nom_reg(region(num_decla($1->numlex, PROC, -1))),
+            region(num_decla($1->numlex, PROC, -1))
+            );
+        }
+
         print_erreur_semantique(erreur);
         erreur_semantique++;
       }

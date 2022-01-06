@@ -353,14 +353,21 @@ int lex2decl(int numlex, int nature, int region){
 // En fonction de sont numéro de déclaration
 // Renvoie le susdit numero ou -1 si cette variable n'existe pas
 int decl2lex(int num_decla){
-  int i, ret = -1;
+  int i;
+  int suivant;
 
-  for (i = 0; i < MAX_TAB_LEX; i++){
-    ret = lex2decl(i, nature(num_decla), region(num_decla));
-    if (ret != -1) { return i; }
+  if(num_decla < MAX_TAB_LEX){
+    return num_decla;
   }
 
-  return ret;
+  suivant = num_decla;
+
+  for(i=0; i< MAX_TAB_DECLA; i++){
+    if(TableDeclaration[i].suivant == suivant){
+      return decl2lex(i);
+    }
+  }
+  return -12;
 }
 
 /*----------------------------------------------------------------------------
