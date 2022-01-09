@@ -15,25 +15,25 @@ void init_tab_decla(){
   /*Initialisation des types de bases*/
   TableDeclaration[0].nature = TYPE_BASE;
   TableDeclaration[0].suivant = -1;
-  TableDeclaration[0].num_region = -1;
+  TableDeclaration[0].num_region = 0;
   TableDeclaration[0].description = -1;
   TableDeclaration[0].exec = 1;
 
   TableDeclaration[1].nature = TYPE_BASE;
   TableDeclaration[1].suivant = -1;
-  TableDeclaration[1].num_region = -1;
+  TableDeclaration[1].num_region = 0;
   TableDeclaration[1].description = -1;
   TableDeclaration[1].exec = 1;
 
   TableDeclaration[2].nature = TYPE_BASE;
   TableDeclaration[2].suivant = -1;
-  TableDeclaration[2].num_region = -1;
+  TableDeclaration[2].num_region = 0;
   TableDeclaration[2].description = -1;
   TableDeclaration[2].exec = 1;
 
   TableDeclaration[3].nature = TYPE_BASE;
   TableDeclaration[3].suivant = -1;
-  TableDeclaration[3].num_region = -1;
+  TableDeclaration[3].num_region = 0;
   TableDeclaration[3].description = -1;
   TableDeclaration[3].exec = 1;
 

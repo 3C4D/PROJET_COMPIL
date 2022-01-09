@@ -193,24 +193,44 @@ declaration_type : TYPE IDF {num_ligne_decla = nb_ligne; nom_type = $2;} DEUX_PO
         int ligne_decla_type  = valeur_tab_representation(
           valeur_description_tab_decla(num_decla_type)+ 1 + 3*valeur_tab_representation(valeur_description_tab_decla(num_decla_type))
           );
-        sprintf(erreur,
-          "Il existe déjà une structure de nom %s dans la région %s ligne %d",
-          lexeme($2),
-          nom_reg(tete_pile_region()),
-          ligne_decla_type
-          );
+          if(tete_pile_region() == 0){
+            sprintf(erreur,
+              "Il existe déjà une structure de nom %s dans la région %s ligne %d",
+              lexeme($2),
+              nom_reg(tete_pile_region()),
+              ligne_decla_type
+              );
+        }else{
+          sprintf(erreur,
+            "Il existe déjà une structure de nom %s dans la région %s (numéro %d) ligne %d",
+            lexeme($2),
+            nom_reg(tete_pile_region()),
+            tete_pile_region(),
+            ligne_decla_type
+            );
+        }
 
       }else if(nature(num_decla_type) == TYPE_TAB){
         int ligne_decla_type  = valeur_tab_representation(
           valeur_description_tab_decla(num_decla_type) + 2 + 2*valeur_tab_representation(valeur_description_tab_decla(num_decla_type)+1)
           );
 
-        sprintf(erreur,
-          "Il existe déjà un tableau de nom %s dans la région %s ligne %d",
-          lexeme($2),
-          nom_reg(tete_pile_region()),
-          ligne_decla_type
-          );
+          if(tete_pile_region() == 0){
+            sprintf(erreur,
+              "Il existe déjà un tableau de nom %s dans la région %s ligne %d",
+              lexeme($2),
+              nom_reg(tete_pile_region()),
+              ligne_decla_type
+              );
+          }else{
+            sprintf(erreur,
+              "Il existe déjà un tableau de nom %s dans la région %s (numéro %d) ligne %d",
+              lexeme($2),
+              nom_reg(tete_pile_region()),
+              tete_pile_region(),
+              ligne_decla_type
+              );
+          }
       }
       print_erreur_semantique(erreur);
       erreur_semantique++; //On signale quand même l'erreur
@@ -235,7 +255,6 @@ suite_declaration_type : STRUCT {
     stocker_table_representation(premier_indice(), nb_champs);
     $$= TYPE_STRUCT;
     if(verif_surcharge_struct(premier_indice(),num_ligne_decla, nom_type) == -1){
-      fprintf(stderr, "Erreur d'insertion dans la table des representations");
       erreur_semantique++; //On signale l'erreur
     }
 }
@@ -1037,15 +1056,18 @@ variable : IDF {
     else if(!est_vide_pile_variable()){ // PROBLEME RENCONTRE
       if(tete_pile_variable().nature == DIMENSION){
         char erreur[500];
-        sprintf(erreur,
-          "Pas assez d'indice fufkhgh"
-          );
-          print_erreur_semantique(erreur);
-        erreur_semantique++;
+        int i = 0;
         while(tete_pile_variable().nature != TAB){
           depiler_pile_variable();
+          i++;
         }
         depiler_pile_variable();
+        sprintf(erreur,
+          "Pas assez d'indice pour une variable représentant un tableau : il en manque %d.",
+            i
+          );
+          print_erreur_semantique(erreur);
+          erreur_semantique++;
       }
       erreur_semantique++;
     }
@@ -1063,20 +1085,34 @@ variable : IDF {
 
  corps_variable : CROCHET_OUVRANT expression CROCHET_FERMANT {
    // Vérification du type de l'expression
+   char erreur[500];
    if(type != TYPE_INT){
-     print_erreur_semantique(
-       "impossible d'indicer un tableau avec une expression non entière."
-     );
+     if(type < 4){
+       sprintf(
+         erreur,
+         "Tentative d'indicage d'un tableau par une expression de type %s. Pour rappel, un tableau peut seulement être indicé par des expressions entières.",
+         lexeme(decl2lex(type))
+       );
+     }else{  //N'arrive jamais
+       sprintf(
+         erreur,
+         "Tentative d'indicage d'un tableau par une expression de type %s déclaré ligne %d dans la région %s (numéro %d). Pour rappel, un tableau peut seulement être indicé par des expressions entières.",
+         lexeme(decl2lex(type)),
+         valeur_tab_representation(valeur_description_tab_decla(type) + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2 +1),
+         nom_reg(region(type)),
+         region(type)
+         );
+     }
+     print_erreur_semantique(erreur);
      erreur_semantique++;
-   }
-   if(est_vide_pile_variable() || tete_pile_variable().nature != DIMENSION){
+   }else if(est_vide_pile_variable() || (tete_pile_variable().nature != TAB && tete_pile_variable().nature != DIMENSION) ){
+     print_erreur_semantique("Tentative d'indicage d'un objet qui n'est pas un tableau.");
+   }else if(tete_pile_variable().nature == TAB){
      print_erreur_semantique(
-       "Trop d'indices."
-     );
-     erreur_semantique++;
-
-   }
-   else{
+       "Nombre d'indice donné trop grand par rapport au nombre d'indice du tableau."
+       );
+       erreur_semantique++;
+   }else{
      type = tete_pile_variable().type;
      depiler_pile_variable();
    }
@@ -1090,7 +1126,7 @@ variable : IDF {
      }
      char erreur[500];
      sprintf(erreur,
-       "Pas assez d'indice pour une variable de type tableau, il en manque : %d",
+       "Pas assez d'indice pour une variable représentant un tableau, il en manque : %d",
        indice_manquant
      );
      print_erreur_semantique(erreur);
@@ -1556,7 +1592,7 @@ composante_afficher : variable       {
                         char erreur[500];
                         sprintf(
                           erreur,
-                          "La variable %s est de type %s ce qui n'est pas un type simple. Pour rappel, les types simples sont : int, float, bool et char.",
+                          "La variable %s est de type %s ce qui n'est pas un type simple ce qui ne correspond à aucun format pour la fonction afficher. Pour rappel, les types simples sont : int, float, bool et char.",
                           lexeme($1->numlex),
                           lexeme(decl2lex(type))
                           );
