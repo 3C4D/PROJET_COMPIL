@@ -89,7 +89,7 @@ int est_vide_pile_variable(){
 void empiler_pile_variable(int nature, int type){
   // Vérification du nombre de variables
   if(pile_variable[0].nature == MAX_IMBR_VAR){
-    fprintf(stderr, "Erreur, trop d'éléments dans la pile des régions.\n");
+    fprintf(stderr, "Erreur, trop d'éléments dans la pile des variables.\n");
     exit(-1);
   }
   pile_variable[0].nature++;

@@ -939,14 +939,17 @@ variable : IDF {
         empiler_pile_variable(STRUCTURE, type);
       }
       else if(nature(type) == TYPE_TAB){    // TYPE_TAB
-        int i;
-        int dimensions = valeur_tab_types(valeur_description_tab_decla(type)+1);
+        int i, dim, local_type = type;
         empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
-        for(i = 0; i < dimensions; i++){
-          empiler_pile_variable(
-            DIMENSION,
-            valeur_tab_types(valeur_description_tab_decla(type))
-          );
+        while(nature(local_type)){  // On empile toutes les dimensions
+          dim = valeur_tab_types(valeur_description_tab_decla(local_type)+1);
+          for(i = 0; i < dim; i++){
+            empiler_pile_variable(
+              DIMENSION,
+              valeur_tab_types(valeur_description_tab_decla(local_type))
+            );
+          }
+          local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
         }
       }
       else{                                 // TYPE_BASE
@@ -996,14 +999,17 @@ variable : IDF {
           empiler_pile_variable(STRUCTURE, type);
         }
         else if(nature(type) == TYPE_TAB){    // TYPE_TAB
-          int i;
-          int dim = valeur_tab_types(valeur_description_tab_decla(type)+1);
+          int i, dim, local_type = type;
           empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
-          for(i = 0; i < dim; i++){
-            empiler_pile_variable(
-              DIMENSION,
-              valeur_tab_types(valeur_description_tab_decla(type))
-            );
+          while(nature(local_type)){  // On empile toutes les dimensions
+            dim = valeur_tab_types(valeur_description_tab_decla(local_type)+1);
+            for(i = 0; i < dim; i++){
+              empiler_pile_variable(
+                DIMENSION,
+                valeur_tab_types(valeur_description_tab_decla(local_type))
+              );
+            }
+            local_type = valeur_tab_types(valeur_description_tab_decla(type));
           }
         }
         else{                                 // TYPE_BASE
