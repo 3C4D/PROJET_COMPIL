@@ -96,7 +96,7 @@ int type = 0;
 %type<typ2> liste_champs liste_param liste_dimensions liste_parametres
 %type<typ2> une_dimension un_champ un_param dimension
 %type<typ2> nom_type type_simple declaration_procedure
-%type<typ2> suite_declaration_type
+%type<typ2> suite_declaration_type constante_entiere
 
 %type<typ1> afficher suite_afficher composante_afficher lire liste_variables
 %type<typ1> variable appel liste_args un_arg expression concatenation
@@ -305,7 +305,7 @@ liste_dimensions : une_dimension { $$ = $1; }
                  | liste_dimensions VIRGULE une_dimension
                 ;
 
-une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {
+une_dimension : constante_entiere SOULIGNE constante_entiere {
   nb_dim += 1;
   /*Vérification de l'ordre des bornes*/
   if($1 > $3){
@@ -325,6 +325,9 @@ une_dimension : CSTE_ENTIERE SOULIGNE CSTE_ENTIERE {
   $$=inserer_tab_representation_type($1, $3, TYPE_TAB);
 }
               ;
+
+constante_entiere : moins CSTE_ENTIERE {$$ = $1*$2;}
+                  ;
 
 liste_champs : un_champ POINT_VIRGULE {$$ = $1;}
              | liste_champs un_champ POINT_VIRGULE
@@ -939,14 +942,21 @@ variable : IDF {
         empiler_pile_variable(STRUCTURE, type);
       }
       else if(nature(type) == TYPE_TAB){    // TYPE_TAB
-        int i, dim, local_type = type;
+        int i, dim, local_type = type, type_effectif;
         empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
-        while(nature(local_type)){  // On empile toutes les dimensions
+
+        while(nature(local_type) == TYPE_TAB){  // On cherche le type effectif
+          local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
+        }
+        type_effectif = local_type;
+
+        local_type = type;
+        while(nature(local_type) == TYPE_TAB){  // On empile toutes les dimensions
           dim = valeur_tab_types(valeur_description_tab_decla(local_type)+1);
           for(i = 0; i < dim; i++){
             empiler_pile_variable(
               DIMENSION,
-              valeur_tab_types(valeur_description_tab_decla(local_type))
+              valeur_tab_types(valeur_description_tab_decla(type_effectif))
             );
           }
           local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
@@ -999,17 +1009,24 @@ variable : IDF {
           empiler_pile_variable(STRUCTURE, type);
         }
         else if(nature(type) == TYPE_TAB){    // TYPE_TAB
-          int i, dim, local_type = type;
+          int i, dim, local_type = type, type_effectif;
           empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
-          while(nature(local_type)){  // On empile toutes les dimensions
+
+          while(nature(local_type) == TYPE_TAB){  // On cherche le type effectif
+            local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
+          }
+          type_effectif = local_type;
+
+          local_type = type;
+          while(nature(local_type) == TYPE_TAB){  // On empile toutes les dimensions
             dim = valeur_tab_types(valeur_description_tab_decla(local_type)+1);
             for(i = 0; i < dim; i++){
               empiler_pile_variable(
                 DIMENSION,
-                valeur_tab_types(valeur_description_tab_decla(local_type))
+                valeur_tab_types(valeur_description_tab_decla(type_effectif))
               );
             }
-            local_type = valeur_tab_types(valeur_description_tab_decla(type));
+            local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
           }
         }
         else{                                 // TYPE_BASE
