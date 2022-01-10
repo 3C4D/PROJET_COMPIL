@@ -944,12 +944,12 @@ variable : IDF {
       }
       else if(nature(type) == TYPE_TAB){    // TYPE_TAB
         int i, dim, local_type = type, type_effectif;
-        empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
 
         while(nature(local_type) == TYPE_TAB){  // On cherche le type effectif
           local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
         }
         type_effectif = local_type;
+        empiler_pile_variable(TAB, type_effectif);
 
         local_type = type;
         while(nature(local_type) == TYPE_TAB){  // On empile toutes les dimensions
@@ -957,11 +957,12 @@ variable : IDF {
           for(i = 0; i < dim; i++){
             empiler_pile_variable(
               DIMENSION,
-              valeur_tab_types(valeur_description_tab_decla(type_effectif))
+              type_effectif
             );
           }
           local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
         }
+        type = type_effectif;
       }
       else{                                 // TYPE_BASE
         empiler_pile_variable(VAR_SIMPLE, type);
@@ -972,6 +973,7 @@ variable : IDF {
     if(tete_pile_variable().nature == CHAMP){
       int i = 0;
       int type_avant;
+      fprintf(stderr, "%d", type);
       // Premier indice de la struct dans la table des types
       int indice_struct = valeur_description_tab_decla(type);
       int indice_lexeme_champ = indice_struct + 2;
@@ -980,9 +982,9 @@ variable : IDF {
       depiler_pile_variable();
 
       type = -1;
-      while(i != valeur_tab_types(indice_struct) && type != -1){
-        // L'IDF appelé est bien un champ de la structure
+      while(i != valeur_tab_types(indice_struct)){
         printf("cest la le caca \n");
+        // L'IDF appelé est bien un champ de la structure
         if(valeur_tab_types(indice_lexeme_champ) == $1){
           // On retient le type et on sort
           type = valeur_tab_types(indice_lexeme_champ-1);
@@ -1012,12 +1014,12 @@ variable : IDF {
         }
         else if(nature(type) == TYPE_TAB){    // TYPE_TAB
           int i, dim, local_type = type, type_effectif;
-          empiler_pile_variable(TAB, valeur_tab_types(valeur_description_tab_decla(type)));
 
           while(nature(local_type) == TYPE_TAB){  // On cherche le type effectif
             local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
           }
           type_effectif = local_type;
+          empiler_pile_variable(TAB, type_effectif);
 
           local_type = type;
           while(nature(local_type) == TYPE_TAB){  // On empile toutes les dimensions
@@ -1025,11 +1027,12 @@ variable : IDF {
             for(i = 0; i < dim; i++){
               empiler_pile_variable(
                 DIMENSION,
-                valeur_tab_types(valeur_description_tab_decla(type_effectif))
+                type_effectif
               );
             }
             local_type = valeur_tab_types(valeur_description_tab_decla(local_type));
           }
+          type = type_effectif;
         }
         else{                                 // TYPE_BASE
           empiler_pile_variable(VAR_SIMPLE, type);
