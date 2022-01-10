@@ -364,7 +364,22 @@ int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
 
   if (dim == 0) {
     if (!est_vide(a)){
-      a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
+      switch (a->nature){
+      case A_VAR_SIMPLE:
+        a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
+        break;
+
+      case A_STRUCT:
+        a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
+        break;
+
+      case A_DIMENSION:
+        a = concat_pere_fils(creer_noeud(0, 0, A_TAB, 0, 0), a);
+        break;
+      
+      default:
+        break;
+      }
     }
     *suite = a;
     return 0;
