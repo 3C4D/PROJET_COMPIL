@@ -156,6 +156,7 @@ int est_dans_pile_region(int region){
 // résultat numérique (ou caractère), renvoie le type final, -1 si erreur
 int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
   // L'une des composantes est booleenne
+  printf("%d  %d %d\n",type_g,type_d, nb_ligne);
   if(type_g == TYPE_BOOL){
     char erreur[500];
     sprintf(
@@ -190,8 +191,8 @@ int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
     sprintf(
     erreur,
     "L'opérateur de gauche est de type %s, et l'opérateur de droite est de type %s, les types sont différents, ce qui rend impossible la réalisation de l'opération arithmétique ligne %d",
-    lexeme(type_g),
-    lexeme(type_d),
+    lexeme(decl2lex(type_g)),
+    lexeme(decl2lex(type_d)),
     nb_ligne
     );
     print_erreur_semantique(erreur);

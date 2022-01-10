@@ -138,7 +138,7 @@ void change_premier_indice(int valeur){
 ----------------------------------------------------------------------------- */
 void ajouter_table_represention(int valeur){
   TableRepresentation[indice_libre] = valeur;
-  indice_libre++;
+  indice_libre+=1;
 }
 
 /*----------------------------------------------------------------------------

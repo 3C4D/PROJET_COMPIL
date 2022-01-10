@@ -234,8 +234,9 @@ declaration_type : TYPE IDF {num_ligne_decla = nb_ligne; nom_type = $2;} DEUX_PO
       }
       print_erreur_semantique(erreur);
       erreur_semantique++; //On signale quand même l'erreur
-    };
-    ajouter_table_represention(num_ligne_decla); //Ligne de la déclaration du type
+    }else{
+      ajouter_table_represention(num_ligne_decla); //Ligne de la déclaration du type
+    }
 }
                  ;
 
@@ -979,8 +980,9 @@ variable : IDF {
       depiler_pile_variable();
 
       type = -1;
-      while(i != valeur_tab_types(indice_struct) && type == -1){
+      while(i != valeur_tab_types(indice_struct) && type != -1){
         // L'IDF appelé est bien un champ de la structure
+        printf("cest la le caca \n");
         if(valeur_tab_types(indice_lexeme_champ) == $1){
           // On retient le type et on sort
           type = valeur_tab_types(indice_lexeme_champ-1);
@@ -994,7 +996,7 @@ variable : IDF {
         sprintf(
           erreur,
           "Il n'existe pas de champs %s pour la structure %s déclarée ligne %d dans la région %s (numéro %d).",
-          lexeme($1),
+          lexeme(decl2lex($1)),
           lexeme(decl2lex(type_avant)),
           valeur_tab_representation(valeur_description_tab_decla(type_avant) + (valeur_tab_representation(valeur_description_tab_decla(type_avant))*3) +1 ),
           nom_reg(region(type_avant)),
@@ -1130,6 +1132,7 @@ variable : IDF {
      erreur_semantique++;
    }else if(est_vide_pile_variable() || (tete_pile_variable().nature != TAB && tete_pile_variable().nature != DIMENSION) ){
      print_erreur_semantique("Tentative d'indicage d'un objet qui n'est pas un tableau.");
+     erreur_semantique++;
    }else if(tete_pile_variable().nature == TAB){
      print_erreur_semantique(
        "Nombre d'indice donné trop grand par rapport au nombre d'indice du tableau."
