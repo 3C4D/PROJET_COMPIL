@@ -251,7 +251,7 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
         if(nature(num_decla) == FCT){
           sprintf(
           erreur,
-          "Le paramètre numéro %d de l'appel ligne %d de la fonction %s déclarée ligne %d n'est pas le bon. Prototype : func %s(",
+          "Le paramètre numéro %d de l'appel ligne %d de la fonction %s déclarée ligne %d n'est pas du bon type. Prototype : func %s(",
           i,
           nb_ligne,
           nom_reg(valeur_exec_tab_decla(num_decla)),
@@ -261,7 +261,7 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
         }else{
           sprintf(
           erreur,
-          "Le paramètre numéro %d de l'appel ligne %d de la procédure %s déclarée ligne %d n'est pas le bon. Prototype : proc %s(",
+          "Le paramètre numéro %d de l'appel ligne %d de la procédure %s déclarée ligne %d n'est pas du bon type. Prototype : proc %s(",
           i,
           nb_ligne,
           nom_reg(valeur_exec_tab_decla(num_decla)),
@@ -301,7 +301,167 @@ int verif_arg_appel(int num_decla, int tab_arg_appel[], int nb_ligne){
       indice += 2;
     }
   }else{
-    print_erreur_semantique("nombre de paramètre de l'appel incorrect.");
+    char erreur[500];
+    if(nature(num_decla) == FCT){ //Cas fonction
+      if(nb_arg > tab_arg_appel[0]){
+        if(region(num_decla) == 0){
+          sprintf(
+            erreur,
+            "La fonction %s déclarée dans la région %s ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il manque donc des arguments. Prototype : func %s(",
+            lexeme(decl2lex(num_decla)),
+            nom_reg(region(num_decla)),
+            valeur_tab_representation(valeur_description_tab_decla(num_decla) + 2 + (valeur_tab_representation(valeur_description_tab_decla(num_decla)+1)*2)),
+            nb_arg,
+            nb_ligne,
+            tab_arg_appel[0],
+            lexeme(decl2lex(num_decla))
+          );
+        }else{
+          sprintf(
+          erreur,
+          "La fonction %s déclarée dans la région %s (numéro %d) ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il manque donc des arguments.Prototype : func %s(",
+          lexeme(decl2lex(num_decla)),
+          nom_reg(region(num_decla)),
+          region(num_decla),
+          valeur_tab_representation(valeur_description_tab_decla(num_decla) + 2 + valeur_tab_representation(valeur_description_tab_decla(num_decla)+1)*2),
+          nb_arg,
+          nb_ligne,
+          tab_arg_appel[0],
+          lexeme(decl2lex(num_decla))
+          );
+        }
+      }else{
+        if(region(num_decla) == 0){
+          sprintf(
+            erreur,
+            "La fonction %s déclarée dans la région %s ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il y a donc des arguments en trop. Prototype : func %s(",
+            lexeme(decl2lex(num_decla)),
+            nom_reg(region(num_decla)),
+            valeur_tab_representation(valeur_description_tab_decla(num_decla) + 2 + valeur_tab_representation(valeur_description_tab_decla(num_decla)+1)*2),
+            nb_arg,
+            nb_ligne,
+            tab_arg_appel[0],
+            lexeme(decl2lex(num_decla))
+          );
+        }else{
+          sprintf(
+          erreur,
+          "La fonction %s déclarée dans la région %s (numéro %d) ligne %d comporte %d. Et l'appel fait ligne %d en comporte %d. Il y a donc des arguments en trop. Prototype : func %s(",
+          lexeme(decl2lex(num_decla)),
+          nom_reg(region(num_decla)),
+          region(num_decla),
+          valeur_tab_representation(valeur_description_tab_decla(num_decla) + 2 + valeur_tab_representation(valeur_description_tab_decla(num_decla)+1)*2),
+          nb_arg,
+          nb_ligne,
+          tab_arg_appel[0],
+          lexeme(decl2lex(num_decla))
+          );
+        }
+      }
+
+      /*Prototype de la fonction à afficher */
+      char erreur_bis[500];
+
+      for(int i =1; i<nb_arg;i++){
+        sprintf(
+        erreur_bis,
+        "%s;",
+        lexeme(valeur_tab_representation(indice))
+        );
+        strcat(erreur, erreur_bis);
+        indice += 2;
+      }
+      sprintf(
+        erreur_bis,
+         "%s) return %s",
+        lexeme(valeur_tab_representation(indice)),
+        lexeme(valeur_tab_representation(valeur_description_tab_decla(num_decla)))
+      );
+
+      strcat(erreur, erreur_bis);
+
+      print_erreur_semantique(erreur);
+    }else{ //Cas procédure
+      if(nb_arg > tab_arg_appel[0]){
+        if(region(num_decla) == 0){
+          sprintf(
+            erreur,
+            "La procédure %s déclarée dans la région %s ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il manque donc des arguments. Prototype : proc %s(",
+            lexeme(decl2lex(num_decla)),
+            nom_reg(region(num_decla)),
+            valeur_tab_representation(valeur_description_tab_decla(num_decla) + 1 + valeur_tab_representation(valeur_description_tab_decla(num_decla))*2),
+            nb_arg,
+            nb_ligne,
+            tab_arg_appel[0],
+            lexeme(decl2lex(num_decla))
+          );
+        }else{
+          sprintf(
+          erreur,
+          "La procédure %s déclarée dans la région %s (numéro %d) ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il manque donc des arguments.Prototype : proc %s(",
+          lexeme(decl2lex(num_decla)),
+          nom_reg(region(num_decla)),
+          region(num_decla),
+          valeur_tab_representation(valeur_description_tab_decla(num_decla) + 1 + valeur_tab_representation(valeur_description_tab_decla(num_decla))*2),
+          nb_arg,
+          nb_ligne,
+          tab_arg_appel[0],
+          lexeme(decl2lex(num_decla))
+          );
+        }
+      }else{
+        if(region(num_decla) == 0){
+          sprintf(
+            erreur,
+            "La procédure %s déclarée dans la région %s ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il y a donc des arguments en trop. Prototype : proc %s(",
+            lexeme(decl2lex(num_decla)),
+            nom_reg(region(num_decla)),
+            valeur_tab_representation(valeur_description_tab_decla(num_decla) + 1 + valeur_tab_representation(valeur_description_tab_decla(num_decla))*2),
+            nb_arg,
+            nb_ligne,
+            tab_arg_appel[0],
+            lexeme(decl2lex(num_decla))
+          );
+        }else{
+          sprintf(
+          erreur,
+          "La procédure %s déclarée dans la région %s (numéro %d) ligne %d comporte %d arguments. Et l'appel fait ligne %d en comporte %d. Il y a donc des arguments en trop. Prototype : proc %s(",
+          lexeme(decl2lex(num_decla)),
+          nom_reg(region(num_decla)),
+          region(num_decla),
+          valeur_tab_representation(valeur_description_tab_decla(num_decla) + 1 + valeur_tab_representation(valeur_description_tab_decla(num_decla))*2),
+          nb_arg,
+          nb_ligne,
+          tab_arg_appel[0],
+          lexeme(decl2lex(num_decla))
+          );
+        }
+      }
+
+      /*Prototype de la fonction à afficher */
+      char erreur_bis[500];
+
+      for(int i =1; i<nb_arg;i++){
+        sprintf(
+        erreur_bis,
+        "%s;",
+        lexeme(valeur_tab_representation(indice))
+        );
+        strcat(erreur, erreur_bis);
+        indice += 2;
+      }
+      sprintf(
+        erreur_bis,
+         "%s)",
+        lexeme(valeur_tab_representation(indice))
+      );
+
+      strcat(erreur, erreur_bis);
+
+      print_erreur_semantique(erreur);
+    }
+
+
     return -1;
   }
   return 0;
