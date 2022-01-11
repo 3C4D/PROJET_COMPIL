@@ -862,7 +862,7 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
     char erreur[500];
     sprintf(
       erreur,
-      "L'opérande de gauche est de type %s (declaré ligne %d), ce qui n'est pas un type simple. Pour rappel, les types simples sont int, float, bool, et char.",
+      "L'opérande de gauche de l'affectation est de type %s (declaré ligne %d), ce qui n'est pas un type simple. Pour rappel, les types simples sont int, float, bool, et char.",
       lexeme(decl2lex(type_var_affectation)),
       valeur_tab_representation(valeur_description_tab_decla(type_var_affectation)+ 1 + 3*valeur_tab_representation(valeur_description_tab_decla(type_var_affectation)))
       );
@@ -875,7 +875,7 @@ affectation : variable {type_var_affectation = type;} OPAFF expression {
     char erreur[500];
     sprintf(
       erreur,
-      "L'opérande de droite est de type %s (declaré ligne %d), ce qui n'est pas un type simple. Pour rappel, les types simples sont int, float, bool, et char.",
+      "L'opérande de droite de l'affectation est de type %s (declaré ligne %d), ce qui n'est pas un type simple. Pour rappel, les types simples sont int, float, bool, et char.",
       lexeme(decl2lex(type)),
       valeur_tab_representation(valeur_description_tab_decla(type)+ 1 + 3*valeur_tab_representation(valeur_description_tab_decla(type)))
       );
