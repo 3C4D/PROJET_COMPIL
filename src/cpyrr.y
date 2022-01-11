@@ -983,7 +983,6 @@ variable : IDF {
 
       type = -1;
       while(i != valeur_tab_types(indice_struct)){
-        printf("cest la le caca \n");
         // L'IDF appelé est bien un champ de la structure
         if(valeur_tab_types(indice_lexeme_champ) == $1){
           // On retient le type et on sort
