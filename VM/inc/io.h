@@ -18,6 +18,9 @@ void io_affiche(ninja format, arbre args);
 void io_lire(arbre vars);
 
 // Affiche une erreur d'exécution
-void err_exec(char *msg);
+void err_exec(char *msg, bool fin);
+
+// Quitte l'exécution du programme et affiche la pile
+void fin_exec();
 
 #endif
