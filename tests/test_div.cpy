@@ -6,7 +6,7 @@ cpyrr
 
 var x:int;
 
-proc div(){
+proc div{
   afficher("div!\n");
 }
 

@@ -153,16 +153,14 @@ void err_exec(char *msg, bool fin){
       if (nature(numdecl_reg) == PROC){
         fprintf(
           stderr, 
-          "Procedure: %s (Région: %s)\n", 
-          lexeme(decl2lex(numdecl_reg)), 
-          tab_decla_region(reg_actu_g)
+          "Procedure: %s (Région: %d)\n", 
+          tab_decla_region(reg_actu_g), reg_actu_g
         );
       } else {
         fprintf(
           stderr, 
-          "Fonction: %s (Région: %s)\n", 
-          lexeme(decl2lex(numdecl_reg)),
-          tab_decla_region(reg_actu_g)
+          "Fonction: %s (Région: %d)\n", 
+          tab_decla_region(reg_actu_g), reg_actu_g
         );
       }
     } else {
