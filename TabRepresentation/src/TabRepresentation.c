@@ -109,7 +109,7 @@ void stocker_table_representation(int indice, int valeur){
 void afficher_tab_representation(){
   int i=0;
   printf("\n---------------- TABLE REPRESENTATION ---------------- \n");
-  while(TableRepresentation[i]!=-1){
+  while(i != indice_libre){
     printf("| %d |", TableRepresentation[i]);
     i++;
   }
