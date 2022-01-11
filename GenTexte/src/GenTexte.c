@@ -13,6 +13,7 @@ extern tabRegion TableRegion[MAX_TAB_REGION];
 extern tabLex TableLexico[MAX_TAB_LEX];
 extern int TableRepresentation[MAX_TAB_RPZ];
 extern tabDecla TableDeclaration[MAX_TAB_DECLA];
+extern int indice_libre;
 
 // Fonction générant le texte intermédiaire à partir des tables
 void generer_texte_intermediaire(FILE *fic){
@@ -79,11 +80,11 @@ void generer_texte_intermediaire(FILE *fic){
 
   // TABLE TYPES
   i = 0;
-  while(TableRepresentation[i] != -1){
+  fprintf(fic, "%d|", indice_libre);
+  while(i != indice_libre){
     fprintf(fic, "%d|", TableRepresentation[i]);
     i++;
   }
-  fprintf(fic, "-1|");
 
   // TABLE REGIONS
   i = 0;

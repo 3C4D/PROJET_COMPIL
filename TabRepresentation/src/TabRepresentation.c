@@ -192,10 +192,13 @@ int verif_surcharge_struct(int premier_indice, int nb_ligne, int nom_struct){
 
 // Charge la table des représentations à partir du texte intermédiaire
 void charger_table_representation(FILE *fic){
-  int i = 0, retour = 0;
-
-  do{
+  int i = 0, retour = 0, indice;
+  retour = fscanf(fic, "%d|", &indice);
+  for(i = 0; i < indice; i++){
+    if(retour == -1){
+      fprintf(stderr, "Erreur chargement table representation\n");
+      exit(-1);
+    }
     retour = fscanf(fic, "%d|", &TableRepresentation[i]);
-    i++;
-  }while(retour != -1 && TableRepresentation[i-1] != -1);
+  }
 }
