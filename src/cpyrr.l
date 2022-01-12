@@ -87,7 +87,55 @@ C3 [^"*/]
 
 (0|[1-9][0-9]*) {yylval.typ2 = atoi(yytext); return(CSTE_ENTIERE);}
 (0|[1-9][0-9]*)\.([0-9]+)  {yylval.typ3 = atof(yytext); return(CSTE_REELLE);}
-\'.\'  {yylval.typ2 = yytext[1]; return(CSTE_CARACTERE);}
+
+\'\\['ntabefrv0\\]\'  {
+  switch(yytext[2]){
+    case '\'' :
+      yylval.typ2 = '\'';
+      return(CSTE_CARACTERE);
+    case 'n' :
+      yylval.typ2 = '\n';
+      return(CSTE_CARACTERE);
+    case 't' :
+      yylval.typ2 = '\t';
+      return(CSTE_CARACTERE);
+    case 'a' :
+      yylval.typ2 = '\a';
+      return(CSTE_CARACTERE);
+    case 'b' :
+      yylval.typ2 = '\b';
+      return(CSTE_CARACTERE);
+    case 'e' :
+      yylval.typ2 = '\e';
+      return(CSTE_CARACTERE);
+    case 'f' :
+      yylval.typ2 = '\f';
+      return(CSTE_CARACTERE);
+    case 'r' :
+      yylval.typ2 = '\r';
+      return(CSTE_CARACTERE);
+    case 'v' :
+      yylval.typ2 = '\v';
+      return(CSTE_CARACTERE);
+    case '0' :
+      yylval.typ2 = '\0';
+      return(CSTE_CARACTERE);
+    case '\\' :
+      yylval.typ2 = '\\';
+      return(CSTE_CARACTERE);
+    default :
+      couleur(VERTGRAS);
+      fprintf(stderr, "\nErreur lexicographique\n");
+      couleur(BLANCGRAS);
+      fprintf(stderr, " %d |  %s", nb_ligne, yytext);
+      couleur(RESET);
+      fprintf(stderr, "\n\n");
+      break;
+
+  }
+}
+\'[^']\'  {yylval.typ2 = yytext[1]; return(CSTE_CARACTERE);}
+
 \"[^"]*\" {yylval.typ2 = inserer_tab_lex(yytext); return(CSTE_CHAINE);}
 
 [a-zA-Z][a-zA-Z0-9]*  {
