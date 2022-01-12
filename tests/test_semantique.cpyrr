@@ -1,0 +1,57 @@
+cpyrr
+
+type t : struct
+        ch1 : int;
+        ch3 : bool;
+fstruct
+
+var prout : int;
+
+
+proc coucou( papa : int; bjr : char; proutprout : float)
+    type s : struct
+        ch1 : int ;
+        ch2 : bool;
+        ch3 : int;
+        ch4 : int;
+        ch5 : bool;
+        ch12 : int;
+        ch6 : float;
+    fstruct
+
+    type t1 : array[5_10, 2_4, 0_1] of int;
+
+    type t : struct
+        ch1 : t1;
+        ch3 : bool;
+    fstruct
+
+    var caca: t;
+
+
+    func coucou(pp : int) return int
+    {
+    return 0 ;
+    }
+
+    proc coulo(po : int){
+    void;
+    }
+
+    {
+    prout := caca.ch1[5][3][0];
+
+    prout := 1 + 1;
+    caca := coulo(4);
+    }
+
+proc cou(papa :int; bjr : char; proutprout : float){
+void;
+}
+
+
+
+
+{
+void;
+}
