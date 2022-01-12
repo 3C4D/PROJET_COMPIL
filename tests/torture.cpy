@@ -1,6 +1,5 @@
 cpyrr
 
-
 type t : struct
     t : int;
 fstruct
@@ -63,7 +62,7 @@ proc torture1
         ch2b : x;
     fstruct
 
-    type y : array[0_10] of yt;
+    type y : array[0_10, 15_20] of yt;
 
     var tab : t;
     var x : x;
