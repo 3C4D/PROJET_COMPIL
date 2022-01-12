@@ -14,18 +14,18 @@ var d : int;
 
 {
 //Opération boolean sur des non boolean
-i := not d;
+//i := not d;
 
 //Affectation entre 2 types différents
-b := c;
+//b := c;
 
-//Addition impossible 
-c := d +c;
+//Addition impossible
+//c := d +c;
 
 //Opération sur les boolean
-b := b + b2;
-if(b > b2){
+//b := b + b2;
+//if(b > b2){
+//    void;
+//}
     void;
-}
-
 }
