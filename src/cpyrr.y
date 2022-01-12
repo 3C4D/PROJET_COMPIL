@@ -973,7 +973,6 @@ variable : IDF {
     if(tete_pile_variable().nature == CHAMP){
       int i = 0;
       int type_avant;
-      fprintf(stderr, "%d", type);
       // Premier indice de la struct dans la table des types
       int indice_struct = valeur_description_tab_decla(type);
       int indice_lexeme_champ = indice_struct + 2;
@@ -981,15 +980,17 @@ variable : IDF {
 
       depiler_pile_variable();
 
-      type = -1;
-      while(i != valeur_tab_types(indice_struct)){
-        // L'IDF appelé est bien un champ de la structure
-        if(valeur_tab_types(indice_lexeme_champ) == $1){
-          // On retient le type et on sort
-          type = valeur_tab_types(indice_lexeme_champ-1);
+      if(indice_struct != -1){
+        type = -1;
+        while(i != valeur_tab_types(indice_struct)){
+          // L'IDF appelé est bien un champ de la structure
+          if(valeur_tab_types(indice_lexeme_champ) == $1){
+            // On retient le type et on sort
+            type = valeur_tab_types(indice_lexeme_champ-1);
+          }
+          indice_lexeme_champ += 3;
+          i++;
         }
-        indice_lexeme_champ += 3;
-        i++;
       }
 
       if(type == -1){   // ERREUR
