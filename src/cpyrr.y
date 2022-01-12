@@ -34,7 +34,6 @@ int flags[] = {0, 0, 0, 0, 0};
 int tab_var_format[40];
 int tab_arg_appel[40][40];
 int num_champ = -1;
-int nb_liste_variable = 0;
 
 int num_avant; //Num région déclaration d'une fonction
 
@@ -1708,7 +1707,7 @@ composante_afficher : variable       {
 
     /* Un appel de moins dans le tableau d'appel */
     tab_arg_appel[0][0]--;
-
+    tab_var_format[tab_var_format[0]] = valeur_tab_types(valeur_description_tab_decla(num_decl_appel));
     $$ = $1;
                     }
                     | CSTE_ENTIERE       {
@@ -1737,68 +1736,15 @@ composante_afficher : variable       {
                     }
                     ;
 
-lire : LIRE PARENTHESE_OUVRANTE {nb_liste_variable = 1;} liste_variables
-       PARENTHESE_FERMANTE {
+lire : LIRE PARENTHESE_OUVRANTE liste_variables PARENTHESE_FERMANTE {
   $$ = concat_pere_fils(
     creer_noeud(-1, -1, A_LIRE, -1, -1.0),
-    $4
+    $3
   );
 }
      ;
 
-liste_variables : variable {
-  if(type > 3){
-    char erreur[500];
-    if(nature(type) == TYPE_STRUCT){
-      if(region(type)==0){
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s, ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) +1+ valeur_tab_representation(valeur_description_tab_decla(type))*3),
-          nom_reg(region(type))
-          );
-      }else{
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s (numéro %d), ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) +1+ valeur_tab_representation(valeur_description_tab_decla(type))*3),
-          nom_reg(region(type)),
-          region(type)
-          );
-      }
-    }else{
-      if(region(type)==0){
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s, ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) + 2 + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2),
-          nom_reg(region(type))
-          );
-      }else{
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s (numéro %d), ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) + 2 + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2),
-          nom_reg(region(type)),
-          region(type)
-          );
-      }
-    }
-    print_erreur_semantique(erreur);
-    erreur_semantique++;
-
-  }
-  nb_liste_variable++;
-}
-  VIRGULE liste_variables {
+liste_variables : variable VIRGULE liste_variables {
   $$ = concat_pere_fils(
     creer_noeud(-1, -1, A_LISTE_VAR, -1, -1),
     concat_pere_frere(
@@ -1806,56 +1752,10 @@ liste_variables : variable {
         creer_noeud(-1, -1, A_VAR, -1, -1.0),
         $1
       ),
-    $4)
+    $3)
   );
 }
                 | variable {
-  if(type > 3){
-    char erreur[500];
-    if(nature(type) == TYPE_STRUCT){
-      if(region(type)==0){
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s, ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) +1+ valeur_tab_representation(valeur_description_tab_decla(type))*3),
-          nom_reg(region(type))
-          );
-      }else{
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s (numéro %d), ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) +1+ valeur_tab_representation(valeur_description_tab_decla(type))*3),
-          nom_reg(region(type)),
-          region(type)
-          );
-      }
-    }else{
-      if(region(type)==0){
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s, ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) + 2 + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2),
-          nom_reg(region(type))
-          );
-      }else{
-        sprintf(
-          erreur,
-          "La variable %d dans fonction lire est de type %s déclarée ligne %d dans la région %s (numéro %d), ce qui n'est pas un type simple. Pour rappel, les types de bases sont int, bool, char et float.",
-          nb_liste_variable,
-          lexeme(decl2lex(type)),
-          valeur_tab_representation(valeur_description_tab_decla(type) + 2 + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2),
-          nom_reg(region(type)),
-          region(type)
-          );
-      }
-    }
-  }
   $$ = concat_pere_fils(
       creer_noeud(-1, -1, A_LISTE_VAR, -1, -1),
       concat_pere_fils(
