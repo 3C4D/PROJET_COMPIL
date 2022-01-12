@@ -87,7 +87,55 @@ C3 [^"*/]
 
 (0|[1-9][0-9]*) {yylval.typ2 = atoi(yytext); return(CSTE_ENTIERE);}
 (0|[1-9][0-9]*)\.([0-9]+)  {yylval.typ3 = atof(yytext); return(CSTE_REELLE);}
-\'.\'  {yylval.typ2 = yytext[1]; return(CSTE_CARACTERE);}
+
+\'\\['ntabefrv0\\]\'  {
+  switch(yytext[2]){
+    case '\'' :
+      return '\'';
+      break;
+    case 'n' :
+      return '\n';
+      break;
+    case 't' :
+      return '\t';
+      break;
+    case 'a' :
+      return '\a';
+      break;
+    case 'b' :
+      return '\b';
+      break;
+    case 'e' :
+      return '\e';
+      break;
+    case 'f' :
+      return '\f';
+      break;
+    case 'r' :
+      return '\r';
+      break;
+    case 'v' :
+      return '\v';
+      break;
+    case '0' :
+      return '\0';
+      break;
+    case '\\' :
+      return '\\';
+      break;
+    default :
+      couleur(VERTGRAS);
+      fprintf(stderr, "\nErreur lexicographique\n");
+      couleur(BLANCGRAS);
+      fprintf(stderr, " %d |  %s", nb_ligne, yytext);
+      couleur(RESET);
+      fprintf(stderr, "\n\n");
+      break;
+
+  }
+}
+\'[^']\'  {yylval.typ2 = yytext[1]; return(CSTE_CARACTERE);}
+
 \"[^"]*\" {yylval.typ2 = inserer_tab_lex(yytext); return(CSTE_CHAINE);}
 
 [a-zA-Z][a-zA-Z0-9]*  {

@@ -209,7 +209,7 @@ void charger_table_lexico(FILE *fic){
     TableLexico[i].lexeme = malloc(
       sizeof(char)
       *
-      TableLexico[i].longueur+4
+      TableLexico[i].longueur+20
     );
     if(TableLexico[i].lexeme == NULL){
       fprintf(stderr, "Erreur d'allocation\n");
