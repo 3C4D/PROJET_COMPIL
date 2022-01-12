@@ -54,6 +54,12 @@ void inserer_exec_tab_decla(int num_decla, int num_region_engendree);
 void afficher_tab_declaration();
 
 /*----------------------------------------------------------------------------
+ Utilité : Renvoie le nom de la région num_reg
+  Paramètre : - num_reg : le numéro de la région en question
+ ----------------------------------------------------------------------------- */
+ char * tab_decla_region(int num_reg);
+
+/*----------------------------------------------------------------------------
   Utilité : Renvoie le numéro de déclaration du lexème si il est déclaré, -1
   sinon.
   Paramatères : - num_lexico : numéro du lexème en question.

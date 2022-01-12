@@ -156,7 +156,6 @@ int est_dans_pile_region(int region){
 // résultat numérique (ou caractère), renvoie le type final, -1 si erreur
 int verif_type_expr_arithm(int type_g, int type_d, int nb_ligne){
   // L'une des composantes est booleenne
-  printf("%d  %d %d\n",type_g,type_d, nb_ligne);
   if(type_g == TYPE_BOOL){
     char erreur[500];
     sprintf(

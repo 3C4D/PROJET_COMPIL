@@ -18,7 +18,7 @@ void io_affiche(ninja format, arbre args){
   ninja res;
 
   if (format.nat != PTR){
-    err_exec("io_affiche: absence de format");
+    err_exec("io_affiche: absence de format", true);
   }
 
   char *msg = (char *)blob2ptr(format.val);
@@ -67,7 +67,7 @@ void io_affiche(ninja format, arbre args){
         break;
 
       default:
-        err_exec("io_affiche: format inconnu");
+        err_exec("io_affiche: format inconnu", true);
         break;
       }
       args = args->fils_gauche->frere_droit;
@@ -98,10 +98,11 @@ void io_lire(arbre vars){
   if (est_vide(vars)){ return; }
   info = info_pile_var(vars->fils_gauche);
   ent.nat = info.nat;
+  ent.val = 0;
   
   switch (info.nat){
     case BOOL:
-      if (scanf("%5s", buf) == EOF){ err_exec("io_lire: Pb. de lecture"); }
+      if (scanf("%5s", buf) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
       if (strcmp("true", buf) == 0 || strcmp("1", buf) == 0){
         ent.val = bool2blob(true);
       } else {
@@ -110,22 +111,22 @@ void io_lire(arbre vars){
       break;
 
     case CHAR:
-      if(scanf(" %c", &c) == EOF){ err_exec("io_lire: Pb. de lecture"); }
+      if(scanf(" %c", &c) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
       ent.val = char2blob(c);
       break;
 
     case INT:
-      if(scanf("%d", &i) == EOF){ err_exec("io_lire: Pb. de lecture"); }
+      if(scanf("%d", &i) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
       ent.val = int2blob(i);
       break;
 
     case DOUBLE:
-      if(scanf("%lf", &d) == EOF){ err_exec("io_lire: Pb. de lecture"); }
+      if(scanf("%lf", &d) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
       ent.val = double2blob(d);
       break;
     
     default:
-      err_exec("io_lire: type de variable inconnu");
+      err_exec("io_lire: type de variable inconnu", true);
       break;
   }
 
@@ -137,7 +138,7 @@ void io_lire(arbre vars){
 
 
 // Affiche une erreur d'exécution
-void err_exec(char *msg){
+void err_exec(char *msg, bool fin){
   int numdecl_reg;
 
   fprintf(
@@ -152,16 +153,14 @@ void err_exec(char *msg){
       if (nature(numdecl_reg) == PROC){
         fprintf(
           stderr, 
-          "Procedure: %s (Région %d)\n", 
-          lexeme(decl2lex(numdecl_reg)), 
-          reg_actu_g
+          "Procedure: %s (Région: %d)\n", 
+          tab_decla_region(reg_actu_g), reg_actu_g
         );
       } else {
         fprintf(
           stderr, 
-          "Fonction: %s (Région %d)\n", 
-          lexeme(decl2lex(numdecl_reg)),
-          reg_actu_g
+          "Fonction: %s (Région: %d)\n", 
+          tab_decla_region(reg_actu_g), reg_actu_g
         );
       }
     } else {
@@ -175,6 +174,11 @@ void err_exec(char *msg){
 
   fprintf(stderr, RESET);
 
+  if (fin) { fin_exec(); }
+}
+
+// Quitte l'exécution du programme et affiche la pile
+void fin_exec(){
   pilex_aff(pile_exec_g, LIMITE_DEBUG);
   exit(-1);
 }

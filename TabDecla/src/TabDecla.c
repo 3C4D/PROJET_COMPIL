@@ -371,6 +371,30 @@ int decl2lex(int num_decla){
 }
 
 /*----------------------------------------------------------------------------
+ Utilité : Renvoie le nom de la région num_reg
+  Paramètre : - num_reg : le numéro de la région en question
+ ----------------------------------------------------------------------------- */
+ char * tab_decla_region(int num_reg){
+   int i =0;
+   if(num_reg == 0){
+     return "programme principal";
+   }
+   
+   while(i != MAX_TAB_DECLA){
+     if(TableDeclaration[i].nature == FCT || TableDeclaration[i].nature == PROC){
+       if(TableDeclaration[i].exec == num_reg){
+         return lexeme(decl2lex(i));
+       }
+     }
+     i++;
+   }
+   return "programme principal";
+ }
+
+
+
+
+/*----------------------------------------------------------------------------
  Utilité : Renvoie le numéro de région d'une certaine déclaration
   Paramètre : - num_decla : numéro de déclaration en question
  ----------------------------------------------------------------------------- */

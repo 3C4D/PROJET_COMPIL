@@ -4,6 +4,7 @@
 #include "../inc/eval.h"
 #include "../inc/pile_exec.h"
 #include "../inc/execution.h"
+#include "../../inc/couleur.h"
 #include "../../inc/macros_arbres.h"
 #include "../../GenTexte/inc/GenTexte.h"
 #include "../../TabDecla/inc/TabDecla.h"
@@ -33,7 +34,7 @@ void chainage_statique(int base_region_appl, int nis);
 /* Fonctions pour le variables */
 var_info info_var(arbre a);
 var_info info_artefact(int numdecl, arbre a);
-int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite);
+int var_dec_tab(int max_dim, int dim, int ind_rep, int *taille_case, arbre a, arbre *suite);
 
 // Execute un fichier de texte intermediare
 void execution(FILE *fic){
@@ -124,7 +125,7 @@ bool exec_arbre(arbre a){
   case A_VIDE :  break;
 
   default:
-    err_exec("Exec: Noeud non reconnu");
+    err_exec("Exec: Noeud non reconnu", true);
   }
 
   return false;
@@ -195,12 +196,12 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
 
   if (arg_num > nb_param){
     if (!est_vide(a)){
-      err_exec("Erreur appel fonction/procedure: trop d'arguments");
+      err_exec("Erreur appel fonction/procedure: trop d'arguments", true);
     } else { return; }
   }
 
   if (est_vide(a)){
-    err_exec("Erreur appel fonction/procedure: manque d'arguements");
+    err_exec("Erreur appel fonction/procedure: manque d'arguements", true);
   }
 
   // Numero lexico -> num decla -> decalage de l'argument
@@ -220,7 +221,7 @@ void ajout_arg(int base_reg, int numreg, int numdecl, int arg_num, arbre a){
   val_arg = eval_arbre(a->fils_gauche);
 
   if (val_arg.nat != type_conv(nat_arg)){
-    err_exec("Err: arg fonction/procedure: type différents");
+    err_exec("Err: arg fonction/procedure: type différents", true);
   }
 
   arg = mem_init(val_arg.val, val_arg.nat, numdecl_arg);
@@ -347,7 +348,7 @@ var_info info_artefact(int numdecl, arbre a){
       info.nat = type_conv(numdecl);
     }
 
-    info.dec = var_dec_tab(dim, ind_rep + 2, &taille_type, a->fils_gauche, &s);
+    info.dec = var_dec_tab(dim, dim, ind_rep + 2, &taille_type, a->fils_gauche, &s);
   }
 
   // On récupère récursivement les infos sur la variable;
@@ -359,19 +360,34 @@ var_info info_artefact(int numdecl, arbre a){
 }
 
 // Decalage d'un index par rapport à "l'adresse" de la variable
-int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
+int var_dec_tab(int max_dim, int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
   int min, max, ind, dec, dist;
 
   if (dim == 0) {
     if (!est_vide(a)){
-      a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
+      switch (a->nature){
+      case A_VAR_SIMPLE:
+        a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
+        break;
+
+      case A_STRUCT:
+        a = concat_pere_fils(creer_noeud(0, 0, A_STRUCT, 0, 0), a);
+        break;
+
+      case A_DIMENSION:
+        a = concat_pere_fils(creer_noeud(0, 0, A_TAB, 0, 0), a);
+        break;
+      
+      default:
+        break;
+      }
     }
     *suite = a;
     return 0;
   }
 
   if (est_vide(a)){
-    err_exec("Erreur sur tableau: manque de dimension");
+    err_exec("Erreur sur tableau: manque de dimension", true);
   }
 
   ind = blob2int(eval_arbre(a->fils_gauche).val);
@@ -379,13 +395,19 @@ int var_dec_tab(int dim, int ind_rep, int *taille_case, arbre a, arbre *suite){
   max = valeur_tab_representation(ind_rep + 1);
 
   if (ind < min || ind > max){
-    err_exec("Erreur sur tableau: indice en dehors du tableau");
+    err_exec("Erreur sur tableau: indice en dehors du tableau", false);
+    fprintf(
+      stderr, 
+      "%s\tBornes: {%d,..,%d} (Dimension: %d) | Index donné: %d%s\n", 
+      JAUNE, min, max, (max_dim - dim + 1), ind, RESET
+    );
+    fin_exec();
   }
 
   dist = max - min + 1;
 
   dec = var_dec_tab(
-    dim - 1, ind_rep + 2, taille_case,
+    max_dim, dim - 1, ind_rep + 2, taille_case,
     a->fils_gauche->frere_droit, suite
     );
   dec += (ind - min) * (*taille_case);

@@ -154,7 +154,7 @@ ninja eval_arbre(arbre a){
     return init_ninja(pilex_recval(var.dec, pile_exec_g).data, var.nat);
 
   default:
-    err_exec("Eval: Noeud non reconnu");
+    err_exec("Eval: Noeud non reconnu", true);
   }
 
   return n;
@@ -320,13 +320,13 @@ blob mult(blob a, blob b, types t){
 blob divi(blob a, blob b, types t){
   switch(t){
     case CHAR:
-      if (blob2char(b) == 0){ err_exec("Division par 0"); }
+      if (blob2char(b) == 0){ err_exec("Division par 0", true); }
       return char2blob(blob2char(a) / blob2char(b));
     case INT:
-      if (blob2int(b) == 0){ err_exec("Division par 0"); }
+      if (blob2int(b) == 0){ err_exec("Division par 0", true); }
       return int2blob(blob2int(a) / blob2int(b));
     case DOUBLE:
-      if (blob2double(b) == 0){ err_exec("Division par 0"); }
+      if (blob2double(b) == 0){ err_exec("Division par 0", true); }
       return double2blob(blob2double(a) / blob2double(b));
     default:
       return 0;
@@ -337,13 +337,13 @@ blob divi(blob a, blob b, types t){
 blob mod(blob a, blob b, types t){
   switch(t){
     case CHAR:
-      if (blob2char(b) == 0) { err_exec("Modulo 0"); }
+      if (blob2char(b) == 0) { err_exec("Modulo 0", true); }
       return char2blob(blob2char(a) % blob2char(b));
     case INT:
-      if (blob2int(b) == 0) { err_exec("Modulo 0"); }
+      if (blob2int(b) == 0) { err_exec("Modulo 0", true); }
       return int2blob(blob2int(a) % blob2int(b));
     case DOUBLE:
-      if ((int)blob2double(b) == 0) { err_exec("Modulo 0"); }
+      if ((int)blob2double(b) == 0) { err_exec("Modulo 0", true); }
       return double2blob((double)((int)blob2double(a) % (int)blob2double(b)));
     default: return 0;
   }

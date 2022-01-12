@@ -18,10 +18,18 @@ func f1(ss:int) return int
 
 //Oublie d'instruction de retour
 func f2(para:int) return int
+    //Instruction de retour vide
+    func f2(para: int) return int{
+    return ;
+    }
     {
-    void;
+    //Appel d'une procédure qui n'existe pas
+    p45();
     }
 
+//func f2(para:int){
+//void;
+//}
 
 {
     //Mauvais type de paramètre d'une fonction
@@ -36,5 +44,6 @@ func f2(para:int) return int
     //Nombre de paramètre incorrecte
     p1();
     p1(5,8);
+
 
 }
