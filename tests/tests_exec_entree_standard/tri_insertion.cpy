@@ -75,23 +75,15 @@ var k:int;
     }
 }
 
-proc remplirTab{
-    tab[0].ch1 := 5;
-    tab[0].ch2 := 7;
-    tab[1].ch1 := 15;
-    tab[1].ch2 := 2;
-    tab[2].ch1 := 3;
-    tab[2].ch2 := 0;
-    tab[3].ch1 := 64;
-    tab[3].ch2 := 12;
-    tab[4].ch1 := 2;
-    tab[4].ch2 := 7;
-    tab[5].ch1 := 7;
-    tab[5].ch2 := 1;
-    tab[6].ch1 := 2;
-    tab[6].ch2 := 6;
-    tab[7].ch1 := 3;
-    tab[7].ch2 := 0;
+proc remplirTab
+    var i : int;
+{
+    i := 0;
+    while(i < 8) do{
+        lire(tab[i].ch1);
+        lire(tab[i].ch2);
+        i := i+1;
+    }
 }
 
 {
