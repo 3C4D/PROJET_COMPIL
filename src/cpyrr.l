@@ -91,38 +91,38 @@ C3 [^"*/]
 \'\\['ntabefrv0\\]\'  {
   switch(yytext[2]){
     case '\'' :
-      return '\'';
-      break;
+      yylval.typ2 = '\'';
+      return(CSTE_CARACTERE);
     case 'n' :
-      return '\n';
-      break;
+      yylval.typ2 = '\n';
+      return(CSTE_CARACTERE);
     case 't' :
-      return '\t';
-      break;
+      yylval.typ2 = '\t';
+      return(CSTE_CARACTERE);
     case 'a' :
-      return '\a';
-      break;
+      yylval.typ2 = '\a';
+      return(CSTE_CARACTERE);
     case 'b' :
-      return '\b';
-      break;
+      yylval.typ2 = '\b';
+      return(CSTE_CARACTERE);
     case 'e' :
-      return '\e';
-      break;
+      yylval.typ2 = '\e';
+      return(CSTE_CARACTERE);
     case 'f' :
-      return '\f';
-      break;
+      yylval.typ2 = '\f';
+      return(CSTE_CARACTERE);
     case 'r' :
-      return '\r';
-      break;
+      yylval.typ2 = '\r';
+      return(CSTE_CARACTERE);
     case 'v' :
-      return '\v';
-      break;
+      yylval.typ2 = '\v';
+      return(CSTE_CARACTERE);
     case '0' :
-      return '\0';
-      break;
+      yylval.typ2 = '\0';
+      return(CSTE_CARACTERE);
     case '\\' :
-      return '\\';
-      break;
+      yylval.typ2 = '\\';
+      return(CSTE_CARACTERE);
     default :
       couleur(VERTGRAS);
       fprintf(stderr, "\nErreur lexicographique\n");
