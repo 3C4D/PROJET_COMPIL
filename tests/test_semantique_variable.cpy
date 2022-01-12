@@ -19,7 +19,7 @@ i := not d;
 //Affectation entre 2 types différents
 b := c;
 
-//
+//Addition impossible 
 c := d +c;
 
 //Opération sur les boolean
