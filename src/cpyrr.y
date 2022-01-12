@@ -973,7 +973,6 @@ variable : IDF {
     if(tete_pile_variable().nature == CHAMP){
       int i = 0;
       int type_avant;
-      fprintf(stderr, "%d", type);
       // Premier indice de la struct dans la table des types
       int indice_struct = valeur_description_tab_decla(type);
       int indice_lexeme_champ = indice_struct + 2;
