@@ -1122,15 +1122,26 @@ variable : IDF {
          "Tentative d'indicage d'un tableau par une expression de type %s. Pour rappel, un tableau peut seulement être indicé par des expressions entières.",
          lexeme(decl2lex(type))
        );
-     }else{  //N'arrive jamais
-       sprintf(
-         erreur,
-         "Tentative d'indicage d'un tableau par une expression de type %s déclaré ligne %d dans la région %s (numéro %d). Pour rappel, un tableau peut seulement être indicé par des expressions entières.",
-         lexeme(decl2lex(type)),
-         valeur_tab_representation(valeur_description_tab_decla(type) + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2 +1),
-         nom_reg(region(type)),
-         region(type)
-         );
+     }else{
+       if(nature(type) == TYPE_TAB){
+         sprintf(
+           erreur,
+           "Tentative d'indicage d'un tableau par une expression de type %s déclaré ligne %d dans la région %s (numéro %d). Pour rappel, un tableau peut seulement être indicé par des expressions entières.",
+           lexeme(decl2lex(type)),
+           valeur_tab_representation(valeur_description_tab_decla(type) + valeur_tab_representation(valeur_description_tab_decla(type)+1)*2 +1),
+           nom_reg(region(type)),
+           region(type)
+           );
+       }else{
+         sprintf(
+           erreur,
+           "Tentative d'indicage d'un tableau par une expression de type %s déclaré ligne %d dans la région %s (numéro %d). Pour rappel, un tableau peut seulement être indicé par des expressions entières.",
+           lexeme(decl2lex(type)),
+           valeur_tab_representation(valeur_description_tab_decla(type) + valeur_tab_representation(valeur_description_tab_decla(type))*3 +1),
+           nom_reg(region(type)),
+           region(type)
+           );
+       }
      }
      print_erreur_semantique(erreur);
      erreur_semantique++;
@@ -1139,7 +1150,7 @@ variable : IDF {
      erreur_semantique++;
    }else if(tete_pile_variable().nature == TAB){
      print_erreur_semantique(
-       "Nombre d'indice donné trop grand par rapport au nombre d'indice du tableau."
+       "Nombre d'indice donné trop grand par rapport au nombre de dimension du tableau."
        );
        erreur_semantique++;
    }else{
