@@ -18,15 +18,15 @@ var essai : tabOfTab;
     afficher("%p");
 
     //Format incompatible
-    afficher(" %f %d", x,x);
+    //afficher(" %f %d", x,x);
 
     //Format en trop
-    afficher("%d %d %d", x);
+    //afficher("%d %d %d", x);
 
     //Argument en trop
-    afficher("%d",x,x);
+    //afficher("%d",x,x);
 
     //FONCTION LIRE
     //Type non simple
-    lire(essai[3][4][5][6]);
+    //lire(essai[3][4][5][6]);
 }
