@@ -528,7 +528,6 @@ declaration_fonction  : FONCTION IDF {
   empiler_pile_region(num_region);
   change_ligne_decla(nb_ligne); //On mémorise le numéro de la ligne de déclaration
   inserer_nom_region_tab_region(lexeme($2)); //On mémorise le nom de la région
-  printf("%d dep %d nis", deplacement(), nis());
   change_deplacement(nis() + 1); //On réserve la place pour les chainages statiques/dynamique
   change_NIS(1); //On ajoute un niveau d'imbrication car on rentre dans une nouvelle région
 
