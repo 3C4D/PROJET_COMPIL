@@ -16,7 +16,7 @@ void init_tab_region(){
 
   for(i=1; i<MAX_TAB_REGION; i++){
     TableRegion[i].nom_region = NULL;
-    TableRegion[i].taille = 1;
+    TableRegion[i].taille = 0;
     TableRegion[i].NIS = -1;
     TableRegion[i].arbre_region = NULL;
   }
@@ -31,7 +31,7 @@ void init_tab_region(){
 void inserer_tab_region(int taille, int nis){
   int region  = tete_pile_region();
 
-  TableRegion[region].taille += taille + nis;
+  TableRegion[region].taille += taille;
   TableRegion[region].NIS = nis;
 }
 

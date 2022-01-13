@@ -1,6 +1,8 @@
 cpyrr
 
-type typeT : array[5_45] of int;
+type typeT : struct
+    ch1 : int;
+fstruct
 
 var x : int;
 
@@ -10,7 +12,7 @@ var x : int;
 }*/
 
 //Type de retour non simple
-/* func f1(ss:int) return int
+/*func f1(ss:int) return int
     var retour : typeT;
     {
     return retour;
@@ -20,12 +22,13 @@ var x : int;
 //Oublie d'instruction de retour
 func f2(para:int) return int
     //Instruction de retour vide
-    /*func f2(para: int) return int{
+/*    func f2(para: int) return int{
     return ;
-  }*/
+  } */
     {
     //Appel d'une procédure qui n'existe pas
     //p45();
+    void;
     return 0;
   }
 
