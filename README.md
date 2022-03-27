@@ -1,4 +1,13 @@
-# Projet de compilation
+# Description
+
+Ces programmes permettent de compiler des prrogrammes écrits avec le langage
+CPYRR.
+
+Le compilateur est capable de détecter les erreurs lexicales, syntaxiques et
+sémantiques dans les programmes.
+
+La machine virtuelle est capable d'exécuter les programmes compilés (voir plus
+bas).
 
 ## Utilisation du Makefile
 
@@ -50,3 +59,7 @@ Exemple d'utilisation :
 La commande ci-dessus exécutera (ou tentera d'exécuter) le fichier
 fichier_output, devant résulter d'une compilation d'un programme CPYRR par le
 compilateur présenter dans le point précédent.
+
+## Crédits
+
+Manon Girard - Soam LeDortz - Enzo Cadoni
