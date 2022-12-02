@@ -114,7 +114,7 @@ void io_lire(arbre vars){
       break;
 
     case CHAR:
-      if(scanf(" %c", &c) == EOF){
+      if((c=getc(stdin)) == EOF){
         ent.val = char2blob(-1);
         break;
       }
