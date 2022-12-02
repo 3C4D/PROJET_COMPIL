@@ -13,7 +13,7 @@
 // Affiche une chaine de caratères
 void aff_str(char *s);
 
-// Affiche sur la sortie standard les variables données par args selon le format 
+// Affiche sur la sortie standard les variables données par args selon le format
 void io_affiche(ninja format, arbre args){
   ninja res;
 
@@ -35,7 +35,7 @@ void io_affiche(ninja format, arbre args){
           case 'r': printf("\r"); break;
           case 't': printf("\t"); break;
           case 'v': printf("\v"); break;
-          
+
           default: break;
         }
     } else if (*msg == '%'){
@@ -99,10 +99,13 @@ void io_lire(arbre vars){
   info = info_pile_var(vars->fils_gauche);
   ent.nat = info.nat;
   ent.val = 0;
-  
+
   switch (info.nat){
     case BOOL:
-      if (scanf("%5s", buf) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
+      if (scanf("%5s", buf) == EOF){
+        ent.val = char2blob(-1);
+        break;
+      }
       if (strcmp("true", buf) == 0 || strcmp("1", buf) == 0){
         ent.val = bool2blob(true);
       } else {
@@ -111,20 +114,29 @@ void io_lire(arbre vars){
       break;
 
     case CHAR:
-      if(scanf(" %c", &c) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
+      if(scanf(" %c", &c) == EOF){
+        ent.val = char2blob(-1);
+        break;
+      }
       ent.val = char2blob(c);
       break;
 
     case INT:
-      if(scanf("%d", &i) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
+      if(scanf("%d", &i) == EOF){
+        ent.val = char2blob(-1);
+        break;
+      }
       ent.val = int2blob(i);
       break;
 
     case DOUBLE:
-      if(scanf("%lf", &d) == EOF){ err_exec("io_lire: Pb. de lecture", true); }
+      if(scanf("%lf", &d) == EOF){
+        ent.val = char2blob(-1);
+        break;
+      }
       ent.val = double2blob(d);
       break;
-    
+
     default:
       err_exec("io_lire: type de variable inconnu", true);
       break;
@@ -152,20 +164,20 @@ void err_exec(char *msg, bool fin){
     if (numdecl_reg != -1){
       if (nature(numdecl_reg) == PROC){
         fprintf(
-          stderr, 
-          "Procedure: %s (Région: %d)\n", 
+          stderr,
+          "Procedure: %s (Région: %d)\n",
           tab_decla_region(reg_actu_g), reg_actu_g
         );
       } else {
         fprintf(
-          stderr, 
-          "Fonction: %s (Région: %d)\n", 
+          stderr,
+          "Fonction: %s (Région: %d)\n",
           tab_decla_region(reg_actu_g), reg_actu_g
         );
       }
     } else {
       fprintf(
-        stderr, 
+        stderr,
         "Région %d, Nature inconnue (/!\\ Évenement fortement anormal)",
         reg_actu_g
       );
